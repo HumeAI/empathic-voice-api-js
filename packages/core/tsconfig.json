@@ -1,4 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "extends": "@humeai/typescript-config/base.json"
+  "extends": "@humeai/typescript-config/base.json",
+  "include": [
+    "./types/**/*.d.ts",
+  ]
 }
