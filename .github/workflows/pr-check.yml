@@ -1,0 +1,56 @@
+# Test that App is functioning properly
+name: PR Check
+
+on:
+  # Run workflow when a PR is merged onto main
+  push:
+    branches:
+      - main
+  # Run workflow on any open PR against main branch
+  pull_request:
+    types: ['opened', 'reopened', 'ready_for_review', 'synchronize']
+    branches:
+      - main
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  pr-check:
+    if: ${{ github.event.pull_request.draft == false }}
+
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: development
+
+    steps:
+      # Checkout repository files
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+
+      # Add Node.js and npm to runner
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      # Install project dependencies with pnpm
+      - name: Install dependencies
+        env:
+          # Note: NODE_ENV needs to be set to development to
+          # install jest and other dev dependencies
+          NODE_ENV: development
+        run: pnpm install
+
+      # Check for linting errors
+      - name: Check for linting errors
+        run: pnpm lint
+
+      # Check that project unit tests are successful
+      #   - name: Run unit tests
+      #     run: pnpm test
