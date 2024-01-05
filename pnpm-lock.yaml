@@ -111,6 +111,12 @@ importers:
 
   packages/core:
     dependencies:
+      reconnecting-websocket:
+        specifier: ^4.4.0
+        version: 4.4.0
+      robust-websocket:
+        specifier: ^1.0.0
+        version: 1.0.0
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -139,6 +145,12 @@ importers:
       '@humeai/assistant':
         specifier: workspace:*
         version: link:../core
+      react:
+        specifier: ^18
+        version: 18.2.0
+      react-dom:
+        specifier: ^18
+        version: 18.2.0(react@18.2.0)
     devDependencies:
       '@humeai/eslint-config':
         specifier: workspace:*
@@ -149,6 +161,12 @@ importers:
       '@types/node':
         specifier: ^20.10.6
         version: 20.10.6
+      '@types/react':
+        specifier: ^18
+        version: 18.2.46
+      '@types/react-dom':
+        specifier: ^18
+        version: 18.2.18
       tsup:
         specifier: ^8.0.1
         version: 8.0.1(typescript@5.3.3)
@@ -3394,6 +3412,10 @@ packages:
       picomatch: 2.3.1
     dev: true
 
+  /reconnecting-websocket@4.4.0:
+    resolution: {integrity: sha512-D2E33ceRPga0NvTDhJmphEgJ7FUYF0v4lr1ki0csq06OdlxKfugGzN0dSkxM/NfqCxYELK4KcaTOUOjTV6Dcng==}
+    dev: false
+
   /reflect.getprototypeof@1.0.4:
     resolution: {integrity: sha512-ECkTw8TmJwW60lOTR+ZkODISW6RQ8+2CL3COqtiJKLd6MmB45hN51HprHFziKLGkAuTGQhBb91V8cy+KHlaCjw==}
     engines: {node: '>= 0.4'}
@@ -3467,6 +3489,10 @@ packages:
     dependencies:
       glob: 7.2.3
     dev: true
+
+  /robust-websocket@1.0.0:
+    resolution: {integrity: sha512-zpd1mXL2kPd2NexxKRBRC3appEhxRZVuiqfckI1kLaNM7tRBJ9l4dqOD1FPoNpOZ2PPNAySR3beVAVd4OYl4tg==}
+    dev: false
 
   /rollup@4.9.2:
     resolution: {integrity: sha512-66RB8OtFKUTozmVEh3qyNfH+b+z2RXBVloqO2KCC/pjFaGaHtxP9fVfOQKPSGXg2mElmjmxjW/fZ7iKrEpMH5Q==}

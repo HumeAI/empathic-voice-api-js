@@ -1,29 +1,39 @@
 import { Config } from './create-config';
 import { createSocketUrl } from './create-url';
 import { Message, parseMessageType } from './message';
+import ReconnectingWebsocket from 'reconnecting-websocket';
 
 export type AssistantEventMap = {
-  message?: (message: Message) => void;
-  ready?: () => void;
   open?: () => void;
+  message?: (message: Message) => void;
   close?: () => void;
   error?: (error: Error) => void;
 };
 
 export class AssistantClient {
-  private socket?: WebSocket;
+  private socket: ReconnectingWebsocket;
   private url: string;
   private eventHandlers: AssistantEventMap = {};
-  private reconnectAttempts = 0;
 
   private constructor(config: Config) {
     this.url = createSocketUrl(config);
+    this.socket = new ReconnectingWebsocket(this.url, [], {
+      startClosed: true,
+      maxRetries: config.reconnectAttempts,
+      debug: config.debug,
+    });
   }
 
+  /**
+   * Create a new AssistantClient.
+   */
   static create(config: Config) {
     return new AssistantClient(config);
   }
 
+  /**
+   * Attach events to the client.
+   */
   on<T extends keyof AssistantEventMap>(
     event: T,
     callback: AssistantEventMap[T],
@@ -31,12 +41,13 @@ export class AssistantClient {
     this.eventHandlers[event] = callback;
   }
 
+  /**
+   * Connect to the websocket.
+   */
   connect() {
-    this.socket = new WebSocket(this.url);
-    this.socket.binaryType = 'arraybuffer';
+    this.socket.reconnect();
 
     this.socket.addEventListener('open', () => {
-      this.reconnectAttempts = 0;
       this.eventHandlers.open?.();
     });
 
@@ -51,16 +62,7 @@ export class AssistantClient {
     });
 
     this.socket.addEventListener('close', () => {
-      if (this.reconnectAttempts < 30) {
-        this.reconnectAttempts += 1;
-        this.connect();
-      } else {
-        this.eventHandlers.error?.(
-          new Error(
-            `Websocket closed after ${this.reconnectAttempts} reconnect attempts`,
-          ),
-        );
-      }
+      this.eventHandlers.close?.();
     });
 
     this.socket.addEventListener('error', (event) => {
@@ -70,11 +72,16 @@ export class AssistantClient {
     return this;
   }
 
+  /**
+   * Disconnect from the websocket.
+   */
   disconnect() {
     this.socket?.close();
-    this.socket = undefined;
   }
 
+  /**
+   * Send audio data to the websocket.
+   */
   sendAudio(audioBuffer: ArrayBufferLike) {
     if (!this.socket) {
       throw new Error('Socket is not connected.');
@@ -85,5 +92,29 @@ export class AssistantClient {
     }
 
     this.socket.send(audioBuffer);
+  }
+
+  /**
+   * Send text data to the websocket.
+   */
+  sendText(text: string) {
+    if (!this.socket) {
+      throw new Error('Socket is not connected.');
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('Socket is not open.');
+    }
+
+    const json = JSON.stringify({ text });
+
+    this.socket.send(json);
+  }
+
+  /**
+   * The current ready state of the socket.
+   */
+  get readyState() {
+    return this.socket.readyState;
   }
 }

@@ -1,9 +1,9 @@
-import { describe, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { AssistantClient } from './client';
 import { defaultConfig } from './create-config';
 
 describe('client', () => {
-  it('should have a url', () => {
+  it('to start closed', () => {
     const client = AssistantClient.create({
       apiKey: 'test',
       ...defaultConfig,
@@ -19,8 +19,6 @@ describe('client', () => {
       }
     });
 
-    client.connect();
-
-    client.sendAudio(new ArrayBuffer(0));
+    expect(client.readyState).toBe(3);
   });
 });

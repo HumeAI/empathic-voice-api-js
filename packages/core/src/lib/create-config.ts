@@ -22,6 +22,18 @@ const ConfigSchema = z.object({
   tts: z.nativeEnum(TTSService, {
     description: 'Text-To-Speech service.',
   }),
+  reconnectAttempts: z
+    .number({
+      description: 'Number of times to attempt to reconnect to the API.',
+    })
+    .optional()
+    .default(30),
+  debug: z
+    .boolean({
+      description: 'Enable debug mode.',
+    })
+    .optional()
+    .default(false),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
@@ -32,6 +44,8 @@ export const defaultConfig: Omit<Config, 'apiKey'> = {
   encoding: AudioEncoding.LINEAR16,
   sampleRate: 44100,
   tts: TTSService.DEFAULT,
+  reconnectAttempts: 30,
+  debug: false,
 };
 
 export const createConfig = (
