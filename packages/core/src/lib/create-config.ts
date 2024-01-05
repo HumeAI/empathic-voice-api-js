@@ -26,15 +26,22 @@ const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 
+export const defaultConfig: Omit<Config, 'apiKey'> = {
+  hostname: 'api.hume.ai',
+  channels: Channels.STEREO,
+  encoding: AudioEncoding.LINEAR16,
+  sampleRate: 44100,
+  tts: TTSService.DEFAULT,
+};
+
 export const createConfig = (
   config: Pick<Config, 'apiKey'> & Partial<Omit<Config, 'apiKey'>>,
 ): Config => {
+  if (!config.apiKey) throw new Error('API key is required.');
+
   return ConfigSchema.parse({
+    ...defaultConfig,
+    ...config,
     apiKey: config.apiKey,
-    hostname: config?.hostname ?? 'api.hume.ai',
-    channels: config?.channels ?? Channels.STEREO,
-    encoding: config?.encoding ?? AudioEncoding.LINEAR16,
-    sampleRate: config?.sampleRate ?? 44100,
-    tts: config?.tts ?? TTSService.DEFAULT,
   });
 };
