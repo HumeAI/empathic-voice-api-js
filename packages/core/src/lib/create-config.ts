@@ -4,7 +4,7 @@ import { TTSService } from './tts';
 
 const ConfigSchema = z.object({
   apiKey: z.string({
-    description: 'API key for the Hume API.',
+    description: 'An API key is required for the Hume API.',
   }),
   hostname: z.string({
     description: 'Hostname of the Hume API.',
@@ -25,9 +25,11 @@ const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 
-export const createConfig = (config: Partial<Config>): Config => {
+export const createConfig = (
+  config: Pick<Config, 'apiKey'> & Partial<Omit<Config, 'apiKey'>>,
+): Config => {
   return ConfigSchema.parse({
-    apiKey: config?.apiKey,
+    apiKey: config.apiKey,
     hostname: config?.hostname ?? 'api.hume.ai',
     channels: config?.channels ?? Channels.STEREO,
     encoding: config?.encoding ?? AudioEncoding.LINEAR16,
