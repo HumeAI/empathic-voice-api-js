@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'vitest';
+
 import { createConfig } from './create-config';
 import { createSocketUrl } from './create-url';
 

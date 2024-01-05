@@ -12,13 +12,15 @@
   },
   "scripts": {
     "test": "vitest",
-    "build": "tsup",
-    "dev": "tsup --watch"
+    "build": "pnpm lint && tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint ./src/"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@humeai/eslint-config": "workspace:*",
     "@humeai/typescript-config": "workspace:*",
     "@types/node": "^20.10.6",
     "tsup": "^8.0.1",
@@ -27,5 +29,8 @@
   },
   "dependencies": {
     "zod": "^3.22.4"
-  }
+  },
+  "browserslist": [
+    "last 2 Chrome versions, last 2 iOS major versions, Firefox ESR, not dead"
+  ]
 }
