@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { Channels, AudioEncoding } from './audio';
+
+import { AudioEncoding, Channels } from './audio';
 import { TTSService } from './tts';
 
 const ConfigSchema = z.object({

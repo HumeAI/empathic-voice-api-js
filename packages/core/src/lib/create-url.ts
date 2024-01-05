@@ -1,4 +1,4 @@
-import { Config } from './create-config';
+import type { Config } from './create-config';
 
 export const createSocketUrl = (config: Config): string => {
   const url = new URL(`wss://${config.hostname}`);

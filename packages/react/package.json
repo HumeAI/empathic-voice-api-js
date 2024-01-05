@@ -13,7 +13,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsup",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "lint": "eslint ./src"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +23,7 @@
     "@humeai/assistant": "workspace:*"
   },
   "devDependencies": {
+    "@humeai/eslint-config": "workspace:*",
     "@humeai/typescript-config": "workspace:*",
     "@types/node": "^20.10.6",
     "tsup": "^8.0.1",

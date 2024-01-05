@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Channels, AudioEncoding, createConfig, TTSService } from '..';
+
+import { AudioEncoding, Channels, createConfig, TTSService } from '..';
 
 describe('create-config', () => {
   it('creates a new config object with defaults', () => {
