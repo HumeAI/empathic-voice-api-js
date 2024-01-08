@@ -45,33 +45,38 @@ export class AssistantClient {
     this.eventHandlers[event] = callback;
   }
 
+  private handleOpen = () => {
+    this.eventHandlers.open?.();
+  };
+
+  private handleMessage = (event: MessageEvent) => {
+    void parseMessageType(event).then((result) => {
+      if (result.success) {
+        this.eventHandlers.message?.(result.message);
+      } else {
+        this.eventHandlers.error?.(result.error);
+      }
+    });
+  };
+
+  private handleClose = () => {
+    this.eventHandlers.close?.();
+  };
+
+  private handleError = () => {
+    this.eventHandlers.error?.(new Error('WebSocket error.'));
+  };
+
   /**
    * Connect to the websocket.
    */
   connect() {
     this.socket.reconnect();
 
-    this.socket.addEventListener('open', () => {
-      this.eventHandlers.open?.();
-    });
-
-    this.socket.addEventListener('message', (event) => {
-      void parseMessageType(event).then((result) => {
-        if (result.success) {
-          this.eventHandlers.message?.(result.message);
-        } else {
-          this.eventHandlers.error?.(result.error);
-        }
-      });
-    });
-
-    this.socket.addEventListener('close', () => {
-      this.eventHandlers.close?.();
-    });
-
-    this.socket.addEventListener('error', () => {
-      this.eventHandlers.error?.(new Error('WebSocket error.'));
-    });
+    this.socket.addEventListener('open', this.handleOpen);
+    this.socket.addEventListener('message', this.handleMessage);
+    this.socket.addEventListener('close', this.handleClose);
+    this.socket.addEventListener('error', this.handleError);
 
     return this;
   }
@@ -80,6 +85,13 @@ export class AssistantClient {
    * Disconnect from the websocket.
    */
   disconnect() {
+    // Remove event listeners before closing the socket
+    this.socket.removeEventListener('open', this.handleOpen);
+    this.socket.removeEventListener('message', this.handleMessage);
+    this.socket.removeEventListener('close', this.handleClose);
+    this.socket.removeEventListener('error', this.handleError);
+
+    // Close socket
     this.socket?.close();
   }
 
