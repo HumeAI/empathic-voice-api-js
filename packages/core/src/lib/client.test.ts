@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { AssistantClient } from './client';
 import { defaultConfig } from './create-config';
 

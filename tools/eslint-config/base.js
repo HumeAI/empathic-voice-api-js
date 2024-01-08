@@ -12,6 +12,12 @@ module.exports = {
   },
   overrides: [
     {
+      files: ['*.test.ts'],
+      rules: {
+        'no-console': 'off',
+      },
+    },
+    {
       files: ['*.ts'],
       extends: [
         'airbnb-typescript/base',
@@ -49,12 +55,12 @@ module.exports = {
   ],
   rules: {
     'arrow-body-style': 'off',
+    'no-console': 'error',
     'no-debugger': 'error',
     'no-nested-ternary': 'error',
     'prettier/prettier': 'error',
     'import/no-unresolved': 'off',
     'no-void': 'off',
-    'no-console': 'error',
     'sort-imports': [
       'error',
       {
