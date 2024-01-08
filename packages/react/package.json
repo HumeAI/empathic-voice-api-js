@@ -20,13 +20,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@humeai/assistant": "workspace:*"
+    "@humeai/assistant": "workspace:*",
+    "react": "^18",
+    "react-dom": "^18"
   },
   "devDependencies": {
     "@humeai/eslint-config": "workspace:*",
     "@humeai/typescript-config": "workspace:*",
     "@types/node": "^20.10.6",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
-  }
+  },
+  "browserslist": [
+    "last 2 Chrome versions, last 2 iOS major versions, Firefox ESR, not dead"
+  ]
 }

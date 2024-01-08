@@ -1,9 +1,6 @@
-import pkg from '../package.json';
+export * from './lib/useSoundPlayer';
+export * from './lib/useMicrophone';
+export * from './lib/useAssistant';
+export * from './lib/useAssistantClient';
 
-export const useAssistant = () => {
-  const version = pkg.version;
-
-  return {
-    version,
-  };
-};
+export { Channels, TTSService, AudioEncoding } from '@humeai/assistant';

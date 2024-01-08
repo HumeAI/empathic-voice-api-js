@@ -5,10 +5,22 @@ export const createSocketUrl = (config: Config): string => {
 
   url.pathname = '/v0/ellm/chat';
   url.searchParams.set('apiKey', config.apiKey);
-  url.searchParams.set('channels', config.channels.toString());
-  url.searchParams.set('encoding', config.encoding);
-  url.searchParams.set('sample_rate', config.sampleRate.toString());
-  url.searchParams.set('tts', config.tts.toString());
+
+  if (config.channels) {
+    url.searchParams.set('channels', config.channels.toString());
+  }
+
+  if (config.encoding) {
+    url.searchParams.set('encoding', config.encoding);
+  }
+
+  if (config.sampleRate) {
+    url.searchParams.set('sample_rate', config.sampleRate.toString());
+  }
+
+  if (config.tts) {
+    url.searchParams.set('tts', config.tts.toString());
+  }
 
   return url.href;
 };
