@@ -21,7 +21,7 @@ importers:
         specifier: latest
         version: 1.11.3
 
-  examples/demo-app:
+  examples/next-app:
     dependencies:
       '@humeai/assistant-react':
         specifier: workspace:*
@@ -109,14 +109,24 @@ importers:
         specifier: ^5
         version: 5.3.3
 
+  examples/vite-app:
+    dependencies:
+      '@humeai/assistant':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      typescript:
+        specifier: ^5.2.2
+        version: 5.3.3
+      vite:
+        specifier: ^5.0.8
+        version: 5.0.11(@types/node@20.10.6)
+
   packages/core:
     dependencies:
       reconnecting-websocket:
         specifier: ^4.4.0
         version: 4.4.0
-      robust-websocket:
-        specifier: ^1.0.0
-        version: 1.0.0
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -3489,10 +3499,6 @@ packages:
     dependencies:
       glob: 7.2.3
     dev: true
-
-  /robust-websocket@1.0.0:
-    resolution: {integrity: sha512-zpd1mXL2kPd2NexxKRBRC3appEhxRZVuiqfckI1kLaNM7tRBJ9l4dqOD1FPoNpOZ2PPNAySR3beVAVd4OYl4tg==}
-    dev: false
 
   /rollup@4.9.2:
     resolution: {integrity: sha512-66RB8OtFKUTozmVEh3qyNfH+b+z2RXBVloqO2KCC/pjFaGaHtxP9fVfOQKPSGXg2mElmjmxjW/fZ7iKrEpMH5Q==}
