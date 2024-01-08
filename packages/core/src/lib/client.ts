@@ -1,7 +1,9 @@
-import { Config } from './create-config';
-import { createSocketUrl } from './create-url';
-import { Message, parseMessageType } from './message';
 import ReconnectingWebsocket from 'reconnecting-websocket';
+
+import type { Config } from './create-config';
+import { createSocketUrl } from './create-url';
+import type { Message } from './message';
+import { parseMessageType } from './message';
 
 export type AssistantEventMap = {
   open?: () => void;
@@ -12,7 +14,9 @@ export type AssistantEventMap = {
 
 export class AssistantClient {
   private socket: ReconnectingWebsocket;
+
   private url: string;
+
   private eventHandlers: AssistantEventMap = {};
 
   private constructor(config: Config) {
@@ -52,7 +56,7 @@ export class AssistantClient {
     });
 
     this.socket.addEventListener('message', (event) => {
-      parseMessageType(event).then((result) => {
+      void parseMessageType(event).then((result) => {
         if (result.success) {
           this.eventHandlers.message?.(result.message);
         } else {
@@ -65,7 +69,7 @@ export class AssistantClient {
       this.eventHandlers.close?.();
     });
 
-    this.socket.addEventListener('error', (event) => {
+    this.socket.addEventListener('error', () => {
       this.eventHandlers.error?.(new Error('WebSocket error.'));
     });
 

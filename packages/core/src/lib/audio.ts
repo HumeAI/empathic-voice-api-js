@@ -11,3 +11,7 @@ export enum AudioEncoding {
   /** Ogg Opus */
   OPUS = 'opus',
 }
+
+export function arrayBufferToBlob(arrayBuffer: ArrayBuffer, mimeType?: string) {
+  return new Blob([arrayBuffer], { type: mimeType });
+}

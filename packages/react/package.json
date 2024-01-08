@@ -32,5 +32,8 @@
     "@types/react-dom": "^18",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3"
-  }
+  },
+  "browserslist": [
+    "last 2 Chrome versions, last 2 iOS major versions, Firefox ESR, not dead"
+  ]
 }

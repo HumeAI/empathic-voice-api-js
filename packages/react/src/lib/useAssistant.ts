@@ -1,47 +1,34 @@
-import { useEffect, useRef, useState } from 'react';
-import { AssistantClient, Config, Message } from '@humeai/assistant';
+import { createConfig } from '@humeai/assistant';
 
-export const useAssistant = (props: { config: Config }) => {
-  const config = useRef<Config>(props.config);
-  config.current = props.config;
+import { useAssistantClient } from './useAssistantClient';
+import { useMicrophone } from './useMicrophone';
+import { useSoundPlayer } from './useSoundPlayer';
 
-  const client = useRef<AssistantClient | null>(null);
+export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
+  const config = createConfig(props);
 
-  const [state, setState] = useState<'idle' | 'connecting' | 'open' | 'closed'>(
-    'idle',
-  );
-  const [messages, setMessages] = useState<Message[]>([]);
+  const player = useSoundPlayer();
 
-  useEffect(() => {
-    client.current = AssistantClient.create(config.current);
+  const client = useAssistantClient({
+    config,
+    onAudioMessage: (arrayBuffer) => {
+      player.addToQueue(arrayBuffer);
+    },
+  });
 
-    client.current.on('open', () => {
-      setState('open');
-    });
-
-    client.current.on('message', (message) => {
-      setMessages((prev) => {
-        return prev.concat([message]);
-      });
-    });
-
-    client.current.on('close', () => {
-      setState('closed');
-    });
-
-    client.current.on('error', () => {});
-
-    setState('connecting');
-
-    client.current.connect();
-
-    return () => {
-      client.current?.disconnect();
-    };
-  }, []);
+  const mic = useMicrophone({
+    numChannels: config.channels,
+    sampleRate: config.sampleRate,
+    onAudioCaptured: (arrayBuffer) => {
+      client.sendAudio(arrayBuffer);
+    },
+  });
 
   return {
-    state,
-    messages,
+    isPlaying: player.isPlaying,
+    messages: client.messages,
+    readyState: client.readyState,
+    mute: mic.mute,
+    unmute: mic.unmute,
   };
 };

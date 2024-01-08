@@ -2,8 +2,18 @@
 
 import { useAssistant } from '@humeai/assistant-react';
 
-export const ExampleComponent = () => {
-  const { version } = useAssistant();
+export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
+  const { isPlaying, readyState } = useAssistant({
+    apiKey,
+    hostname: 'api.hume.ai',
+  });
 
-  return <div className={'font-light'}>Assistant Version: {version}</div>;
+  return (
+    <div>
+      <div className={'font-light'}>
+        <div>Playing: {isPlaying ? 'true' : 'false'}</div>
+        <div>Ready State: {readyState}</div>
+      </div>
+    </div>
+  );
 };
