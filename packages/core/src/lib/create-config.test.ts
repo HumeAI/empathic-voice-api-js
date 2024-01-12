@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { AudioEncoding, Channels, createConfig, TTSService } from '..';
+import { createConfig } from '..';
 
 describe('create-config', () => {
   it('creates a new config object with defaults', () => {
@@ -10,11 +10,9 @@ describe('create-config', () => {
 
     expect(config).toMatchObject({
       apiKey: 'hume-api-key-1234',
-      channels: Channels.STEREO,
-      encoding: AudioEncoding.LINEAR16,
       hostname: 'api.hume.ai',
-      sampleRate: 44100,
-      tts: TTSService.DEFAULT,
+      debug: false,
+      reconnectAttempts: 30,
     });
   });
 
