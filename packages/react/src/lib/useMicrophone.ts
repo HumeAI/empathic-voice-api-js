@@ -19,7 +19,8 @@ export const useMicrophone = ({
   onAudioCaptured,
   ...props
 }: MicrophoneProps) => {
-  const [isMuted, setIsMuted] = useState(true);
+  const isMutedRef = useRef(false);
+  const [isMuted, setIsMuted] = useState(false);
 
   const mimeType = props.mimeType ?? 'audio/webm';
   const recorder = useRef<MediaRecorder | null>(null);
@@ -27,23 +28,20 @@ export const useMicrophone = ({
   const sendAudio = useRef(onAudioCaptured);
   sendAudio.current = onAudioCaptured;
 
-  const dataHandler = useCallback(
-    (event: BlobEvent) => {
-      const blob = event.data;
+  const dataHandler = useCallback((event: BlobEvent) => {
+    const blob = event.data;
 
-      if (isMuted) {
-        return;
-      }
+    if (isMutedRef.current) {
+      return;
+    }
 
-      blob
-        .arrayBuffer()
-        .then((buffer) => {
-          sendAudio.current?.(buffer);
-        })
-        .catch(() => {});
-    },
-    [isMuted],
-  );
+    blob
+      .arrayBuffer()
+      .then((buffer) => {
+        sendAudio.current?.(buffer);
+      })
+      .catch(() => {});
+  }, []);
 
   const start = useCallback(async () => {
     try {
@@ -64,9 +62,7 @@ export const useMicrophone = ({
 
       recorder.current = new MediaRecorder(stream, { mimeType });
 
-      recorder.current.addEventListener('dataavailable', (event) => {
-        dataHandler(event);
-      });
+      recorder.current.addEventListener('dataavailable', dataHandler);
 
       recorder.current.start(250);
     } catch (e) {
@@ -84,11 +80,13 @@ export const useMicrophone = ({
   }, [dataHandler]);
 
   const mute = useCallback(() => {
-    setIsMuted(false);
+    isMutedRef.current = true;
+    setIsMuted(true);
   }, []);
 
   const unmute = useCallback(() => {
-    setIsMuted(true);
+    isMutedRef.current = false;
+    setIsMuted(false);
   }, []);
 
   useEffect(() => {

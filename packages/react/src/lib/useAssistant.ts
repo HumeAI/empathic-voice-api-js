@@ -28,6 +28,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     isPlaying: player.isPlaying,
     messages: client.messages,
     readyState: client.readyState,
+    isMuted: mic.isMuted,
     mute: mic.mute,
     unmute: mic.unmute,
   };
