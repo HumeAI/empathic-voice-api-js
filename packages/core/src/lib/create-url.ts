@@ -3,7 +3,7 @@ import type { Config } from './create-config';
 export const createSocketUrl = (config: Config): string => {
   const url = new URL(`wss://${config.hostname}`);
 
-  url.pathname = '/v0/ellm/chat';
+  url.pathname = '/v0/assistant/chat';
   url.searchParams.set('apiKey', config.apiKey);
 
   if (config.channels) {
