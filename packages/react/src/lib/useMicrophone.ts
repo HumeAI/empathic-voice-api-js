@@ -90,7 +90,6 @@ export const useMicrophone = ({
   }, []);
 
   useEffect(() => {
-    void start();
     return () => {
       stop();
     };

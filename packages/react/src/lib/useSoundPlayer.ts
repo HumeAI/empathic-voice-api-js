@@ -3,6 +3,10 @@ import type { MeydaFeaturesObject } from 'meyda';
 import Meyda from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+function generateEmptyFft(): number[] {
+  return Array.from({ length: 24 }).map(() => 0);
+}
+
 export const useSoundPlayer = () => {
   const [queue, setQueue] = useState<{
     isProcessing: boolean;
@@ -11,7 +15,7 @@ export const useSoundPlayer = () => {
     isProcessing: false,
     clips: [],
   });
-  const [fft, setFft] = useState<number[]>(new Array(24).fill(0));
+  const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
   const currentClip = useRef<HTMLAudioElement | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
@@ -82,11 +86,11 @@ export const useSoundPlayer = () => {
       return;
     }
     if (queue.clips.length === 0) {
-      setFft(new Array(24).fill(0));
+      setFft(generateEmptyFft());
       return;
     }
     if (queue.isProcessing) {
-      setFft(new Array(24).fill(0));
+      setFft(generateEmptyFft());
       return;
     }
 

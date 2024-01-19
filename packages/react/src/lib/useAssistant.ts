@@ -31,12 +31,14 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     setIsConnected(true);
     client.connect();
     player.initPlayer();
+    void mic.start();
   }, []);
 
   const disconnect = useCallback(() => {
     setIsConnected(false);
     client.disconnect();
     player.stopAll();
+    mic.stop();
   }, []);
 
   return {

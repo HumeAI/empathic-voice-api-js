@@ -20,18 +20,18 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   });
 
   const normalizedFft = useMemo(() => {
-    const max = Math.max(...fft);
+    const max = 2.5;
     const min = Math.min(...fft);
 
     // define a minimum possible value because we want the bar to have
     // a height even when the audio is off
-    const minNormalizedValue = 0.15;
+    const minNormalizedValue = 0.01;
     return Array.from(fft).map((x) => {
-      if (max === min) {
-        return minNormalizedValue;
-      }
-      const normalized = Math.max(minNormalizedValue, (x - min) / (max - min));
-      return Math.round(normalized * 100);
+      // normalize & avoid divide by zero
+      const normalized = max === min ? max : (x - min) / (max - min);
+      const lowerBounded = Math.max(minNormalizedValue, normalized);
+      const upperBounded = Math.min(1, lowerBounded);
+      return Math.round(upperBounded * 100);
     });
   }, [fft]);
 
