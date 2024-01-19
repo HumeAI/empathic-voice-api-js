@@ -1,5 +1,11 @@
 import { arrayBufferToBlob } from '@humeai/assistant';
+import type { MeydaFeaturesObject } from 'meyda';
+import Meyda from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
+
+function generateEmptyFft(): number[] {
+  return Array.from({ length: 24 }).map(() => 0);
+}
 
 export const useSoundPlayer = () => {
   const [queue, setQueue] = useState<{
@@ -9,10 +15,21 @@ export const useSoundPlayer = () => {
     isProcessing: false,
     clips: [],
   });
+  const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
   const currentClip = useRef<HTMLAudioElement | null>(null);
+  const audioContext = useRef<AudioContext | null>(null);
+  const isInitialized = useRef(false);
+
+  const initPlayer = () => {
+    audioContext.current = new AudioContext();
+    isInitialized.current = true;
+  };
 
   const addToQueue = useCallback((clip: ArrayBuffer) => {
+    if (!isInitialized.current) {
+      throw new Error('AudioContext has not been initialized');
+    }
     try {
       const blob = arrayBufferToBlob(clip);
       const url = URL.createObjectURL(blob);
@@ -30,25 +47,50 @@ export const useSoundPlayer = () => {
   }, []);
 
   const playClip = async (audioElement: HTMLAudioElement) => {
+    if (!audioContext.current) {
+      throw new Error('AudioContext has not been initialized');
+    }
+
+    const source = audioContext.current.createMediaElementSource(audioElement);
+    source.connect(audioContext.current.destination);
+
+    const analyzer = Meyda.createMeydaAnalyzer({
+      audioContext: audioContext.current,
+      source,
+      featureExtractors: ['loudness'],
+      callback: (features: MeydaFeaturesObject) => {
+        const newFft = features.loudness.specific || [];
+        setFft(() => Array.from(newFft));
+      },
+    });
+
     return new Promise<void>((resolve, reject) => {
       audioElement.addEventListener('ended', () => {
         audioElement.remove();
+        analyzer.stop();
         resolve();
       });
 
       audioElement.addEventListener('error', () => {
+        analyzer.stop();
         reject();
       });
 
+      analyzer.start();
       void audioElement.play();
     });
   };
 
   useEffect(() => {
+    if (!audioContext.current) {
+      return;
+    }
     if (queue.clips.length === 0) {
+      setFft(generateEmptyFft());
       return;
     }
     if (queue.isProcessing) {
+      setFft(generateEmptyFft());
       return;
     }
 
@@ -82,8 +124,10 @@ export const useSoundPlayer = () => {
   }, []);
 
   return {
-    isPlaying: queue.isProcessing,
     addToQueue,
+    fft,
+    initPlayer,
+    isPlaying: queue.isProcessing,
     stopAll,
   };
 };
