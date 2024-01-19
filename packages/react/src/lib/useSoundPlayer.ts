@@ -1,4 +1,6 @@
 import { arrayBufferToBlob } from '@humeai/assistant';
+import Meyda, { MeydaFeaturesObject } from 'meyda';
+import { MeydaAnalyzer } from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const useSoundPlayer = () => {
@@ -12,39 +14,87 @@ export const useSoundPlayer = () => {
 
   const currentClip = useRef<HTMLAudioElement | null>(null);
 
-  const addToQueue = useCallback((clip: ArrayBuffer) => {
-    try {
-      const blob = arrayBufferToBlob(clip);
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.autoplay = false;
-      audio.load();
+  const audioContext = useRef<AudioContext | null>(null);
+  const meydaAnalyzer = useRef<MeydaAnalyzer>(null);
 
-      setQueue((prev) => ({
-        isProcessing: prev.isProcessing,
-        clips: [...prev.clips, audio],
-      }));
-    } catch (e) {
-      void true;
-    }
-  }, []);
+  const [fft, setFft] = useState<number[]>([]);
+
+  // const [isInitialized, setIsInitialized] = useState(false);
+  const isInitialized = useRef(false);
+
+  const initPlayer = () => {
+    audioContext.current = new AudioContext();
+    isInitialized.current = true;
+  };
+
+  const addToQueue = useCallback(
+    (clip: ArrayBuffer) => {
+      if (!isInitialized.current) {
+        throw new Error('Context has not been initialized');
+      }
+      try {
+        const blob = arrayBufferToBlob(clip);
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.autoplay = false;
+        audio.load();
+
+        setQueue((prev) => ({
+          isProcessing: prev.isProcessing,
+          clips: [...prev.clips, audio],
+        }));
+      } catch (e) {
+        void true;
+      }
+    },
+    [isInitialized],
+  );
 
   const playClip = async (audioElement: HTMLAudioElement) => {
-    return new Promise<void>((resolve, reject) => {
-      audioElement.addEventListener('ended', () => {
-        audioElement.remove();
-        resolve();
-      });
+    if (audioContext.current) {
+      const source =
+        audioContext.current.createMediaElementSource(audioElement);
+      source.connect(audioContext.current.destination);
 
-      audioElement.addEventListener('error', () => {
-        reject();
+      const analyzer = Meyda.createMeydaAnalyzer({
+        audioContext: audioContext.current,
+        source,
+        bufferSize: 512,
+        featureExtractors: ['loudness'],
+        callback: (features: MeydaFeaturesObject) => {
+          const newFft = features.loudness.specific || [];
+          setFft(() => Array.from(newFft));
+        },
       });
+      meydaAnalyzer.current = analyzer;
+      // }
 
-      void audioElement.play();
-    });
+      return new Promise<void>((resolve, reject) => {
+        audioElement.addEventListener('ended', () => {
+          audioElement.remove();
+          if (meydaAnalyzer.current) {
+            meydaAnalyzer.current.stop();
+          }
+          resolve();
+        });
+
+        audioElement.addEventListener('error', () => {
+          meydaAnalyzer.current?.stop();
+          reject();
+        });
+
+        console.log('playing', meydaAnalyzer.current);
+
+        meydaAnalyzer.current?.start();
+        void audioElement.play();
+      });
+    }
   };
 
   useEffect(() => {
+    if (!audioContext.current) {
+      return;
+    }
     if (queue.clips.length === 0) {
       return;
     }
@@ -67,7 +117,7 @@ export const useSoundPlayer = () => {
         }));
       });
     }
-  }, [queue]);
+  }, [queue, isInitialized]);
 
   const stopAll = useCallback(() => {
     if (currentClip.current) {
@@ -85,5 +135,7 @@ export const useSoundPlayer = () => {
     isPlaying: queue.isProcessing,
     addToQueue,
     stopAll,
+    fft,
+    initPlayer,
   };
 };
