@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background-image: none;
+  background-color: transparent !important;
+}
+
+/* Fellix Typeface */
+@font-face {
+  font-family: 'Fellix';
+  src:
+    url('https://storage.googleapis.com/hume-ai-fonts/Fellix/Fellix-Regular.woff2')
+      format('woff2'),
+    url('https://storage.googleapis.com/hume-ai-fonts/Fellix/Fellix-Regular.woff')
+      format('woff'),
+    url('https://storage.googleapis.com/hume-ai-fonts/Fellix/Fellix-Regular.otf')
+      format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fellix';
+  src:
+    url('https://storage.googleapis.com/hume-ai-fonts/Fellix/Fellix-Medium.woff2')
+      format('woff2'),
+    url('/fonts/Fellix/Fellix-Medium.woff') format('woff'),
+    url('https://storage.googleapis.com/hume-ai-fonts/Fellix/Fellix-Medium.woff')
+      format('woff');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Fellix';
+  src:
+    url('https://storage.googleapis.com/hume-ai-fonts/Fellix/Fellix-SemiBold.woff2')
+      format('woff2'),
+    url('https://storage.googleapis.com/hume-ai-fonts/Fellix/Fellix-SemiBold.woff')
+      format('woff'),
+    url('https://storage.googleapis.com/hume-ai-fonts/Fellix/Fellix-SemiBold.otf')
+      format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'PP Fraktion Mono';
+  src:
+    url('https://storage.googleapis.com/hume-ai-fonts/PP-Fraktion-Mono/PPFraktionMono-Regular.woff')
+      format('woff'),
+    url('https://storage.googleapis.com/hume-ai-fonts/PP-Fraktion-Mono/PPFraktionMono-Regular.woff2')
+      format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-sans: 'Fellix', sans-serif;
+  --font-mono: 'PP Fraktion Mono', monospace;
+}

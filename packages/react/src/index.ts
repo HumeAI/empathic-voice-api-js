@@ -3,4 +3,9 @@ export * from './lib/useMicrophone';
 export * from './lib/useAssistant';
 export * from './lib/useAssistantClient';
 
-export { Channels, TTSService, AudioEncoding } from '@humeai/assistant';
+export {
+  Channels,
+  TTSService,
+  AudioEncoding,
+  type PostMessageAction,
+} from '@humeai/assistant';
