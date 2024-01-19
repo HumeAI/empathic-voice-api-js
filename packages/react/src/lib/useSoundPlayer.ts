@@ -1,6 +1,6 @@
 import { arrayBufferToBlob } from '@humeai/assistant';
-import Meyda, { MeydaFeaturesObject } from 'meyda';
-import { MeydaAnalyzer } from 'meyda';
+import type { MeydaFeaturesObject } from 'meyda';
+import Meyda from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export const useSoundPlayer = () => {
@@ -11,15 +11,10 @@ export const useSoundPlayer = () => {
     isProcessing: false,
     clips: [],
   });
+  const [fft, setFft] = useState<number[]>(new Array(24).fill(0));
 
   const currentClip = useRef<HTMLAudioElement | null>(null);
-
   const audioContext = useRef<AudioContext | null>(null);
-  const meydaAnalyzer = useRef<MeydaAnalyzer>(null);
-
-  const [fft, setFft] = useState<number[]>([]);
-
-  // const [isInitialized, setIsInitialized] = useState(false);
   const isInitialized = useRef(false);
 
   const initPlayer = () => {
@@ -66,26 +61,20 @@ export const useSoundPlayer = () => {
           setFft(() => Array.from(newFft));
         },
       });
-      meydaAnalyzer.current = analyzer;
-      // }
 
       return new Promise<void>((resolve, reject) => {
         audioElement.addEventListener('ended', () => {
           audioElement.remove();
-          if (meydaAnalyzer.current) {
-            meydaAnalyzer.current.stop();
-          }
+          analyzer.stop();
           resolve();
         });
 
         audioElement.addEventListener('error', () => {
-          meydaAnalyzer.current?.stop();
+          analyzer?.stop();
           reject();
         });
 
-        console.log('playing', meydaAnalyzer.current);
-
-        meydaAnalyzer.current?.start();
+        analyzer?.start();
         void audioElement.play();
       });
     }
@@ -96,9 +85,11 @@ export const useSoundPlayer = () => {
       return;
     }
     if (queue.clips.length === 0) {
+      setFft(new Array(24).fill(0));
       return;
     }
     if (queue.isProcessing) {
+      setFft(new Array(24).fill(0));
       return;
     }
 
