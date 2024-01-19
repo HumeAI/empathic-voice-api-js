@@ -52,5 +52,5 @@ jobs:
         run: pnpm lint
 
       # Check that project unit tests are successful
-      #   - name: Run unit tests
-      #     run: pnpm test
+      - name: Run unit tests
+        run: pnpm test

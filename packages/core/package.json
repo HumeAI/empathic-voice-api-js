@@ -11,7 +11,7 @@
     "directory": "packages/core"
   },
   "scripts": {
-    "test": "vitest",
+    "test": "vitest --watch=false",
     "build": "pnpm lint && tsup",
     "dev": "tsup --watch",
     "lint": "eslint ./src/"
