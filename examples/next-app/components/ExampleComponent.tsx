@@ -4,11 +4,20 @@ import { useAssistant } from '@humeai/assistant-react';
 import { useMemo } from 'react';
 
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
-  const { isPlaying, readyState, mute, unmute, isMuted, fft, initialize } =
-    useAssistant({
-      apiKey,
-      hostname: 'api.hume.ai',
-    });
+  const {
+    connect,
+    disconnect,
+    fft,
+    isConnected,
+    isMuted,
+    isPlaying,
+    mute,
+    readyState,
+    unmute,
+  } = useAssistant({
+    apiKey,
+    hostname: 'api.hume.ai',
+  });
 
   const normalizedFft = useMemo(() => {
     const max = Math.max(...fft);
@@ -31,20 +40,44 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
       <div className={'font-light'}>
         <div>Playing: {isPlaying ? 'true' : 'false'}</div>
         <div>Ready State: {readyState}</div>
-        <div className="flex gap-4">
-          {isMuted ? (
-            <button onClick={() => unmute()}>Unmute</button>
+        <div className="flex max-w-sm flex-col gap-4">
+          {isConnected ? (
+            <button
+              className="rounded border border-neutral-500 p-2"
+              onClick={() => {
+                disconnect();
+              }}
+            >
+              Disconnect
+            </button>
           ) : (
-            <button onClick={() => mute()}>Mute</button>
+            <button
+              className="rounded border border-neutral-500 p-2"
+              onClick={() => {
+                connect();
+              }}
+            >
+              Connect to assistant
+            </button>
+          )}
+
+          {isMuted ? (
+            <button
+              className="rounded border border-neutral-500 p-2"
+              onClick={() => unmute()}
+            >
+              Unmute mic
+            </button>
+          ) : (
+            <button
+              className="rounded border border-neutral-500 p-2"
+              onClick={() => mute()}
+            >
+              Mute mic
+            </button>
           )}
         </div>
-        <button
-          onClick={() => {
-            initialize();
-          }}
-        >
-          Init player
-        </button>
+
         <div className="grid h-32 grid-cols-1 grid-rows-2 p-4">
           <div className="flex items-end gap-1">
             {normalizedFft.map((val, i) => {

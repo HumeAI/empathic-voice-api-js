@@ -1,11 +1,13 @@
 import { createConfig } from '@humeai/assistant';
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
 
 export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
+  const [isConnected, setIsConnected] = useState(false);
+
   const config = createConfig(props);
 
   const player = useSoundPlayer();
@@ -25,19 +27,28 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     },
   });
 
-  const initialize = useCallback(() => {
-    client.initClient();
+  const connect = useCallback(() => {
+    setIsConnected(true);
+    client.connect();
     player.initPlayer();
   }, []);
 
+  const disconnect = useCallback(() => {
+    setIsConnected(false);
+    client.disconnect();
+    player.stopAll();
+  }, []);
+
   return {
+    connect,
+    disconnect,
+    fft: player.fft,
+    isConnected,
+    isMuted: mic.isMuted,
     isPlaying: player.isPlaying,
     messages: client.messages,
-    readyState: client.readyState,
-    isMuted: mic.isMuted,
-    fft: player.fft,
-    initialize,
     mute: mic.mute,
+    readyState: client.readyState,
     unmute: mic.unmute,
   };
 };

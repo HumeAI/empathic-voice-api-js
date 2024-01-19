@@ -26,7 +26,7 @@ export const useAssistantClient = (props: {
   >(props.onAudioMessage);
   onAudioMessage.current = props.onAudioMessage;
 
-  const initClient = () => {
+  const connect = () => {
     client.current = AssistantClient.create(config.current);
 
     client.current.on('open', () => {
@@ -58,6 +58,11 @@ export const useAssistantClient = (props: {
     };
   };
 
+  const disconnect = () => {
+    setReadyState(ReadyState.IDLE);
+    client.current?.disconnect();
+  };
+
   const sendAudio = useCallback((arrayBuffer: ArrayBufferLike) => {
     client.current?.sendAudio(arrayBuffer);
   }, []);
@@ -66,6 +71,7 @@ export const useAssistantClient = (props: {
     readyState,
     messages,
     sendAudio,
-    initClient,
+    connect,
+    disconnect,
   };
 };
