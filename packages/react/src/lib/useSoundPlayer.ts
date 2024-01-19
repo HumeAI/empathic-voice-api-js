@@ -31,7 +31,9 @@ export const useSoundPlayer = () => {
       throw new Error('AudioContext has not been initialized');
     }
     try {
-      const blob = arrayBufferToBlob(clip);
+      // defining MIME type on the blob is required for the audio
+      // player to work in safari
+      const blob = arrayBufferToBlob(clip, 'audio/mp3');
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       audio.autoplay = false;

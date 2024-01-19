@@ -1,6 +1,6 @@
 import type { Config, Message } from '@humeai/assistant';
 import { AssistantClient } from '@humeai/assistant';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 export enum ReadyState {
   IDLE = 'idle',
@@ -52,16 +52,18 @@ export const useAssistantClient = (props: {
     setReadyState(ReadyState.CONNECTING);
 
     client.current.connect();
-
-    return () => {
-      client.current?.disconnect();
-    };
   };
 
   const disconnect = () => {
     setReadyState(ReadyState.IDLE);
     client.current?.disconnect();
   };
+
+  useEffect(() => {
+    return () => {
+      client.current?.disconnect();
+    };
+  });
 
   const sendAudio = useCallback((arrayBuffer: ArrayBufferLike) => {
     client.current?.sendAudio(arrayBuffer);
