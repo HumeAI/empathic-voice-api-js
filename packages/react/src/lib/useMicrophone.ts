@@ -6,42 +6,25 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export type MicrophoneProps = {
   numChannels?: Channels;
   sampleRate?: number;
-  mimeType?: string;
-  onAudioCaptured: (b: ArrayBuffer) => void;
+  onAudioCaptured: (b: Float32Array) => void;
   onStartRecording?: () => void;
   onStopRecording?: () => void;
   onError?: (message: string, error: Error) => void;
 };
 
 export const useMicrophone = ({
-  numChannels,
-  sampleRate,
+  numChannels = 1,
+  sampleRate = 44100,
   onAudioCaptured,
   ...props
 }: MicrophoneProps) => {
-  const isMutedRef = useRef(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+
+  const [isRecording, setIsRecording] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-
-  const mimeType = props.mimeType ?? 'audio/webm';
-  const recorder = useRef<MediaRecorder | null>(null);
-
-  const sendAudio = useRef(onAudioCaptured);
-  sendAudio.current = onAudioCaptured;
-
-  const dataHandler = useCallback((event: BlobEvent) => {
-    const blob = event.data;
-
-    if (isMutedRef.current) {
-      return;
-    }
-
-    blob
-      .arrayBuffer()
-      .then((buffer) => {
-        sendAudio.current?.(buffer);
-      })
-      .catch(() => {});
-  }, []);
+  
+  const analyserNodeRef = useRef<AnalyserNode | null>(null);
 
   const start = useCallback(async () => {
     try {
@@ -56,43 +39,78 @@ export const useMicrophone = ({
         video: false,
       });
 
-      if (!stream) {
-        throw new Error('No stream connected');
+      const audioContext = new AudioContext({ sampleRate });
+      const speakers = audioContext.destination;
+      try {
+        await audioContext.audioWorklet.addModule(
+          'https://joaquin-config-details.s3.us-east-2.amazonaws.com/AudioWorklet.js',
+        );
+        console.log('Worklet module loaded');
+      } catch (error) {
+        console.error('Error adding worklet module', error);
       }
 
-      recorder.current = new MediaRecorder(stream, { mimeType });
+      const audioInputSource = audioContext.createMediaStreamSource(stream);
 
-      recorder.current.addEventListener('dataavailable', dataHandler);
+      const recorderNode = new AudioWorkletNode(
+        audioContext,
+        'recorder.worklet',
+      );
 
-      recorder.current.start(250);
-    } catch (e) {
-      void true;
+      recorderNode.port.onmessage = (event) => {
+        onAudioCaptured(event.data);
+      };
+      audioInputSource.connect(recorderNode);
+
+      const analyserNode = audioContext.createAnalyser();
+      analyserNode.fftSize = 2048;
+      audioInputSource.connect(analyserNode);
+
+      audioContextRef.current = audioContext;
+      mediaStreamRef.current = stream;
+      analyserNodeRef.current = analyserNode;
+
+      setIsRecording(true);
+      props.onStartRecording?.();
+    } catch (error) {
+      props.onError?.('Error starting recording', error as Error);
     }
-  }, [dataHandler, mimeType, numChannels, sampleRate]);
+  }, [numChannels, onAudioCaptured, props, sampleRate]);
 
   const stop = useCallback(() => {
-    try {
-      recorder.current?.stop();
-      recorder.current?.removeEventListener('dataavailable', dataHandler);
-    } catch (e) {
-      void true;
+    if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+      audioContextRef.current.close();
     }
-  }, [dataHandler]);
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+    }
 
-  const mute = useCallback(() => {
-    isMutedRef.current = true;
-    setIsMuted(true);
-  }, []);
-
-  const unmute = useCallback(() => {
-    isMutedRef.current = false;
-    setIsMuted(false);
-  }, []);
+    setIsRecording(false);
+    props.onStopRecording?.();
+  }, [props]);
 
   useEffect(() => {
     return () => {
       stop();
     };
+  }, [stop]);
+
+  const mute = useCallback(() => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => {
+        track.enabled = false;
+      });
+      setIsMuted(true);
+    }
+  }, []);
+
+  const unmute = useCallback(() => {
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach((track) => {
+        track.enabled = true;
+      });
+      setIsMuted(false);
+    }
   }, []);
 
   return {
@@ -100,6 +118,8 @@ export const useMicrophone = ({
     stop,
     mute,
     unmute,
+    isRecording,
     isMuted,
+    analyserNode: analyserNodeRef.current,
   };
 };

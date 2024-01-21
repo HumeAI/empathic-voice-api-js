@@ -1,5 +1,5 @@
 import { createConfig } from '@humeai/assistant';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
 import { useMicrophone } from './useMicrophone';
@@ -22,16 +22,27 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   const mic = useMicrophone({
     numChannels: config.channels,
     sampleRate: config.sampleRate,
+    onStartRecording: () => {
+      console.log('onStartRecording');
+    },
     onAudioCaptured: (arrayBuffer) => {
+      console.log('onAudioCaptured', arrayBuffer);
       client.sendAudio(arrayBuffer);
     },
   });
 
-  const connect = useCallback(() => {
-    setIsConnected(true);
-    client.connect();
-    player.initPlayer();
-    void mic.start();
+  useEffect(() => {
+    if (mic) {
+      void mic.start();
+    }
+  }, [])
+
+  const connect = useCallback(async () => {
+  //   console.log("connecting")
+  //   setIsConnected(true);
+  //   client.connect();
+  //   player.initPlayer();
+  //   void await mic.start();
   }, []);
 
   const disconnect = useCallback(() => {
@@ -52,5 +63,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     mute: mic.mute,
     readyState: client.readyState,
     unmute: mic.unmute,
+    analyserNode: mic.analyserNode,
   };
 };

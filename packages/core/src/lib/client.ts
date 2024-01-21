@@ -107,6 +107,8 @@ export class AssistantClient {
       throw new Error('Socket is not open.');
     }
 
+    console.log('sendAudio', audioBuffer);
+
     this.socket.send(audioBuffer);
   }
 
