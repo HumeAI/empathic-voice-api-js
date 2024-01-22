@@ -17,6 +17,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   } = useAssistant({
     apiKey,
     hostname: 'api.hume.ai',
+    url: 'wss://localhost:3002',
   });
 
   const normalizedFft = useMemo(() => {

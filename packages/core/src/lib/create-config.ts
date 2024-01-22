@@ -42,6 +42,11 @@ const ConfigSchema = z.object({
     })
     .optional()
     .default(false),
+  url: z
+    .string({
+      description: 'URL of the Hume API.',
+    })
+    .optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

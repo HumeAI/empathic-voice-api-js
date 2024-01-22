@@ -27,22 +27,23 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     },
     onAudioCaptured: (arrayBuffer) => {
       console.log('onAudioCaptured', arrayBuffer);
+      console.log(client);
       client.sendAudio(arrayBuffer);
     },
   });
 
   useEffect(() => {
+    client.connect();
     if (mic) {
       void mic.start();
     }
-  }, [])
+  }, []);
 
   const connect = useCallback(async () => {
-  //   console.log("connecting")
-  //   setIsConnected(true);
-  //   client.connect();
-  //   player.initPlayer();
-  //   void await mic.start();
+  //     console.log("connecting")
+  //     setIsConnected(true);
+  //     player.initPlayer();
+  //     void await mic.start();
   }, []);
 
   const disconnect = useCallback(() => {

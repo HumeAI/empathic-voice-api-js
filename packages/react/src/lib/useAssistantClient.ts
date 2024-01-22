@@ -52,6 +52,7 @@ export const useAssistantClient = (props: {
     setReadyState(ReadyState.CONNECTING);
 
     client.current.connect();
+    console.log(client.current);
   };
 
   const disconnect = () => {

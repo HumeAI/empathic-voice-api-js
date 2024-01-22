@@ -1,6 +1,10 @@
 import type { Config } from './create-config';
 
 export const createSocketUrl = (config: Config): string => {
+  if (config.url) {
+    return config.url;
+  }
+  
   const url = new URL(`wss://${config.hostname}`);
 
   url.pathname = '/v0/assistant/chat';

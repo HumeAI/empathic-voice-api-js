@@ -32,7 +32,8 @@ export class AssistantClient {
    * Create a new AssistantClient.
    */
   static create(config: Config) {
-    return new AssistantClient(config);
+    const socket = new AssistantClient(config);
+    return socket;
   }
 
   /**
@@ -46,10 +47,12 @@ export class AssistantClient {
   }
 
   private handleOpen = () => {
+    console.log('client - socket open');
     this.eventHandlers.open?.();
   };
 
   private handleMessage = (event: MessageEvent) => {
+    console.log('client - socket message', event.data);
     void parseMessageType(event).then((result) => {
       if (result.success) {
         this.eventHandlers.message?.(result.message);
@@ -71,13 +74,16 @@ export class AssistantClient {
    * Connect to the websocket.
    */
   connect() {
+    console.log('before', this.socket);
+    console.log('url to connect to', this.socket.url);
     this.socket.reconnect();
-
+    
     this.socket.addEventListener('open', this.handleOpen);
     this.socket.addEventListener('message', this.handleMessage);
     this.socket.addEventListener('close', this.handleClose);
     this.socket.addEventListener('error', this.handleError);
-
+    
+    console.log('after', this.socket);
     return this;
   }
 
@@ -99,6 +105,7 @@ export class AssistantClient {
    * Send audio data to the websocket.
    */
   sendAudio(audioBuffer: ArrayBufferLike) {
+    console.log(this.socket.readyState);
     if (!this.socket) {
       throw new Error('Socket is not connected.');
     }
