@@ -1,5 +1,5 @@
 import { createConfig } from '@humeai/assistant';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
 import { useMicrophone } from './useMicrophone';
@@ -34,15 +34,32 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     },
   });
 
+  const onMicPermissionChange = useCallback(
+    (permission: 'prompt' | 'granted' | 'denied') => {
+      setMicPermission(permission);
+
+      if (permission === 'granted') {
+        setStatus({ value: 'connected' });
+        client.connect();
+        player.initPlayer();
+      }
+
+      if (permission === 'denied') {
+        setStatus({ value: 'error', reason: 'Microphone permission denied' });
+        client.disconnect();
+        player.stopAll();
+      }
+    },
+    [client, player],
+  );
+
   const mic = useMicrophone({
     numChannels: config.channels,
     sampleRate: config.sampleRate,
     onAudioCaptured: (arrayBuffer) => {
       client.sendAudio(arrayBuffer);
     },
-    onMicPermissionChange: (permission: 'prompt' | 'granted' | 'denied') => {
-      setMicPermission(permission);
-    },
+    onMicPermissionChange,
   });
 
   const connect = useCallback(() => {
@@ -64,20 +81,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     player.stopAll();
     mic.stop();
   }, [micPermission, client, player, mic]);
-
-  useEffect(() => {
-    if (micPermission === 'granted' && status.value === 'connecting') {
-      setStatus({ value: 'connected' });
-      client.connect();
-      player.initPlayer();
-    }
-  }, [micPermission, status]);
-
-  useEffect(() => {
-    if (micPermission === 'denied') {
-      disconnect();
-    }
-  }, [micPermission, disconnect]);
 
   return {
     connect,

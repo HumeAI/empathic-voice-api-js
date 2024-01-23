@@ -29,7 +29,6 @@ export const useMicrophone = ({
 
   const sendAudio = useRef(onAudioCaptured);
   sendAudio.current = onAudioCaptured;
-  console.log('cheese');
 
   const dataHandler = useCallback((event: BlobEvent) => {
     const blob = event.data;
@@ -76,7 +75,7 @@ export const useMicrophone = ({
     } catch (e) {
       void true;
     }
-  }, [dataHandler, mimeType, numChannels, sampleRate]);
+  }, [dataHandler, mimeType, numChannels, sampleRate, onMicPermissionChange]);
 
   const stop = useCallback(() => {
     try {
