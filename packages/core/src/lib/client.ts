@@ -21,7 +21,7 @@ export class AssistantClient {
 
   private constructor(config: Config) {
     this.url = createSocketUrl(config);
-    this.socket = new ReconnectingWebsocket(this.url, [], {
+    this.socket = new ReconnectingWebsocket('ws://localhost:8080', [], {
       startClosed: true,
       maxRetries: config.reconnectAttempts,
       debug: config.debug,
@@ -77,12 +77,12 @@ export class AssistantClient {
     console.log('before', this.socket);
     console.log('url to connect to', this.socket.url);
     this.socket.reconnect();
-    
+
     this.socket.addEventListener('open', this.handleOpen);
     this.socket.addEventListener('message', this.handleMessage);
     this.socket.addEventListener('close', this.handleClose);
     this.socket.addEventListener('error', this.handleError);
-    
+
     console.log('after', this.socket);
     return this;
   }

@@ -6,15 +6,15 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 export type MicrophoneProps = {
   numChannels?: Channels;
   sampleRate?: number;
-  onAudioCaptured: (b: Float32Array) => void;
+  onAudioCaptured: (b: Float32Array[]) => void;
   onStartRecording?: () => void;
   onStopRecording?: () => void;
   onError?: (message: string, error: Error) => void;
 };
 
 export const useMicrophone = ({
-  numChannels = 1,
-  sampleRate = 44100,
+  numChannels = 2,
+  sampleRate = 48000,
   onAudioCaptured,
   ...props
 }: MicrophoneProps) => {
@@ -23,7 +23,7 @@ export const useMicrophone = ({
 
   const [isRecording, setIsRecording] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
-  
+
   const analyserNodeRef = useRef<AnalyserNode | null>(null);
 
   const start = useCallback(async () => {
@@ -41,16 +41,18 @@ export const useMicrophone = ({
 
       const audioContext = new AudioContext({ sampleRate });
       const speakers = audioContext.destination;
+      const audioInputSource = audioContext.createMediaStreamSource(stream);
+
+      const channelCount = audioInputSource.channelCount;
+      const streamSampleRate = audioInputSource.context.sampleRate;
+
       try {
-        await audioContext.audioWorklet.addModule(
-          'https://joaquin-config-details.s3.us-east-2.amazonaws.com/AudioWorklet.js',
-        );
+        console.log(channelCount);
+        await audioContext.audioWorklet.addModule('AudioWorklet.js');
         console.log('Worklet module loaded');
       } catch (error) {
         console.error('Error adding worklet module', error);
       }
-
-      const audioInputSource = audioContext.createMediaStreamSource(stream);
 
       const recorderNode = new AudioWorkletNode(
         audioContext,

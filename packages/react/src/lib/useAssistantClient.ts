@@ -60,12 +60,6 @@ export const useAssistantClient = (props: {
     client.current?.disconnect();
   };
 
-  useEffect(() => {
-    return () => {
-      client.current?.disconnect();
-    };
-  });
-
   const sendAudio = useCallback((arrayBuffer: ArrayBufferLike) => {
     client.current?.sendAudio(arrayBuffer);
   }, []);

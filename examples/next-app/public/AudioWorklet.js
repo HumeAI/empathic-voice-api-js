@@ -32,12 +32,36 @@ class RecorderProcessor extends AudioWorkletProcessor {
   /**
    * @param {Float32Array[][]} inputs
    * @returns {boolean}
+   *
+   * An array of inputs connected to the node, each item of which is,
+   * in turn, an array of channels. Each channel is a Float32Array containing
+   * 128 samples. For example, inputs[n][m][i] will access n-th input, m-th
+   * channel of that input, and i-th sample of that frame (128 frames per frame).
+   *
+   * https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Basic_concepts_behind_Web_Audio_API#audio_buffers_frames_samples_and_channels
    */
   process(inputs) {
-    // Grabbing the 1st channel similar to ScriptProcessorNode
-    this.append([inputs[0][0], inputs[0][1]]);
+    console.log('inputs', inputs);
+    // Grabbing the first input, then the first and second channels
+    this.append([
+      this.float32ToLinear16PCM(inputs[0][0]),
+      this.float32ToLinear16PCM(inputs[0][1]),
+    ]);
 
     return true;
+  }
+
+  float32ToLinear16PCM(input) {
+    let output = new Int16Array(input.length);
+
+    for (let i = 0; i < input.length; i++) {
+      // Clipping the float
+      let s = Math.max(-1, Math.min(1, input[i]));
+      // Scaling to 16-bit and converting to integer
+      output[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+    }
+
+    return output;
   }
 
   /**

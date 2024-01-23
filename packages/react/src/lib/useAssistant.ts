@@ -25,10 +25,11 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     onStartRecording: () => {
       console.log('onStartRecording');
     },
-    onAudioCaptured: (arrayBuffer) => {
-      console.log('onAudioCaptured', arrayBuffer);
-      console.log(client);
-      client.sendAudio(arrayBuffer);
+    onAudioCaptured: (arrayBuffers: Float32Array[]) => {
+      console.log('onAudioCaptured');
+      console.log('channels: ', arrayBuffers.length)
+      console.log(arrayBuffers[0]);
+      client.sendAudio(arrayBuffers[0]);
     },
   });
 
@@ -40,10 +41,11 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   }, []);
 
   const connect = useCallback(async () => {
-  //     console.log("connecting")
-  //     setIsConnected(true);
-  //     player.initPlayer();
-  //     void await mic.start();
+    //     console.log("connecting")
+    //     setIsConnected(true);
+    // client.connect();
+    //     player.initPlayer();
+    //     void await mic.start();
   }, []);
 
   const disconnect = useCallback(() => {
