@@ -52,7 +52,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
       setStatus({ value: 'connecting' });
       void mic.start();
     }
-  }, [micPermission]);
+  }, [micPermission, mic]);
 
   const disconnect = useCallback(() => {
     if (micPermission === 'denied') {
@@ -63,7 +63,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [micPermission]);
+  }, [micPermission, client, player, mic]);
 
   useEffect(() => {
     if (micPermission === 'granted' && status.value === 'connecting') {
@@ -77,7 +77,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     if (micPermission === 'denied') {
       disconnect();
     }
-  }, [micPermission]);
+  }, [micPermission, disconnect]);
 
   return {
     connect,

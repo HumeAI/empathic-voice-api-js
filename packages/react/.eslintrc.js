@@ -4,9 +4,18 @@
 
 module.exports = {
   root: true,
-  extends: ['@humeai/eslint-config/base'],
+  extends: [
+    '@humeai/eslint-config/base',
+    'plugin:react/recommended',
+    'plugin:react-hooks/recommended',
+  ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     project: './tsconfig.json',
+  },
+  settings: {
+    react: {
+      version: 'detect',
+    },
   },
 };
