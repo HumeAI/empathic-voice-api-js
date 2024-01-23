@@ -2,13 +2,14 @@
 
 import { useAssistant } from '@humeai/assistant-react';
 import { useMemo } from 'react';
+import { match } from 'ts-pattern';
 
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   const {
     connect,
     disconnect,
     fft,
-    isConnected,
+    status,
     isMuted,
     isPlaying,
     mute,
@@ -41,25 +42,48 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
         <div>Playing: {isPlaying ? 'true' : 'false'}</div>
         <div>Ready State: {readyState}</div>
         <div className="flex max-w-sm flex-col gap-4">
-          {isConnected ? (
-            <button
-              className="rounded border border-neutral-500 p-2"
-              onClick={() => {
-                disconnect();
-              }}
-            >
-              Disconnect
-            </button>
-          ) : (
-            <button
-              className="rounded border border-neutral-500 p-2"
-              onClick={() => {
-                connect();
-              }}
-            >
-              Connect to assistant
-            </button>
-          )}
+          {match(status.value)
+            .with('connected', () => (
+              <button
+                className="rounded border border-neutral-500 p-2"
+                onClick={() => {
+                  disconnect();
+                }}
+              >
+                Disconnect
+              </button>
+            ))
+            .with('disconnected', () => (
+              <button
+                className="rounded border border-neutral-500 p-2"
+                onClick={() => {
+                  connect();
+                }}
+              >
+                Connect to assistant
+              </button>
+            ))
+            .with('connecting', () => (
+              <button
+                className="cursor-not-allowed rounded border border-neutral-500 p-2"
+                disabled
+              >
+                Connecting...
+              </button>
+            ))
+            .with('error', () => (
+              <div className="flex flex-col gap-4">
+                <button
+                  className="rounded border border-neutral-500 p-2"
+                  onClick={() => {
+                    connect();
+                  }}
+                >
+                  Connect to assistant
+                </button>
+              </div>
+            ))
+            .exhaustive()}
 
           {isMuted ? (
             <button
@@ -77,6 +101,10 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
             </button>
           )}
         </div>
+
+        {status.value === 'error' && (
+          <span className="text-red-500">{status.reason}</span>
+        )}
 
         <div className="grid h-32 grid-cols-1 grid-rows-2 p-4">
           <div className="flex items-end gap-1">
