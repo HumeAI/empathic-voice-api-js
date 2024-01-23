@@ -188,9 +188,9 @@ importers:
 
   examples/vite-app-embed:
     dependencies:
-      '@humeai/assistant':
+      '@humeai/assistant-react':
         specifier: workspace:*
-        version: link:../../packages/core
+        version: link:../../packages/react
       react:
         specifier: ^18.2.0
         version: 18.2.0

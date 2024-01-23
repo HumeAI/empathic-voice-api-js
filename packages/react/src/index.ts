@@ -1,3 +1,4 @@
+export * from './lib/EmbeddedAssistant';
 export * from './lib/useSoundPlayer';
 export * from './lib/useMicrophone';
 export * from './lib/useAssistant';
