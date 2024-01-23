@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { AudioEncoding, Channels } from './audio';
 import { TTSService } from './tts';
 
-const ConfigSchema = z.object({
+export const ConfigSchema = z.object({
   apiKey: z.string({
     description: 'An API key is required for the Hume API.',
   }),

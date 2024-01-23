@@ -1,44 +1,42 @@
-import { z } from 'zod';
-
-export const PostMessageSchema = z.union([
-  z.object({
-    action: z.literal('expand'),
-  }),
-  z.object({
-    action: z.literal('collapse'),
-  }),
-  z.object({
-    action: z.literal('iframe_ready'),
-  }),
-]);
-
-export type PostMessageAction = z.infer<typeof PostMessageSchema>;
+import type { Config } from './create-config';
+import { createConfig } from './create-config';
+import type { ClientToFrameAction } from './embed-messages';
+import {
+  FrameToClientActionSchema,
+  UPDATE_CONFIG_ACTION,
+  WIDGET_IFRAME_IS_READY_ACTION,
+} from './embed-messages';
 
 export type EmbeddedAssistantConfig = {
   rendererUrl: string;
-  apiHostname: string;
-};
+} & Config;
 
 export class EmbeddedAssistant {
-  iframe: HTMLIFrameElement;
+  private iframe: HTMLIFrameElement;
 
-  isMounted: boolean = false;
+  private isMounted: boolean = false;
 
-  managedContainer: HTMLElement | null = null;
+  private managedContainer: HTMLElement | null = null;
 
-  private constructor({ rendererUrl, apiHostname }: EmbeddedAssistantConfig) {
-    this.iframe = this.createIframe({ rendererUrl, apiHostname });
+  private config: EmbeddedAssistantConfig;
+
+  private constructor(config: EmbeddedAssistantConfig) {
+    this.config = config;
+    this.iframe = this.createIframe(config);
 
     this.messageHandler = this.messageHandler.bind(this);
   }
 
   static create({
     rendererUrl,
-    apiHostname,
-  }: Partial<EmbeddedAssistantConfig> = {}): EmbeddedAssistant {
+    ...config
+  }: Partial<EmbeddedAssistantConfig> &
+    NonNullable<Pick<EmbeddedAssistantConfig, 'apiKey'>>): EmbeddedAssistant {
+    const parsedConfig = createConfig(config);
+
     return new EmbeddedAssistant({
-      rendererUrl: rendererUrl ?? '/',
-      apiHostname: apiHostname ?? 'https://api.hume.ai',
+      rendererUrl: rendererUrl ?? 'https://assistant-widget.hume.ai',
+      ...parsedConfig,
     });
   }
 
@@ -57,7 +55,7 @@ export class EmbeddedAssistant {
       this.isMounted = false;
     }
 
-    return () => {
+    const unmount = () => {
       try {
         window.removeEventListener('message', messageHandler);
         this.iframe.remove();
@@ -70,6 +68,8 @@ export class EmbeddedAssistant {
         el.remove();
       }
     };
+
+    return unmount;
   }
 
   private createContainer() {
@@ -92,7 +92,7 @@ export class EmbeddedAssistant {
     return div;
   }
 
-  private createIframe({ rendererUrl, apiHostname }: EmbeddedAssistantConfig) {
+  private createIframe({ rendererUrl }: EmbeddedAssistantConfig) {
     const el = document.createElement('iframe');
 
     Object.assign(el.style, {
@@ -106,7 +106,7 @@ export class EmbeddedAssistant {
 
     el.id = 'hume-embedded-assistant';
 
-    el.src = `${rendererUrl}/?apiHostname=${apiHostname}`;
+    el.src = `${rendererUrl}`;
 
     el.setAttribute('frameborder', '0');
     el.setAttribute('allowtransparency', 'true');
@@ -131,14 +131,41 @@ export class EmbeddedAssistant {
       return;
     }
 
-    const message = PostMessageSchema.safeParse(event.data);
+    const actionFromFrame = FrameToClientActionSchema.safeParse(event.data);
 
-    if (!message.success) {
+    if (!actionFromFrame.success) {
       return;
     }
 
-    if (message.data.action === 'iframe_ready') {
-      this.iframe.style.opacity = '1';
+    switch (actionFromFrame.data.type) {
+      case WIDGET_IFRAME_IS_READY_ACTION.type: {
+        this.showIframe();
+        this.sendConfigObject();
+        break;
+      }
     }
+  }
+
+  private sendConfigObject() {
+    const action = UPDATE_CONFIG_ACTION(this.config);
+    this.sendMessageToFrame(action);
+  }
+
+  private sendMessageToFrame(action: ClientToFrameAction) {
+    const frame = this.iframe;
+
+    if (!frame.contentWindow) {
+      return;
+    }
+
+    frame.contentWindow.postMessage(action, new URL(frame.src).origin);
+  }
+
+  private showIframe() {
+    this.iframe.style.opacity = '1';
+  }
+
+  private hideIframe() {
+    this.iframe.style.opacity = '0';
   }
 }
