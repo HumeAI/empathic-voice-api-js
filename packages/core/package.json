@@ -11,7 +11,7 @@
     "directory": "packages/core"
   },
   "scripts": {
-    "test": "vitest --watch=false",
+    "test": "vitest",
     "build": "pnpm lint && tsup",
     "dev": "tsup --watch",
     "lint": "eslint ./src/"
@@ -23,6 +23,7 @@
     "@humeai/eslint-config": "workspace:*",
     "@humeai/typescript-config": "workspace:*",
     "@types/node": "^20.10.6",
+    "jsdom": "^24.0.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
     "vitest": "^1.1.3"
