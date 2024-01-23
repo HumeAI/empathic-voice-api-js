@@ -11,12 +11,14 @@ export type MicrophoneProps = {
   onStartRecording?: () => void;
   onStopRecording?: () => void;
   onError?: (message: string, error: Error) => void;
+  onMicPermissionChange: (permission: 'prompt' | 'granted' | 'denied') => void;
 };
 
 export const useMicrophone = ({
   numChannels,
   sampleRate,
   onAudioCaptured,
+  onMicPermissionChange,
   ...props
 }: MicrophoneProps) => {
   const isMutedRef = useRef(false);
@@ -44,8 +46,9 @@ export const useMicrophone = ({
   }, []);
 
   const start = useCallback(async () => {
+    let stream;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -55,11 +58,15 @@ export const useMicrophone = ({
         },
         video: false,
       });
+      onMicPermissionChange('granted');
+    } catch (e) {
+      onMicPermissionChange('denied');
+    }
 
+    try {
       if (!stream) {
         throw new Error('No stream connected');
       }
-
       recorder.current = new MediaRecorder(stream, { mimeType });
 
       recorder.current.addEventListener('dataavailable', dataHandler);

@@ -1,6 +1,5 @@
 import { createConfig } from '@humeai/assistant';
 import { useCallback, useEffect, useState } from 'react';
-import { usePermission } from 'react-use';
 
 import { useAssistantClient } from './useAssistantClient';
 import { useMicrophone } from './useMicrophone';
@@ -20,7 +19,9 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   const [status, setStatus] = useState<AssistantStatus>({
     value: 'disconnected',
   });
-  const hasMicPermission = usePermission({ name: 'microphone' });
+  const [micPermission, setMicPermission] = useState<
+    'prompt' | 'granted' | 'denied'
+  >('prompt');
 
   const config = createConfig(props);
 
@@ -39,19 +40,22 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     onAudioCaptured: (arrayBuffer) => {
       client.sendAudio(arrayBuffer);
     },
+    onMicPermissionChange: (permission: 'prompt' | 'granted' | 'denied') => {
+      setMicPermission(permission);
+    },
   });
 
   const connect = useCallback(() => {
-    if (hasMicPermission === 'denied') {
+    if (micPermission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
       setStatus({ value: 'connecting' });
       void mic.start();
     }
-  }, [hasMicPermission]);
+  }, [micPermission]);
 
   const disconnect = useCallback(() => {
-    if (hasMicPermission === 'denied') {
+    if (micPermission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
       setStatus({ value: 'disconnected' });
@@ -59,21 +63,21 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [hasMicPermission]);
+  }, [micPermission]);
 
   useEffect(() => {
-    if (hasMicPermission === 'granted' && status.value === 'connecting') {
+    if (micPermission === 'granted' && status.value === 'connecting') {
       setStatus({ value: 'connected' });
       client.connect();
       player.initPlayer();
     }
-  }, [hasMicPermission, status]);
+  }, [micPermission, status]);
 
   useEffect(() => {
-    if (hasMicPermission === 'denied') {
+    if (micPermission === 'denied') {
       disconnect();
     }
-  }, [hasMicPermission]);
+  }, [micPermission]);
 
   return {
     connect,
