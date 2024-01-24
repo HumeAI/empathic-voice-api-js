@@ -1,14 +1,21 @@
-import { ComponentRef, memo, useCallback, useRef, useState } from 'react';
+import { ComponentRef, FC, useCallback, useRef, useState } from 'react';
 import { parentDispatch } from '../../utils/parentDispatch';
-import { IframeReady } from '../IframeReady';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HumeLogo } from '../HumeLogo';
 import { ConversationUI } from '../ConversationUI';
 import { useButton, mergeProps } from 'react-aria';
 import { useSafeMotion } from '../../utils/useSafeMotion';
 import { X } from 'lucide-react';
+import {
+  COLLAPSE_WIDGET_ACTION,
+  EXPAND_WIDGET_ACTION,
+} from '@humeai/assistant-react';
 
-export const AssistantUI = memo(() => {
+export type AssistantUIProps = {
+  apiKey: string;
+};
+
+export const AssistantUI: FC<AssistantUIProps> = () => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleOrSetExpanded = useCallback(
@@ -16,9 +23,9 @@ export const AssistantUI = memo(() => {
       console.log('toggleExpanded', { isExpanded });
       setIsExpanded((prev) => {
         const nextValue = nextIsExpanded ?? !prev;
-        parentDispatch({
-          action: nextValue ? 'expand' : 'collapse',
-        });
+        parentDispatch(
+          nextValue ? EXPAND_WIDGET_ACTION : COLLAPSE_WIDGET_ACTION,
+        );
         return nextValue;
       });
     },
@@ -57,7 +64,6 @@ export const AssistantUI = memo(() => {
 
   return (
     <>
-      <IframeReady />
       <motion.div
         className={[
           'h-[52px]',
@@ -69,6 +75,7 @@ export const AssistantUI = memo(() => {
         animate={{
           width: isExpanded ? '348px' : '52px',
         }}
+        data-testid={'assistant-ui-root'}
       >
         <AnimatePresence mode={'wait'}>
           {isExpanded ? (
@@ -131,4 +138,4 @@ export const AssistantUI = memo(() => {
       </motion.div>
     </>
   );
-});
+};

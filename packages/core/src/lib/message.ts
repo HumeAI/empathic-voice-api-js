@@ -1,17 +1,26 @@
-export type AudioMessage = {
-  type: 'audio';
-  data: ArrayBuffer;
-};
+import z from 'zod';
 
-export type TranscriptMessage = {
-  type: 'transcript';
-  data: {
-    sender: string;
-    content: string;
-  };
-};
+export const AudioMessageSchema = z.object({
+  type: z.literal('audio'),
+  data: z.instanceof(ArrayBuffer),
+});
 
-export type Message = AudioMessage | TranscriptMessage;
+export type AudioMessage = z.infer<typeof AudioMessageSchema>;
+
+export const TranscriptMessageSchema = z.object({
+  type: z.literal('transcript'),
+  data: z.object({
+    sender: z.string(),
+    content: z.string(),
+  }),
+});
+
+export type TranscriptMessage = z.infer<typeof TranscriptMessageSchema>;
+
+export const MessageSchema = z.union([
+  AudioMessageSchema,
+  TranscriptMessageSchema,
+]);
 
 export const parseAudioMessage = async (
   blob: Blob,
@@ -20,14 +29,16 @@ export const parseAudioMessage = async (
     .arrayBuffer()
     .then((buffer) => {
       return {
-        type: 'audio',
+        type: 'audio' as const,
         data: buffer,
-      } as const;
+      };
     })
     .catch(() => {
       return null;
     });
 };
+
+export type Message = z.infer<typeof MessageSchema>;
 
 export const parseMessageType = async (
   event: MessageEvent,
