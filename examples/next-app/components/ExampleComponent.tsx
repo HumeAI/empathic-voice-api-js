@@ -22,6 +22,7 @@ export const ExampleComponent = () => {
     readyState,
     unmute,
     messages,
+    micFft: _micFft,
   } = useAssistant();
 
   const normalizedFft = useMemo(() => {

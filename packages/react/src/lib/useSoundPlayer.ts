@@ -3,7 +3,7 @@ import type { MeydaFeaturesObject } from 'meyda';
 import Meyda from 'meyda';
 import { useCallback, useRef, useState } from 'react';
 
-function generateEmptyFft(): number[] {
+export function generateEmptyFft(): number[] {
   return Array.from({ length: 24 }).map(() => 0);
 }
 
