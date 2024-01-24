@@ -2,6 +2,7 @@ import { createConfig } from '@humeai/assistant';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
+import { useEncoding } from './useEncoding';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
 
@@ -19,10 +20,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   const [status, setStatus] = useState<AssistantStatus>({
     value: 'disconnected',
   });
-  const [micPermission, setMicPermission] = useState<
-    'prompt' | 'granted' | 'denied'
-  >('prompt');
-
   const config = createConfig(props);
 
   const onError = useCallback((message: string) => {
@@ -33,61 +30,67 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     onError,
   });
 
+  const {
+    encodingRef,
+    streamRef,
+    getStream,
+    permission: storedPermission,
+  } = useEncoding({
+    encodingConstraints: {
+      sampleRate: config.sampleRate,
+      channelCount: config.channels,
+    },
+    onPermissionChange: (permission) => {
+      if (permission === 'denied') {
+        setStatus({ value: 'error', reason: 'Microphone permission denied' });
+      }
+      if (permission === 'granted') {
+        setStatus({ value: 'disconnected' });
+      }
+    },
+  });
+
   const client = useAssistantClient({
-    config,
     onAudioMessage: (arrayBuffer) => {
       player.addToQueue(arrayBuffer);
     },
     onError,
   });
 
-  const onMicPermissionChange = useCallback(
-    (permission: 'prompt' | 'granted' | 'denied') => {
-      setMicPermission(permission);
-
-      if (permission === 'granted') {
-        setStatus({ value: 'connected' });
-        client.connect();
-        player.initPlayer();
-      }
-
-      if (permission === 'denied') {
-        setStatus({ value: 'error', reason: 'Microphone permission denied' });
-        client.disconnect();
-        player.stopAll();
-      }
-    },
-    [client, player],
-  );
-
   const mic = useMicrophone({
-    numChannels: config.channels,
-    sampleRate: config.sampleRate,
+    streamRef,
     onAudioCaptured: (arrayBuffer) => {
       client.sendAudio(arrayBuffer);
     },
-    onMicPermissionChange,
     onError,
   });
 
-  const connect = useCallback(() => {
-    if (micPermission === 'denied') {
+  const connect = async () => {
+    const permission = await getStream();
+    if (permission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
       setStatus({ value: 'connecting' });
+      client.connect({
+        ...config,
+        sampleRate: encodingRef.current.sampleRate,
+        channels: encodingRef.current.channelCount,
+      });
       void mic.start();
+      setStatus({ value: 'connected' });
     }
-  }, [micPermission, mic]);
+  };
 
-  const disconnect = useCallback(() => {
-    if (status.value !== 'error') {
-      // if the status is `error`, keep the existing status
+  const disconnect = () => {
+    if (storedPermission === 'denied') {
+      setStatus({ value: 'error', reason: 'Microphone permission denied' });
+    } else {
       setStatus({ value: 'disconnected' });
     }
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [client, player, mic, status.value]);
+  };
 
   useEffect(() => {
     if (status.value === 'error') {
