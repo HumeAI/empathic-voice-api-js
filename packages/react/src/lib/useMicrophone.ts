@@ -13,8 +13,8 @@ export type MicrophoneProps = {
 };
 
 export const useMicrophone = ({
-  numChannels = 2,
-  sampleRate = 48000,
+  numChannels = 1,
+  sampleRate = 48000, // if this isn't 48000, the audio output is all 0
   onAudioCaptured,
   ...props
 }: MicrophoneProps) => {
@@ -54,15 +54,15 @@ export const useMicrophone = ({
         console.error('Error adding worklet module', error);
       }
 
-      const recorderNode = new AudioWorkletNode(
+      const converterNode = new AudioWorkletNode(
         audioContext,
         'recorder.worklet',
       );
 
-      recorderNode.port.onmessage = (event) => {
+      converterNode.port.onmessage = (event) => {
         onAudioCaptured(event.data);
       };
-      audioInputSource.connect(recorderNode);
+      audioInputSource.connect(converterNode);
 
       const analyserNode = audioContext.createAnalyser();
       analyserNode.fftSize = 2048;

@@ -3,7 +3,7 @@
 */
 class RecorderProcessor extends AudioWorkletProcessor {
   // 0. Determine the buffer size (this is the same as the 1st argument of ScriptProcessor)
-  bufferSize = 4096;
+  bufferSize = 48000;
   // 1. Track the current buffer fill level
   _bytesWritten = 0;
 
@@ -38,30 +38,20 @@ class RecorderProcessor extends AudioWorkletProcessor {
    * 128 samples. For example, inputs[n][m][i] will access n-th input, m-th
    * channel of that input, and i-th sample of that frame (128 frames per frame).
    *
+   * https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Using_AudioWorklet#the_input_and_output_lists
    * https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Basic_concepts_behind_Web_Audio_API#audio_buffers_frames_samples_and_channels
    */
   process(inputs) {
-    console.log('inputs', inputs);
-    // Grabbing the first input, then the first and second channels
-    this.append([
-      this.float32ToLinear16PCM(inputs[0][0]),
-      this.float32ToLinear16PCM(inputs[0][1]),
-    ]);
+    const input = inputs[0];
+    console.log('channels', input);
 
-    return true;
-  }
-
-  float32ToLinear16PCM(input) {
-    let output = new Int16Array(input.length);
-
-    for (let i = 0; i < input.length; i++) {
-      // Clipping the float
-      let s = Math.max(-1, Math.min(1, input[i]));
-      // Scaling to 16-bit and converting to integer
-      output[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+    if (input.length != 1) {
+      console.log('too many channels', input);
     }
 
-    return output;
+    this.append([input[0], input[1]]);
+
+    return true;
   }
 
   /**
@@ -75,9 +65,9 @@ class RecorderProcessor extends AudioWorkletProcessor {
 
     if (!channelData) return;
 
-    for (let i = 0; i < channelData.length; i++) {
-      this.leftBuffer[this._bytesWritten++] = channelData[0][i];
-      this.rightBuffer[this._bytesWritten++] = channelData[1][i];
+    for (let frame = 0; frame < channelData.length; frame++) {
+      this.leftBuffer[this._bytesWritten++] = channelData[0][frame];
+      this.rightBuffer[this._bytesWritten++] = channelData[1][frame];
     }
   }
 
