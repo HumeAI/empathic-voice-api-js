@@ -27,15 +27,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
 
   const player = useSoundPlayer();
 
-  const client = useAssistantClient({
-    config,
-    onAudioMessage: (arrayBuffer) => {
-      player.addToQueue(arrayBuffer);
-    },
-  });
-
-  console.log(config);
-
   const mic = useMicrophone({
     numChannels: config.channels,
     sampleRate: config.sampleRate,
@@ -44,6 +35,13 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     },
     onMicPermissionChange: (permission: 'prompt' | 'granted' | 'denied') => {
       setMicPermission(permission);
+    },
+  });
+
+  const client = useAssistantClient({
+    config,
+    onAudioMessage: (arrayBuffer) => {
+      player.addToQueue(arrayBuffer);
     },
   });
 
