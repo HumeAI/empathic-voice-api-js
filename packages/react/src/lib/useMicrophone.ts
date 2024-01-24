@@ -3,6 +3,9 @@
 import type { Channels } from '@humeai/assistant';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { MediaRecorder as ExtendableMediaRecorder, register } from 'extendable-media-recorder';
+import { connect } from 'extendable-media-recorder-wav-encoder';
+
 export type MicrophoneProps = {
   numChannels?: Channels;
   sampleRate?: number;
@@ -24,7 +27,8 @@ export const useMicrophone = ({
   const isMutedRef = useRef(false);
   const [isMuted, setIsMuted] = useState(false);
 
-  const mimeType = props.mimeType ?? 'audio/webm';
+  const mimeType = 'audio/wav';
+  // const mimeType = props.mimeType ?? 'audio/webm';
   const recorder = useRef<MediaRecorder | null>(null);
 
   const sendAudio = useRef(onAudioCaptured);
@@ -67,10 +71,16 @@ export const useMicrophone = ({
       if (!stream) {
         throw new Error('No stream connected');
       }
-      recorder.current = new MediaRecorder(stream, { mimeType });
 
+      await register(await connect());
+
+      // @ts-ignore
+      recorder.current = new ExtendableMediaRecorder(stream, { mimeType });
+
+      // @ts-ignore
       recorder.current.addEventListener('dataavailable', dataHandler);
 
+      // @ts-ignore
       recorder.current.start(250);
     } catch (e) {
       void true;

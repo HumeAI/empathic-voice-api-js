@@ -34,6 +34,8 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     },
   });
 
+  console.log(config);
+
   const mic = useMicrophone({
     numChannels: config.channels,
     sampleRate: config.sampleRate,
