@@ -287,6 +287,9 @@ importers:
       '@testing-library/react':
         specifier: ^14.1.2
         version: 14.1.2(react-dom@18.2.0)(react@18.2.0)
+      '@types/eslint':
+        specifier: ^8.56.1
+        version: 8.56.1
       '@types/meyda':
         specifier: ^4.3.8
         version: 4.3.8
@@ -299,6 +302,21 @@ importers:
       '@types/react-dom':
         specifier: ^18
         version: 18.2.18
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.17.0
+        version: 6.17.0(@typescript-eslint/parser@6.17.0)(eslint@8.56.0)(typescript@5.3.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.17.0
+        version: 6.17.0(eslint@8.56.0)(typescript@5.3.3)
+      eslint:
+        specifier: ^8.56.0
+        version: 8.56.0
+      eslint-plugin-react:
+        specifier: ^7.33.2
+        version: 7.33.2(eslint@8.56.0)
+      eslint-plugin-react-hooks:
+        specifier: ^4.6.0
+        version: 4.6.0(eslint@8.56.0)
       jsdom:
         specifier: ^24.0.0
         version: 24.0.0

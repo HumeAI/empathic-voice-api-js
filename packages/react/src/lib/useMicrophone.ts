@@ -75,7 +75,7 @@ export const useMicrophone = ({
     } catch (e) {
       void true;
     }
-  }, [dataHandler, mimeType, numChannels, sampleRate]);
+  }, [dataHandler, mimeType, numChannels, sampleRate, onMicPermissionChange]);
 
   const stop = useCallback(() => {
     try {
@@ -100,7 +100,7 @@ export const useMicrophone = ({
     return () => {
       stop();
     };
-  }, []);
+  }, [stop]);
 
   return {
     start,

@@ -1,5 +1,5 @@
 import { createConfig } from '@humeai/assistant';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
 import { useMicrophone } from './useMicrophone';
@@ -34,15 +34,32 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     },
   });
 
+  const onMicPermissionChange = useCallback(
+    (permission: 'prompt' | 'granted' | 'denied') => {
+      setMicPermission(permission);
+
+      if (permission === 'granted') {
+        setStatus({ value: 'connected' });
+        client.connect();
+        player.initPlayer();
+      }
+
+      if (permission === 'denied') {
+        setStatus({ value: 'error', reason: 'Microphone permission denied' });
+        client.disconnect();
+        player.stopAll();
+      }
+    },
+    [client, player],
+  );
+
   const mic = useMicrophone({
     numChannels: config.channels,
     sampleRate: config.sampleRate,
     onAudioCaptured: (arrayBuffer) => {
       client.sendAudio(arrayBuffer);
     },
-    onMicPermissionChange: (permission: 'prompt' | 'granted' | 'denied') => {
-      setMicPermission(permission);
-    },
+    onMicPermissionChange,
   });
 
   const connect = useCallback(() => {
@@ -52,7 +69,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
       setStatus({ value: 'connecting' });
       void mic.start();
     }
-  }, [micPermission]);
+  }, [micPermission, mic]);
 
   const disconnect = useCallback(() => {
     if (micPermission === 'denied') {
@@ -63,21 +80,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [micPermission]);
-
-  useEffect(() => {
-    if (micPermission === 'granted' && status.value === 'connecting') {
-      setStatus({ value: 'connected' });
-      client.connect();
-      player.initPlayer();
-    }
-  }, [micPermission, status]);
-
-  useEffect(() => {
-    if (micPermission === 'denied') {
-      disconnect();
-    }
-  }, [micPermission]);
+  }, [micPermission, client, player, mic]);
 
   return {
     connect,
