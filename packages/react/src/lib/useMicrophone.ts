@@ -2,8 +2,12 @@
 
 import type { Channels } from '@humeai/assistant';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { detect } from 'detect-browser';
 
-import { MediaRecorder as ExtendableMediaRecorder, register } from 'extendable-media-recorder';
+import {
+  MediaRecorder as ExtendableMediaRecorder,
+  register,
+} from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
 
 export type MicrophoneProps = {
@@ -49,8 +53,109 @@ export const useMicrophone = ({
       .catch(() => {});
   }, []);
 
+  const getStreamSettings = (stream: MediaStream) => {
+    const browserInfo = detect();
+    if (!browserInfo) {
+      console.warn('No browser info available.');
+    }
+    const { name: browserName } = browserInfo || {};
+
+    const tracks = stream.getAudioTracks();
+    if (tracks.length === 0) {
+      throw new Error('No audio tracks');
+    }
+    if (tracks.length > 1) {
+      throw new Error('Multiple audio tracks');
+    }
+    const track = tracks[0];
+    if (!track) {
+      throw new Error('No audio track');
+    }
+
+    const settings = track.getSettings();
+    if (!settings) {
+      throw new Error('No audio track settings');
+    }
+
+    let { sampleRate, channelCount } = settings;
+
+    /**
+     * macbook pro
+     * arc -     pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 1 channels, s16, 768 kb/s
+     * chrome -  pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 1 channels, s16, 768 kb/s
+     * firefox - pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 1 channels, s16, 768 kb/s
+     * safari -  pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 2 channels, s16, 1536 kb/s
+     */
+
+    if (!sampleRate) {
+      console.warn(
+        'No audio track sample rate found in stream settings. This may lead to decoding issues when sending linear PCM to downstream consumers.',
+      );
+      console.warn(`Using default sample rate for ${browserName}.`)
+      switch (browserName) {
+        case 'chrome':
+        case 'firefox':
+          sampleRate = 48000;
+          break;
+        case 'safari':
+          sampleRate = 48000;
+          break;
+        default:
+          sampleRate = 48000;
+      }
+    }
+
+    if (!channelCount) {
+      console.warn(
+        'No audio track channel count found in stream settings. This may lead to decoding issues when sending linear PCM to downstream consumers.',
+      );
+      console.warn(`Using default channel count for ${browserName}.`)
+
+      switch (browserName) {
+        case 'chrome':
+        case 'firefox':
+          channelCount = 1;
+          break;
+        case 'safari':
+          channelCount = 2;
+          break;
+        default:
+          channelCount = 1;
+      }
+    }
+
+    return {
+      sampleRate,
+      channelCount,
+    };
+  };
+
+  const warnOnUnsupportedMicrophoneSettings = () => {
+    const supportedConstraints =
+      navigator.mediaDevices.getSupportedConstraints();
+    const browserInfo = detect();
+    if (!browserInfo) {
+      console.warn('No browser info available.');
+    }
+    const { name: browserName } = browserInfo || {};
+
+    const constraints = ['sampleRate', 'channelCount'];
+    for (const constraint of constraints) {
+      if (Object.keys(supportedConstraints).indexOf(constraint) === -1) {
+        console.warn(
+          `Microphone constraint ${constraint} is not supported by ${browserName}. This may lead to decoding issues when sending linear PCM to downstream consumers.`,
+        );
+      }
+    }
+  };
+
+  useEffect(() => {
+    warnOnUnsupportedMicrophoneSettings();
+  }, []);
+
   const start = useCallback(async () => {
     let stream;
+
     try {
       stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -71,6 +176,9 @@ export const useMicrophone = ({
       if (!stream) {
         throw new Error('No stream connected');
       }
+
+      const streamSettings = getStreamSettings(stream);
+      console.log(streamSettings);
 
       await register(await connect());
 
@@ -118,5 +226,8 @@ export const useMicrophone = ({
     mute,
     unmute,
     isMuted,
+    // actualSampleRate: recorder.current?.sampleRate,
+    // actualChannelCount: recorder.current?.audioChannels,
+    // actualMimeType: recorder.current?.mimeType,
   };
 };

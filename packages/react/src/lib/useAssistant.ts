@@ -27,13 +27,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
 
   const player = useSoundPlayer();
 
-  const client = useAssistantClient({
-    config,
-    onAudioMessage: (arrayBuffer) => {
-      player.addToQueue(arrayBuffer);
-    },
-  });
-
   const onMicPermissionChange = useCallback(
     (permission: 'prompt' | 'granted' | 'denied') => {
       setMicPermission(permission);
@@ -60,6 +53,13 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
       client.sendAudio(arrayBuffer);
     },
     onMicPermissionChange,
+  });
+
+  const client = useAssistantClient({
+    config,
+    onAudioMessage: (arrayBuffer) => {
+      player.addToQueue(arrayBuffer);
+    },
   });
 
   const connect = useCallback(() => {
