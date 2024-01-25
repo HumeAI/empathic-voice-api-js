@@ -7,9 +7,7 @@ import {
   register,
 } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
-import {
-  DEFAULT_ENCODING_VALUES,
-} from './constants';
+import { DEFAULT_ENCODING_VALUES, EncodingValues } from './constants';
 import { getStreamSettings } from './getMicrophoneDefaults';
 
 export type MicrophoneProps = {
@@ -30,10 +28,9 @@ export const useMicrophone = ({
   const isMutedRef = useRef(false);
   const [isMuted, setIsMuted] = useState(false);
 
-  const [realEncodingValues, setRealEncodingValues] = useState<{
-    sampleRate: number;
-    channelCount: number;
-  }>(DEFAULT_ENCODING_VALUES);
+  const [realEncodingValues, setRealEncodingValues] = useState<EncodingValues>(
+    DEFAULT_ENCODING_VALUES,
+  );
 
   const mimeType = 'audio/wav';
   const recorder = useRef<MediaRecorder | null>(null);
