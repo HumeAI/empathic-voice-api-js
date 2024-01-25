@@ -17,21 +17,22 @@ const parseTrackEncodingConstraints = (
       const { min, max } = (trackCapabilities as any)[key];
       const idealValue = (idealTrackSettings as any)[key];
       if (idealValue) {
-        if (min && min > idealValue) {
+        if (min && idealValue < min) {
           console.warn(
             `Ideal ${key} ${idealValue} is not supported by the ${
               browserName ?? 'this browser'
             } (minimum ${min}). Using ${min} instead.`,
           );
           supportedConstraints[key as keyof EncodingValues] = min;
-        }
-        if (max && max < idealValue) {
+        } else if (max && idealValue > max) {
           console.warn(
             `Ideal ${key} ${idealValue} is not supported by the ${
               browserName ?? 'this browser'
             } (maximum ${max}). Using ${max} instead.`,
           );
           supportedConstraints[key as keyof EncodingValues] = max;
+        } else {
+          supportedConstraints[key as keyof EncodingValues] = idealValue;
         }
       }
     }
@@ -50,8 +51,8 @@ const parseTrackEncodingConstraints = (
   }
 
   return {
-    ...supportedConstraints,
     ...getDefaultEncodingByBrowser(browserName),
+    ...supportedConstraints,
   };
 };
 
@@ -91,4 +92,4 @@ const getStreamSettings = (
   }
 };
 
-export { getStreamSettings };
+export { getStreamSettings, parseTrackEncodingConstraints };
