@@ -99,8 +99,8 @@ export class EmbeddedAssistant {
       backgroundColor: 'transparent',
       backgroundImage: 'none',
       border: 'none',
-      height: '52px',
-      width: '348px',
+      height: '0px',
+      width: '0px',
       opacity: '0',
     });
 
@@ -131,16 +131,20 @@ export class EmbeddedAssistant {
       return;
     }
 
-    const actionFromFrame = FrameToClientActionSchema.safeParse(event.data);
+    const action = FrameToClientActionSchema.safeParse(event.data);
 
-    if (!actionFromFrame.success) {
+    if (!action.success) {
       return;
     }
 
-    switch (actionFromFrame.data.type) {
+    switch (action.data.type) {
       case WIDGET_IFRAME_IS_READY_ACTION.type: {
         this.showIframe();
         this.sendConfigObject();
+        break;
+      }
+      case 'resize_frame': {
+        this.resizeIframe(action.data.payload);
         break;
       }
     }
@@ -167,5 +171,10 @@ export class EmbeddedAssistant {
 
   private hideIframe() {
     this.iframe.style.opacity = '0';
+  }
+
+  private resizeIframe({ width, height }: { width: number; height: number }) {
+    this.iframe.style.width = `${width}px`;
+    this.iframe.style.height = `${height}px`;
   }
 }

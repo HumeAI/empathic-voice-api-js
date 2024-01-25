@@ -8,7 +8,10 @@ function App() {
   return (
     <>
       <div>Demo of embedding assistant as an iframe</div>
-      <EmbeddedAssistant apiKey={apiKey} />
+      <EmbeddedAssistant
+        apiKey={apiKey}
+        rendererUrl={'http://localhost:3000'}
+      />
     </>
   );
 }
