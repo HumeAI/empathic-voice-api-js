@@ -2,8 +2,8 @@ import { createConfig } from '@humeai/assistant';
 import { useCallback, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
-import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
+import { useMicrophone } from './useMicrophone';
 
 type AssistantStatus =
   | {
@@ -27,6 +27,28 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
 
   const player = useSoundPlayer();
 
+  const mic = useMicrophone({
+    encodingConstraints: {
+      sampleRate: config.sampleRate,
+      channelCount: config.channels,
+    },
+    onAudioCaptured: (arrayBuffer) => {
+      client.sendAudio(arrayBuffer);
+    },
+    onMicPermissionChange,
+  });
+
+  const client = useAssistantClient({
+    config: {
+      ...config,
+      sampleRate: mic.realEncodingValues.sampleRate,
+      channels: mic.realEncodingValues.channelCount,
+    },
+    onAudioMessage: (arrayBuffer) => {
+      player.addToQueue(arrayBuffer);
+    },
+  });
+
   const onMicPermissionChange = useCallback(
     (permission: 'prompt' | 'granted' | 'denied') => {
       setMicPermission(permission);
@@ -45,22 +67,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     },
     [client, player],
   );
-
-  const mic = useMicrophone({
-    numChannels: config.channels,
-    sampleRate: config.sampleRate,
-    onAudioCaptured: (arrayBuffer) => {
-      client.sendAudio(arrayBuffer);
-    },
-    onMicPermissionChange,
-  });
-
-  const client = useAssistantClient({
-    config,
-    onAudioMessage: (arrayBuffer) => {
-      player.addToQueue(arrayBuffer);
-    },
-  });
 
   const connect = useCallback(() => {
     if (micPermission === 'denied') {
