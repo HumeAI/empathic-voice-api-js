@@ -23,6 +23,9 @@
                                             ┌───────────────────────────┐
                                ◀─────────── │    transcript message     │
                                             └───────────────────────────┘
+                                            ┌───────────────────────────┐
+                               ◀─────────── │       resize window       │
+                                            └───────────────────────────┘
  ┌───────────────────────────┐                                           
  │      unmount iframe       │ ───────────▶                              
  └───────────────────────────┘                                           
@@ -87,6 +90,13 @@ export const FrameToClientActionSchema = z.union([
     type: z.literal('transcript_message'),
     payload: TranscriptMessageSchema,
   }),
+  z.object({
+    type: z.literal('resize_frame'),
+    payload: z.object({
+      width: z.number(),
+      height: z.number(),
+    }),
+  }),
 ]);
 
 export type FrameToClientAction = z.infer<typeof FrameToClientActionSchema>;
@@ -96,7 +106,7 @@ export const EXPAND_WIDGET_ACTION = {
 } satisfies FrameToClientAction;
 
 export const COLLAPSE_WIDGET_ACTION = {
-  type: 'collapse_widget',
+  type: 'collapse_widget' as const,
 } satisfies FrameToClientAction;
 
 export const MINIMIZE_WIDGET_ACTION = {
@@ -107,11 +117,22 @@ export const WIDGET_IFRAME_IS_READY_ACTION = {
   type: 'widget_iframe_is_ready',
 } satisfies FrameToClientAction;
 
-export const TRANSCRIPT_MESSAGE_ACTION = (
-  message: TranscriptMessage,
-): FrameToClientAction => {
+export const TRANSCRIPT_MESSAGE_ACTION = (message: TranscriptMessage) => {
   return {
     type: 'transcript_message',
     payload: message,
-  };
+  } satisfies FrameToClientAction;
+};
+
+export const RESIZE_FRAME_ACTION = (dimensions: {
+  width: number;
+  height: number;
+}) => {
+  return {
+    type: 'resize_frame',
+    payload: {
+      width: dimensions.width,
+      height: dimensions.height,
+    },
+  } satisfies FrameToClientAction;
 };
