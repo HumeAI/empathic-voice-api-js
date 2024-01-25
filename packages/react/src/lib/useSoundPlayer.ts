@@ -7,7 +7,11 @@ function generateEmptyFft(): number[] {
   return Array.from({ length: 24 }).map(() => 0);
 }
 
-export const useSoundPlayer = () => {
+export const useSoundPlayer = ({
+  onError,
+}: {
+  onError: (message: string) => void;
+}) => {
   const [queue, setQueue] = useState<{
     isProcessing: boolean;
     clips: Array<HTMLAudioElement>;
@@ -28,7 +32,8 @@ export const useSoundPlayer = () => {
 
   const addToQueue = useCallback((clip: ArrayBuffer) => {
     if (!isInitialized.current) {
-      throw new Error('AudioContext has not been initialized');
+      onError('AudioContext has not been initialized');
+      return;
     }
     try {
       // defining MIME type on the blob is required for the audio
@@ -50,21 +55,30 @@ export const useSoundPlayer = () => {
 
   const playClip = async (audioElement: HTMLAudioElement) => {
     if (!audioContext.current) {
-      throw new Error('AudioContext has not been initialized');
+      onError('AudioContext has not been initialized');
+      return;
     }
 
     const source = audioContext.current.createMediaElementSource(audioElement);
     source.connect(audioContext.current.destination);
 
-    const analyzer = Meyda.createMeydaAnalyzer({
-      audioContext: audioContext.current,
-      source,
-      featureExtractors: ['loudness'],
-      callback: (features: MeydaFeaturesObject) => {
-        const newFft = features.loudness.specific || [];
-        setFft(() => Array.from(newFft));
-      },
-    });
+    let analyzer: ReturnType<typeof Meyda.createMeydaAnalyzer>;
+
+    try {
+      analyzer = Meyda.createMeydaAnalyzer({
+        audioContext: audioContext.current,
+        source,
+        featureExtractors: ['loudness'],
+        callback: (features: MeydaFeaturesObject) => {
+          const newFft = features.loudness.specific || [];
+          setFft(() => Array.from(newFft));
+        },
+      });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      onError(`Failed to start audio analyzer: ${message}`);
+      return;
+    }
 
     return new Promise<void>((resolve, reject) => {
       audioElement.addEventListener('ended', () => {
@@ -73,8 +87,10 @@ export const useSoundPlayer = () => {
         resolve();
       });
 
-      audioElement.addEventListener('error', () => {
+      audioElement.addEventListener('error', (e) => {
         analyzer.stop();
+        const message = e instanceof Error ? e.message : 'Unknown error';
+        onError(`Error in audio player: ${message}`);
         reject();
       });
 
