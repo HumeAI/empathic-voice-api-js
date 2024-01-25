@@ -28,8 +28,10 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   const player = useSoundPlayer();
 
   const mic = useMicrophone({
-    numChannels: config.channels,
-    sampleRate: config.sampleRate,
+    encodingConstraints: {
+      sampleRate: config.sampleRate,
+      channelCount: config.channels,
+    },
     onAudioCaptured: (arrayBuffer) => {
       client.sendAudio(arrayBuffer);
     },
@@ -37,9 +39,12 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
       setMicPermission(permission);
     },
   });
-
   const client = useAssistantClient({
-    config,
+    config: {
+      ...config,
+      sampleRate: mic.realEncodingValues.sampleRate,
+      channels: mic.realEncodingValues.channelCount,
+    },
     onAudioMessage: (arrayBuffer) => {
       player.addToQueue(arrayBuffer);
     },
