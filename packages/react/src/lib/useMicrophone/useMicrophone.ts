@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   MediaRecorder as ExtendableMediaRecorder,
+  IBlobEvent,
+  IMediaRecorder,
   register,
 } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
@@ -18,12 +20,12 @@ export const useMicrophone = ({
   const [isMuted, setIsMuted] = useState(false);
 
   const mimeType = 'audio/wav';
-  const recorder = useRef<MediaRecorder | null>(null);
+  const recorder = useRef<IMediaRecorder | null>(null);
 
   const sendAudio = useRef(onAudioCaptured);
   sendAudio.current = onAudioCaptured;
 
-  const dataHandler = useCallback((event: BlobEvent) => {
+  const dataHandler = useCallback((event: IBlobEvent) => {
     const blob = event.data;
 
     if (isMutedRef.current) {
@@ -46,15 +48,10 @@ export const useMicrophone = ({
 
     await register(await connect());
 
-    // @ts-ignore
     recorder.current = new ExtendableMediaRecorder(stream, {
       mimeType,
     });
-
-    // @ts-ignore
     recorder.current.addEventListener('dataavailable', dataHandler);
-
-    // @ts-ignore
     recorder.current.start(250);
   };
 
