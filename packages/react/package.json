@@ -10,11 +10,16 @@
     "url": "https://github.com/HumeAI/assistant-sdk.git",
     "directory": "packages/react"
   },
+  "files": [
+    "package.json",
+    "dist"
+  ],
   "scripts": {
     "test": "vitest",
     "build": "tsup",
     "dev": "tsup --watch",
-    "lint": "eslint ./src"
+    "lint": "eslint ./src",
+    "pack": "npm pack --pack-destination ../../release/"
   },
   "keywords": [],
   "author": "",

@@ -15,6 +15,9 @@
     },
     "test": {
       "dependsOn": ["^build", "^test"]
+    },
+    "pack": {
+      "dependsOn": ["^build"]
     }
   }
 }
