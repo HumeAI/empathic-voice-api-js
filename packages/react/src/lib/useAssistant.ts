@@ -1,4 +1,4 @@
-import { createConfig, Message } from '@humeai/assistant';
+import { createConfig } from '@humeai/assistant';
 import { useCallback, useEffect, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
@@ -87,7 +87,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [micPermission, client, player, mic]);
+  }, [client, player, mic, status.value]);
 
   useEffect(() => {
     if (status.value === 'error') {

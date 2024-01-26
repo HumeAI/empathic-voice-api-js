@@ -1,5 +1,5 @@
 import { renderHook } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { ReadyState, useAssistantClient } from './useAssistantClient';
 
@@ -13,7 +13,7 @@ describe('useAssistantClient', () => {
           reconnectAttempts: 0,
           debug: false,
         },
-        onError: (_e: Error) => {},
+        onError: () => {},
       }),
     );
 

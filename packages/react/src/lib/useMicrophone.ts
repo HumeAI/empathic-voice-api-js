@@ -78,7 +78,14 @@ export const useMicrophone = ({
       const message = e instanceof Error ? e.message : 'Unknown error';
       onError(`Error with microphone: ${message}`);
     }
-  }, [dataHandler, mimeType, numChannels, sampleRate, onMicPermissionChange]);
+  }, [
+    dataHandler,
+    mimeType,
+    numChannels,
+    sampleRate,
+    onMicPermissionChange,
+    onError,
+  ]);
 
   const stop = useCallback(() => {
     try {
@@ -88,7 +95,7 @@ export const useMicrophone = ({
       const message = e instanceof Error ? e.message : 'Unknown error';
       onError(`Error stopping microphone: ${message}`);
     }
-  }, [dataHandler]);
+  }, [dataHandler, onError]);
 
   const mute = useCallback(() => {
     isMutedRef.current = true;
