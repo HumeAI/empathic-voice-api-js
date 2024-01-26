@@ -1,6 +1,6 @@
 // cspell:ignore dataavailable
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { MutableRefObject, useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   MediaRecorder as ExtendableMediaRecorder,
@@ -9,13 +9,20 @@ import {
   register,
 } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
-import { MicrophoneHook, MicrophoneProps } from './types';
+
+export type MicrophoneProps = {
+  streamRef: MutableRefObject<MediaStream | null>;
+  onAudioCaptured: (b: ArrayBuffer) => void;
+  onStartRecording?: () => void;
+  onStopRecording?: () => void;
+  onError?: (message: string, error: Error) => void;
+};
 
 export const useMicrophone = ({
   onAudioCaptured,
   streamRef,
   ...props
-}: MicrophoneProps): MicrophoneHook => {
+}: MicrophoneProps) => {
   const isMutedRef = useRef(false);
   const [isMuted, setIsMuted] = useState(false);
 
