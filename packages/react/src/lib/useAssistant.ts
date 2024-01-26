@@ -1,5 +1,5 @@
 import { createConfig } from '@humeai/assistant';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
 import { useMicrophone } from './useMicrophone';
@@ -25,13 +25,20 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
 
   const config = createConfig(props);
 
-  const player = useSoundPlayer();
+  const onError = useCallback((message: string) => {
+    setStatus({ value: 'error', reason: message });
+  }, []);
+
+  const player = useSoundPlayer({
+    onError,
+  });
 
   const client = useAssistantClient({
     config,
     onAudioMessage: (arrayBuffer) => {
       player.addToQueue(arrayBuffer);
     },
+    onError,
   });
 
   const onMicPermissionChange = useCallback(
@@ -60,6 +67,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
       client.sendAudio(arrayBuffer);
     },
     onMicPermissionChange,
+    onError,
   });
 
   const connect = useCallback(() => {
@@ -72,15 +80,21 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   }, [micPermission, mic]);
 
   const disconnect = useCallback(() => {
-    if (micPermission === 'denied') {
-      setStatus({ value: 'error', reason: 'Microphone permission denied' });
-    } else {
+    if (status.value !== 'error') {
+      // if the status is `error`, keep the existing status
       setStatus({ value: 'disconnected' });
     }
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [micPermission, client, player, mic]);
+  }, [client, player, mic, status.value]);
+
+  useEffect(() => {
+    if (status.value === 'error') {
+      // If the status is ever set to `error`, disconnect the assistant.
+      disconnect();
+    }
+  }, [status, disconnect]);
 
   return {
     connect,

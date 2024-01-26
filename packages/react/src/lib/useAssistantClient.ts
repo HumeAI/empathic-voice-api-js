@@ -12,6 +12,7 @@ export enum ReadyState {
 export const useAssistantClient = (props: {
   config: Config;
   onAudioMessage?: (arrayBuffer: ArrayBufferLike) => void;
+  onError: (message: string) => void;
 }) => {
   const config = useRef<Config>(props.config);
   config.current = props.config;
@@ -47,7 +48,10 @@ export const useAssistantClient = (props: {
       setReadyState(ReadyState.CLOSED);
     });
 
-    client.current.on('error', () => {});
+    client.current.on('error', (e) => {
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      props.onError(`Error with websocket connection: ${message}`);
+    });
 
     setReadyState(ReadyState.CONNECTING);
 

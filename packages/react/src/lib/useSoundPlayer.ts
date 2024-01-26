@@ -7,7 +7,11 @@ function generateEmptyFft(): number[] {
   return Array.from({ length: 24 }).map(() => 0);
 }
 
-export const useSoundPlayer = () => {
+export const useSoundPlayer = ({
+  onError,
+}: {
+  onError: (message: string) => void;
+}) => {
   const [queue, setQueue] = useState<{
     isProcessing: boolean;
     clips: Array<HTMLAudioElement>;
@@ -26,62 +30,81 @@ export const useSoundPlayer = () => {
     isInitialized.current = true;
   };
 
-  const addToQueue = useCallback((clip: ArrayBuffer) => {
-    if (!isInitialized.current) {
-      throw new Error('AudioContext has not been initialized');
-    }
-    try {
-      // defining MIME type on the blob is required for the audio
-      // player to work in safari
-      const blob = arrayBufferToBlob(clip, 'audio/mp3');
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audio.autoplay = false;
-      audio.load();
+  const addToQueue = useCallback(
+    (clip: ArrayBuffer) => {
+      if (!isInitialized.current) {
+        onError('AudioContext has not been initialized');
+        return;
+      }
+      try {
+        // defining MIME type on the blob is required for the audio
+        // player to work in safari
+        const blob = arrayBufferToBlob(clip, 'audio/mp3');
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        audio.autoplay = false;
+        audio.load();
 
-      setQueue((prev) => ({
-        isProcessing: prev.isProcessing,
-        clips: [...prev.clips, audio],
-      }));
-    } catch (e) {
-      void true;
-    }
-  }, []);
+        setQueue((prev) => ({
+          isProcessing: prev.isProcessing,
+          clips: [...prev.clips, audio],
+        }));
+      } catch (e) {
+        void true;
+      }
+    },
+    [onError],
+  );
 
-  const playClip = async (audioElement: HTMLAudioElement) => {
-    if (!audioContext.current) {
-      throw new Error('AudioContext has not been initialized');
-    }
+  const playClip = useCallback(
+    async (audioElement: HTMLAudioElement) => {
+      if (!audioContext.current) {
+        onError('AudioContext has not been initialized');
+        return;
+      }
 
-    const source = audioContext.current.createMediaElementSource(audioElement);
-    source.connect(audioContext.current.destination);
+      const source =
+        audioContext.current.createMediaElementSource(audioElement);
+      source.connect(audioContext.current.destination);
 
-    const analyzer = Meyda.createMeydaAnalyzer({
-      audioContext: audioContext.current,
-      source,
-      featureExtractors: ['loudness'],
-      callback: (features: MeydaFeaturesObject) => {
-        const newFft = features.loudness.specific || [];
-        setFft(() => Array.from(newFft));
-      },
-    });
+      let analyzer: ReturnType<typeof Meyda.createMeydaAnalyzer>;
 
-    return new Promise<void>((resolve, reject) => {
-      audioElement.addEventListener('ended', () => {
-        audioElement.remove();
-        analyzer.stop();
-        resolve();
+      try {
+        analyzer = Meyda.createMeydaAnalyzer({
+          audioContext: audioContext.current,
+          source,
+          featureExtractors: ['loudness'],
+          callback: (features: MeydaFeaturesObject) => {
+            const newFft = features.loudness.specific || [];
+            setFft(() => Array.from(newFft));
+          },
+        });
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Unknown error';
+        onError(`Failed to start audio analyzer: ${message}`);
+        return;
+      }
+
+      return new Promise<void>((resolve, reject) => {
+        audioElement.addEventListener('ended', () => {
+          audioElement.remove();
+          analyzer.stop();
+          resolve();
+        });
+
+        audioElement.addEventListener('error', (e) => {
+          analyzer.stop();
+          const message = e instanceof Error ? e.message : 'Unknown error';
+          onError(`Error in audio player: ${message}`);
+          reject();
+        });
+
+        analyzer.start();
+        void audioElement.play();
       });
-
-      audioElement.addEventListener('error', () => {
-        analyzer.stop();
-        reject();
-      });
-
-      analyzer.start();
-      void audioElement.play();
-    });
-  };
+    },
+    [onError],
+  );
 
   useEffect(() => {
     if (!audioContext.current) {
@@ -111,7 +134,7 @@ export const useSoundPlayer = () => {
         }));
       });
     }
-  }, [queue]);
+  }, [queue, playClip]);
 
   const stopAll = useCallback(() => {
     if (currentClip.current) {

@@ -13,6 +13,7 @@ describe('useAssistantClient', () => {
           reconnectAttempts: 0,
           debug: false,
         },
+        onError: () => {},
       }),
     );
 

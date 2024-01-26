@@ -10,7 +10,7 @@ export type MicrophoneProps = {
   onAudioCaptured: (b: ArrayBuffer) => void;
   onStartRecording?: () => void;
   onStopRecording?: () => void;
-  onError?: (message: string, error: Error) => void;
+  onError: (message: string) => void;
   onMicPermissionChange: (permission: 'prompt' | 'granted' | 'denied') => void;
 };
 
@@ -19,6 +19,7 @@ export const useMicrophone = ({
   sampleRate,
   onAudioCaptured,
   onMicPermissionChange,
+  onError,
   ...props
 }: MicrophoneProps) => {
   const isMutedRef = useRef(false);
@@ -61,6 +62,7 @@ export const useMicrophone = ({
       onMicPermissionChange('granted');
     } catch (e) {
       onMicPermissionChange('denied');
+      return;
     }
 
     try {
@@ -73,18 +75,27 @@ export const useMicrophone = ({
 
       recorder.current.start(250);
     } catch (e) {
-      void true;
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      onError(`Error with microphone: ${message}`);
     }
-  }, [dataHandler, mimeType, numChannels, sampleRate, onMicPermissionChange]);
+  }, [
+    dataHandler,
+    mimeType,
+    numChannels,
+    sampleRate,
+    onMicPermissionChange,
+    onError,
+  ]);
 
   const stop = useCallback(() => {
     try {
       recorder.current?.stop();
       recorder.current?.removeEventListener('dataavailable', dataHandler);
     } catch (e) {
-      void true;
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      onError(`Error stopping microphone: ${message}`);
     }
-  }, [dataHandler]);
+  }, [dataHandler, onError]);
 
   const mute = useCallback(() => {
     isMutedRef.current = true;
