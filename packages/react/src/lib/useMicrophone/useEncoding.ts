@@ -6,7 +6,7 @@ import { DEFAULT_ENCODING_VALUES, EncodingValues } from './constants';
 import { getStreamSettings } from './getMicrophoneDefaults';
 
 type EncodingHook = {
-  encoding: EncodingValues;
+  encodingRef: React.MutableRefObject<EncodingValues>;
   permission: 'prompt' | 'granted' | 'denied';
   streamRef: React.MutableRefObject<MediaStream | null>;
   getStream: () => Promise<void>;
@@ -19,12 +19,10 @@ type EncodingProps = {
 const useEncoding = (props: EncodingProps): EncodingHook => {
   const { encodingConstraints } = props;
 
+  const encodingRef = useRef<EncodingValues>(DEFAULT_ENCODING_VALUES);
   const streamRef = useRef<MediaStream | null>(null);
   const [permission, setPermission] = useState<'prompt' | 'granted' | 'denied'>(
     'prompt',
-  );
-  const [encoding, setEncodingValues] = useState<EncodingValues>(
-    DEFAULT_ENCODING_VALUES,
   );
 
   const getStream = async () => {
@@ -43,14 +41,14 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
 
       setPermission('granted');
       streamRef.current = stream;
-      setEncodingValues(getStreamSettings(stream, encodingConstraints));
+      encodingRef.current = getStreamSettings(stream, encodingConstraints);
     } catch (e) {
       console.log(e);
       setPermission('denied');
     }
   };
 
-  return { encoding, permission, streamRef, getStream };
+  return { encodingRef, permission, streamRef, getStream };
 };
 
 export { useEncoding };

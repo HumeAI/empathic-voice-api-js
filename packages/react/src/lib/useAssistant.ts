@@ -23,7 +23,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
 
   const player = useSoundPlayer();
 
-  const { permission, encoding, streamRef, getStream } = useEncoding({
+  const { permission, encodingRef, streamRef, getStream } = useEncoding({
     encodingConstraints: {
       sampleRate: config.sampleRate,
       channelCount: config.channels,
@@ -33,13 +33,13 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   const client = useAssistantClient({
     config: {
       ...config,
-      ...encoding,
+      sampleRate: encodingRef.current.sampleRate,
+      channels: encodingRef.current.channelCount,
     },
     onAudioMessage: (arrayBuffer) => {
       player.addToQueue(arrayBuffer);
     },
   });
-
 
   const mic = useMicrophone({
     streamRef,
@@ -64,9 +64,9 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   }, [permission]);
 
   const connect = async () => {
-    console.log("before getStream", streamRef.current);
+    console.log('before getStream', streamRef.current);
     await getStream();
-    console.log("after getStream", streamRef.current);
+    console.log('after getStream', streamRef.current);
     if (permission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
