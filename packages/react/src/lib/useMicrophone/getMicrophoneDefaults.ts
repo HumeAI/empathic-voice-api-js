@@ -19,14 +19,14 @@ const parseTrackEncodingConstraints = (
       if (idealValue) {
         if (min && idealValue < min) {
           console.warn(
-            `Ideal ${key} ${idealValue} is not supported by the ${
+            `constraint ${key} ${idealValue} is not supported by the ${
               browserName ?? 'this browser'
             } (minimum ${min}). Using ${min} instead.`,
           );
           supportedConstraints[key as keyof EncodingValues] = min;
         } else if (max && idealValue > max) {
           console.warn(
-            `Ideal ${key} ${idealValue} is not supported by the ${
+            `constraint ${key} ${idealValue} is not supported by the ${
               browserName ?? 'this browser'
             } (maximum ${max}). Using ${max} instead.`,
           );
@@ -81,6 +81,11 @@ const getStreamSettings = (
     return DEFAULT_ENCODING_VALUES;
   } else {
     const { name: browserName } = browserInfo || {};
+
+    if (browserName === 'firefox') {
+      // Firefox does not support getCapabilities() yet
+      return getDefaultEncodingByBrowser(browserName);
+    }
 
     const supportedConstraints = parseTrackEncodingConstraints(
       track.getCapabilities(),

@@ -1,9 +1,9 @@
 import { createConfig } from '@humeai/assistant';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
 import { useSoundPlayer } from './useSoundPlayer';
-import { useMicrophone } from './useMicrophone';
+import { useEncoding, useMicrophone } from './useMicrophone';
 
 type AssistantStatus =
   | {
@@ -19,66 +19,64 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   const [status, setStatus] = useState<AssistantStatus>({
     value: 'disconnected',
   });
-  const [micPermission, setMicPermission] = useState<
-    'prompt' | 'granted' | 'denied'
-  >('prompt');
-
   const config = createConfig(props);
 
   const player = useSoundPlayer();
 
-  const mic = useMicrophone({
+  const { permission, encoding, streamRef, getStream } = useEncoding({
     encodingConstraints: {
       sampleRate: config.sampleRate,
       channelCount: config.channels,
     },
-    onAudioCaptured: (arrayBuffer) => {
-      client.sendAudio(arrayBuffer);
-    },
-    onMicPermissionChange,
   });
 
   const client = useAssistantClient({
     config: {
       ...config,
-      sampleRate: mic.realEncodingValues.sampleRate,
-      channels: mic.realEncodingValues.channelCount,
+      ...encoding,
     },
     onAudioMessage: (arrayBuffer) => {
       player.addToQueue(arrayBuffer);
     },
   });
 
-  const onMicPermissionChange = useCallback(
-    (permission: 'prompt' | 'granted' | 'denied') => {
-      setMicPermission(permission);
 
-      if (permission === 'granted') {
-        setStatus({ value: 'connected' });
-        client.connect();
-        player.initPlayer();
-      }
-
-      if (permission === 'denied') {
-        setStatus({ value: 'error', reason: 'Microphone permission denied' });
-        client.disconnect();
-        player.stopAll();
-      }
+  const mic = useMicrophone({
+    streamRef,
+    onAudioCaptured: (arrayBuffer) => {
+      console.log(arrayBuffer);
+      client.sendAudio(arrayBuffer);
     },
-    [client, player],
-  );
+  });
 
-  const connect = useCallback(() => {
-    if (micPermission === 'denied') {
+  useEffect(() => {
+    if (permission === 'granted') {
+      setStatus({ value: 'connected' });
+      client.connect();
+      player.initPlayer();
+    }
+
+    if (permission === 'denied') {
+      setStatus({ value: 'error', reason: 'Microphone permission denied' });
+      client.disconnect();
+      player.stopAll();
+    }
+  }, [permission]);
+
+  const connect = async () => {
+    console.log("before getStream", streamRef.current);
+    await getStream();
+    console.log("after getStream", streamRef.current);
+    if (permission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
       setStatus({ value: 'connecting' });
       void mic.start();
     }
-  }, [micPermission, mic]);
+  };
 
   const disconnect = useCallback(() => {
-    if (micPermission === 'denied') {
+    if (mic.permission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
       setStatus({ value: 'disconnected' });
@@ -86,7 +84,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [micPermission, client, player, mic]);
+  }, [client, player, mic]);
 
   return {
     connect,

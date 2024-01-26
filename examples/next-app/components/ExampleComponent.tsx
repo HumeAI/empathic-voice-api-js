@@ -18,6 +18,8 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   } = useAssistant({
     apiKey,
     hostname: 'api.hume.ai',
+    sampleRate: 16000,
+    channels: 2,
   });
 
   const normalizedFft = useMemo(() => {
