@@ -44,7 +44,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   const mic = useMicrophone({
     streamRef,
     onAudioCaptured: (arrayBuffer) => {
-      console.log(arrayBuffer);
       client.sendAudio(arrayBuffer);
     },
   });
@@ -64,9 +63,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   }, [permission]);
 
   const connect = async () => {
-    console.log('before getStream', streamRef.current);
     await getStream();
-    console.log('after getStream', streamRef.current);
     if (permission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
@@ -76,7 +73,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   };
 
   const disconnect = useCallback(() => {
-    if (mic.permission === 'denied') {
+    if (permission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
       setStatus({ value: 'disconnected' });
@@ -84,7 +81,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [client, player, mic]);
+  }, [client, player, mic, permission]);
 
   return {
     connect,

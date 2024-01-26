@@ -7,15 +7,15 @@ import {
 
 const parseTrackEncodingConstraints = (
   trackCapabilities: MediaTrackCapabilities,
-  idealTrackSettings: Partial<EncodingValues>,
+  encodingConstraints: Partial<EncodingValues>,
   browserName?: string,
 ): EncodingValues => {
   const supportedConstraints: Partial<EncodingValues> = {};
 
-  for (const key of Object.keys(idealTrackSettings)) {
+  for (const key of Object.keys(encodingConstraints)) {
     if (key in trackCapabilities) {
       const { min, max } = (trackCapabilities as any)[key];
-      const idealValue = (idealTrackSettings as any)[key];
+      const idealValue = (encodingConstraints as any)[key];
       if (idealValue) {
         if (min && idealValue < min) {
           console.warn(

@@ -1,6 +1,6 @@
 // cspell:ignore dataavailable
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { DEFAULT_ENCODING_VALUES, EncodingValues } from './constants';
 import { getStreamSettings } from './getMicrophoneDefaults';
@@ -36,8 +36,6 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
         },
         video: false,
       });
-
-      console.log('getStream', stream);
 
       setPermission('granted');
       streamRef.current = stream;

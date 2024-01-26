@@ -33,7 +33,6 @@ export const useMicrophone = ({
     blob
       .arrayBuffer()
       .then((buffer) => {
-        console.log('buffer', buffer);
         sendAudio.current?.(buffer);
       })
       .catch(() => {});
