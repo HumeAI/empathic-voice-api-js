@@ -15,6 +15,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
     mute,
     readyState,
     unmute,
+    messages,
   } = useAssistant({
     apiKey,
     hostname: 'api.hume.ai',
@@ -35,6 +36,19 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
       return Math.round(upperBounded * 100);
     });
   }, [fft]);
+
+  const assistantMessages = useMemo(() => {
+    return messages
+      .filter((message) => message.type === 'assistant_message')
+      .map((message) => {
+        return {
+          message: message.message,
+          top3: [...message.models[0].entries]
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3),
+        };
+      });
+  }, [messages]);
 
   return (
     <div>
@@ -132,6 +146,19 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
                 ></div>
               );
             })}
+          </div>
+
+          <div>
+            <div>Last transcript message received from assistant</div>
+            {assistantMessages.length > 0 ? (
+              <div>
+                {JSON.stringify(
+                  assistantMessages[assistantMessages.length - 1],
+                )}
+              </div>
+            ) : (
+              <div>No transcript available</div>
+            )}
           </div>
         </div>
       </div>

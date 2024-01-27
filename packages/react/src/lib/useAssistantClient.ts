@@ -36,6 +36,7 @@ export const useAssistantClient = (props: {
       }
 
       setMessages((prev) => {
+        console.log('new message', message);
         return prev.concat([message]);
       });
     });
