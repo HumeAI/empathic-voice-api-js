@@ -40,40 +40,68 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const WIDTH = 500;
-  const HEIGHT = 500;
-
   const visualize = () => {
+    const bars = 20;
+
     const analyserNode = analyserNodeRef.current;
     const canvas = canvasRef.current;
     const canvasCtx = canvas?.getContext('2d');
-    if (!analyserNode || !canvasCtx) {
+    if (!analyserNode || !canvas || !canvasCtx) {
       console.log('no node or canvas context');
       return;
     }
-
     const bufferLength = analyserNode.fftSize;
     const dataArray = new Uint8Array(bufferLength);
-    const barWidth = (WIDTH / bufferLength) * 2.5;
+
+    const [height, width] = [canvasCtx.canvas.height, canvasCtx.canvas.width];
+    console.log(height, width);
+
+    const barWidth = width / bars;
+    const frequenciesPerBar = bufferLength / bars;
 
     const draw = () => {
       requestAnimationFrame(draw);
       analyserNode.getByteFrequencyData(dataArray);
 
       canvasCtx.fillStyle = '#ffffff';
-      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+      canvasCtx.fillRect(0, 0, width, height);
 
       let barHeight;
       let x = 0;
-      for (let i = 0; i < bufferLength; i++) {
-        barHeight = dataArray[i];
 
-        canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
-        canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight / 2);
+      for (let bar = 0; bar < bars; bar++) {
+        const leftMostFreq = bar * frequenciesPerBar;
+        const rightMostFreq =
+          (bar + 1) * frequenciesPerBar > bufferLength
+            ? bufferLength
+            : undefined;
+        const frequencies = dataArray.slice(leftMostFreq, rightMostFreq);
+
+        const averageFreq = frequencies.reduce((a, b) => {
+          return a + b / frequencies.length;
+        }, 0);
+        const maxFreq = frequencies.reduce((a, b) => {
+          if (a > b) {
+            return a;
+          } else {
+            return b;
+          }
+        }, -1);
+
+        const barHeight = (averageFreq / maxFreq) * height;
+
+        canvasCtx.fillStyle = 'rgb(50,50,50)';
+        canvasCtx.fillRect(x, height / 2 - barHeight, barWidth, 2 * barHeight);
 
         x += barWidth + 1;
       }
+      // for (let i = 0; i < bufferLength; i++) {
+      //   barHeight = dataArray[i];
+      //   canvasCtx.fillStyle = 'rgb(50,50,50)';
+      //   canvasCtx.fillRect(x, height - barHeight / 2, barWidth, barHeight / 2);
 
+      //   x += barWidth + 1;
+      // }
     };
     draw();
   };
@@ -184,12 +212,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
           border: '1px solid black',
         }}
       >
-        <canvas
-          ref={canvasRef}
-          width={WIDTH}
-          height={HEIGHT}
-          className="audio-react-recorder__canvas"
-        />
+        <canvas ref={canvasRef} className="audio-react-recorder__canvas" />
       </div>
     </div>
   );
