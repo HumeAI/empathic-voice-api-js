@@ -52,8 +52,6 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
 
       analyserNodeRef.current = analyserNode;
 
-      console.log(analyserNode);
-
       encodingRef.current = getStreamSettings(stream, encodingConstraints);
       return 'granted';
     } catch (e) {
