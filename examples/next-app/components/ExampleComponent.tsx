@@ -3,7 +3,7 @@
 import { useAssistant } from '@humeai/assistant-react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
-import { doMath, drawBars } from './vis';
+import { doMath, drawBars } from './drawBars';
 
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   const {
