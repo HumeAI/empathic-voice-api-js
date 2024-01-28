@@ -3,6 +3,7 @@
 import { useAssistant } from '@humeai/assistant-react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
+import { doMath } from './vis';
 
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   const {
@@ -41,8 +42,6 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const visualize = () => {
-    const bars = 20;
-
     const analyserNode = analyserNodeRef.current;
     const canvas = canvasRef.current;
     const canvasCtx = canvas?.getContext('2d');
@@ -56,9 +55,6 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
     const [height, width] = [canvasCtx.canvas.height, canvasCtx.canvas.width];
     console.log(height, width);
 
-    const barWidth = width / bars;
-    const frequenciesPerBar = bufferLength / bars;
-
     const draw = () => {
       requestAnimationFrame(draw);
       analyserNode.getByteFrequencyData(dataArray);
@@ -66,42 +62,17 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
       canvasCtx.fillStyle = '#ffffff';
       canvasCtx.fillRect(0, 0, width, height);
 
-      let barHeight;
       let x = 0;
+      const bars = doMath(dataArray);
+      const barWidth = width / bars.length;
 
-      for (let bar = 0; bar < bars; bar++) {
-        const leftMostFreq = bar * frequenciesPerBar;
-        const rightMostFreq =
-          (bar + 1) * frequenciesPerBar > bufferLength
-            ? bufferLength
-            : undefined;
-        const frequencies = dataArray.slice(leftMostFreq, rightMostFreq);
-
-        const averageFreq = frequencies.reduce((a, b) => {
-          return a + b / frequencies.length;
-        }, 0);
-        const maxFreq = frequencies.reduce((a, b) => {
-          if (a > b) {
-            return a;
-          } else {
-            return b;
-          }
-        }, -1);
-
-        const barHeight = (averageFreq / maxFreq) * height;
-
+      for (let bar = 0; bar < bars.length; bar++) {
         canvasCtx.fillStyle = 'rgb(50,50,50)';
+        const barHeight = (bars[bar] / 2) * height;
         canvasCtx.fillRect(x, height / 2 - barHeight, barWidth, 2 * barHeight);
 
         x += barWidth + 1;
       }
-      // for (let i = 0; i < bufferLength; i++) {
-      //   barHeight = dataArray[i];
-      //   canvasCtx.fillStyle = 'rgb(50,50,50)';
-      //   canvasCtx.fillRect(x, height - barHeight / 2, barWidth, barHeight / 2);
-
-      //   x += barWidth + 1;
-      // }
     };
     draw();
   };
