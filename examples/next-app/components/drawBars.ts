@@ -23,7 +23,7 @@ const getAverage = (array: Uint8Array) => {
 
 const getBatches = (array: Uint8Array, n_batches: number) => {
   const batchSize = array.length / n_batches;
-  let batches = [];
+  const batches = [];
   for (let i = 0; i < n_batches; i++) {
     const batch = array.slice(i * batchSize, (i + 1) * batchSize);
     batches.push(batch);
@@ -32,7 +32,7 @@ const getBatches = (array: Uint8Array, n_batches: number) => {
   return batches;
 };
 
-const doMath = (array: Uint8Array): number[] => {
+const getAverageBatchHeight = (array: Uint8Array): number[] => {
   const barHeights: number[] = [];
   const batches = getBatches(array, N_BARS);
 
@@ -46,34 +46,12 @@ const doMath = (array: Uint8Array): number[] => {
   return barHeights;
 };
 
-const getHexFromNumber = (x: number) => {
-  if (x >= 256) {
-    throw new Error('Not valid hex value.');
-  }
-  const [first, second] = [parseInt(`${x / 16}`), parseInt(`${x % 16}`)];
-  const keys = '01234567890abcdef'.split('');
-  return `${keys[first]}${keys[second]}`;
-};
-
-const getRandomColor = () => {
-  let color = '#';
-  for (let i = 0; i < 3; i++) {
-    const num = parseInt(`${256 * Math.random()}`);
-    const hex = getHexFromNumber(num);
-
-    color = color.concat(hex);
-  }
-
-  return color;
-};
-
-const drawWaves = (
+const drawBars = (
   analyserNode: AnalyserNode,
   dataArray: Uint8Array,
   canvasCtx: CanvasRenderingContext2D,
 ) => {
   const [height, width] = [canvasCtx.canvas.height, canvasCtx.canvas.width];
-  console.log(height, width);
 
   const draw = () => {
     requestAnimationFrame(draw);
@@ -82,24 +60,19 @@ const drawWaves = (
     canvasCtx.fillStyle = '#ffffff';
     canvasCtx.fillRect(0, 0, width, height);
 
-    const bars = doMath(dataArray);
+    let x = 0;
+    const bars = getAverageBatchHeight(dataArray);
+    const barWidth = width / bars.length;
 
     for (let bar = 0; bar < bars.length; bar++) {
-      const gradient = canvasCtx.createRadialGradient(
-        width / 2,
-        height / 2,
-        height / 2,
-        width,
-        height,
-        height,
-      );
-      gradient.addColorStop(bar / bars.length, getRandomColor());
+      canvasCtx.fillStyle = 'rgb(50,50,50)';
+      const barHeight = (bars[bar] / 2) * height;
+      canvasCtx.fillRect(x, height / 2 - barHeight, barWidth, 2 * barHeight);
 
-      canvasCtx.fillStyle = gradient;
-      canvasCtx.fillRect(0, 0, width, height);
+      x += barWidth + 1;
     }
   };
   draw();
 };
 
-export { drawWaves };
+export { drawBars };

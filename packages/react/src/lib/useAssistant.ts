@@ -35,6 +35,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     streamRef,
     getStream,
     permission: storedPermission,
+    analyserNodeRef,
   } = useEncoding({
     encodingConstraints: {
       sampleRate: config.sampleRate,
@@ -111,5 +112,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     readyState: client.readyState,
     status,
     unmute: mic.unmute,
+    analyserNodeRef,
   };
 };
