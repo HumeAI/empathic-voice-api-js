@@ -3,7 +3,7 @@
 import { useAssistant } from '@humeai/assistant-react';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
-import { doMath } from './vis';
+import { doMath, drawBars } from './vis';
 
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   const {
@@ -52,29 +52,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
     const bufferLength = analyserNode.fftSize;
     const dataArray = new Uint8Array(bufferLength);
 
-    const [height, width] = [canvasCtx.canvas.height, canvasCtx.canvas.width];
-    console.log(height, width);
-
-    const draw = () => {
-      requestAnimationFrame(draw);
-      analyserNode.getByteFrequencyData(dataArray);
-
-      canvasCtx.fillStyle = '#ffffff';
-      canvasCtx.fillRect(0, 0, width, height);
-
-      let x = 0;
-      const bars = doMath(dataArray);
-      const barWidth = width / bars.length;
-
-      for (let bar = 0; bar < bars.length; bar++) {
-        canvasCtx.fillStyle = 'rgb(50,50,50)';
-        const barHeight = (bars[bar] / 2) * height;
-        canvasCtx.fillRect(x, height / 2 - barHeight, barWidth, 2 * barHeight);
-
-        x += barWidth + 1;
-      }
-    };
-    draw();
+    drawBars(analyserNode, dataArray, canvasCtx);
   };
 
   return (

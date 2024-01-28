@@ -40,10 +40,40 @@ const doMath = (array: Uint8Array): number[] => {
     const batch = batches[i];
     const average = getAverage(batch);
     const max = getMax(batch);
-    barHeights[i] = average / max || .01;
+    barHeights[i] = average / max || 0.01;
   }
 
   return barHeights;
 };
 
-export { doMath };
+const drawBars = (
+  analyserNode: AnalyserNode,
+  dataArray: Uint8Array,
+  canvasCtx: CanvasRenderingContext2D,
+) => {
+  const [height, width] = [canvasCtx.canvas.height, canvasCtx.canvas.width];
+  console.log(height, width);
+
+  const draw = () => {
+    requestAnimationFrame(draw);
+    analyserNode.getByteFrequencyData(dataArray);
+
+    canvasCtx.fillStyle = '#ffffff';
+    canvasCtx.fillRect(0, 0, width, height);
+
+    let x = 0;
+    const bars = doMath(dataArray);
+    const barWidth = width / bars.length;
+
+    for (let bar = 0; bar < bars.length; bar++) {
+      canvasCtx.fillStyle = 'rgb(50,50,50)';
+      const barHeight = (bars[bar] / 2) * height;
+      canvasCtx.fillRect(x, height / 2 - barHeight, barWidth, 2 * barHeight);
+
+      x += barWidth + 1;
+    }
+  };
+  draw();
+};
+
+export { drawBars };
