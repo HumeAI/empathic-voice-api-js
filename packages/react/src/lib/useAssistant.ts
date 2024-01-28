@@ -1,5 +1,5 @@
 import { createConfig } from '@humeai/assistant';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useAssistantClient } from './useAssistantClient';
 import { useEncoding } from './useEncoding';
@@ -49,6 +49,17 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
       }
     },
   });
+
+  const analyserNodeRef = useRef<AnalyserNode | null>(null);
+  if (streamRef.current) {
+    const context = new AudioContext();
+    const input = context.createMediaStreamSource(streamRef.current);
+    const analyserNode = context.createAnalyser();
+    analyserNode.fftSize = 2048
+    input.connect(analyserNode);
+
+    analyserNodeRef.current = analyserNode;
+  }
 
   const client = useAssistantClient({
     onAudioMessage: (arrayBuffer) => {
@@ -110,5 +121,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     readyState: client.readyState,
     status,
     unmute: mic.unmute,
+    micFft: null,
+    analyserNode: analyserNodeRef.current,
   };
 };

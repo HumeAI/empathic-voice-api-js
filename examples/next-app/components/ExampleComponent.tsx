@@ -1,7 +1,7 @@
 'use client';
 
 import { useAssistant } from '@humeai/assistant-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
 
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
@@ -15,6 +15,8 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
     mute,
     readyState,
     unmute,
+    micFft,
+    analyserNode,
   } = useAssistant({
     apiKey,
     hostname: 'api.hume.ai',
@@ -35,6 +37,25 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
       return Math.round(upperBounded * 100);
     });
   }, [fft]);
+
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  const visualize = () => {
+    const draw = () => {
+      if (!analyserNode) {
+        return;
+      }
+
+      const bufferLength = analyserNode.fftSize;
+      const dataArray = new Uint8Array(bufferLength);
+
+      requestAnimationFrame(draw);
+
+      analyserNode.getByteFrequencyData(dataArray);
+
+      draw();
+    };
+  };
 
   return (
     <div>
@@ -134,6 +155,18 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
             })}
           </div>
         </div>
+      </div>
+      <div
+        style={{
+          border: '1px solid black',
+        }}
+      >
+        <canvas
+          ref={canvasRef}
+          width={500}
+          height={500}
+          className="audio-react-recorder__canvas"
+        />
       </div>
     </div>
   );
