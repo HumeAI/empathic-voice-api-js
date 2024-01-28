@@ -1,7 +1,7 @@
 'use client';
 
 import { useAssistant } from '@humeai/assistant-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
 
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
@@ -16,7 +16,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
     readyState,
     unmute,
     micFft,
-    analyserNode,
+    analyserNodeRef,
   } = useAssistant({
     apiKey,
     hostname: 'api.hume.ai',
@@ -40,21 +40,42 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const WIDTH = 500;
+  const HEIGHT = 500;
+
   const visualize = () => {
+    const analyserNode = analyserNodeRef.current;
+    const canvas = canvasRef.current;
+    const canvasCtx = canvas?.getContext('2d');
+    if (!analyserNode || !canvasCtx) {
+      console.log('no node or canvas context');
+      return;
+    }
+
+    const bufferLength = analyserNode.fftSize;
+    const dataArray = new Uint8Array(bufferLength);
+    const barWidth = (WIDTH / bufferLength) * 2.5;
+
     const draw = () => {
-      if (!analyserNode) {
-        return;
-      }
-
-      const bufferLength = analyserNode.fftSize;
-      const dataArray = new Uint8Array(bufferLength);
-
       requestAnimationFrame(draw);
-
       analyserNode.getByteFrequencyData(dataArray);
 
-      draw();
+      canvasCtx.fillStyle = '#ffffff';
+      canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
+
+      let barHeight;
+      let x = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        barHeight = dataArray[i];
+
+        canvasCtx.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)';
+        canvasCtx.fillRect(x, HEIGHT - barHeight / 2, barWidth, barHeight / 2);
+
+        x += barWidth + 1;
+      }
+
     };
+    draw();
   };
 
   return (
@@ -77,8 +98,9 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
             .with('disconnected', () => (
               <button
                 className="rounded border border-neutral-500 p-2"
-                onClick={() => {
-                  void connect();
+                onClick={async () => {
+                  await connect();
+                  visualize();
                 }}
               >
                 Connect to assistant
@@ -98,6 +120,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
                   className="rounded border border-neutral-500 p-2"
                   onClick={() => {
                     void connect();
+                    visualize();
                   }}
                 >
                   Connect to assistant
@@ -163,8 +186,8 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
       >
         <canvas
           ref={canvasRef}
-          width={500}
-          height={500}
+          width={WIDTH}
+          height={HEIGHT}
           className="audio-react-recorder__canvas"
         />
       </div>

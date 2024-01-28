@@ -35,6 +35,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     streamRef,
     getStream,
     permission: storedPermission,
+    analyserNodeRef,
   } = useEncoding({
     encodingConstraints: {
       sampleRate: config.sampleRate,
@@ -49,17 +50,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
       }
     },
   });
-
-  const analyserNodeRef = useRef<AnalyserNode | null>(null);
-  if (streamRef.current) {
-    const context = new AudioContext();
-    const input = context.createMediaStreamSource(streamRef.current);
-    const analyserNode = context.createAnalyser();
-    analyserNode.fftSize = 2048
-    input.connect(analyserNode);
-
-    analyserNodeRef.current = analyserNode;
-  }
 
   const client = useAssistantClient({
     onAudioMessage: (arrayBuffer) => {
@@ -122,6 +112,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     status,
     unmute: mic.unmute,
     micFft: null,
-    analyserNode: analyserNodeRef.current,
+    analyserNodeRef,
   };
 };

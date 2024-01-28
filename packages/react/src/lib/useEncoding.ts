@@ -12,6 +12,7 @@ type EncodingHook = {
   streamRef: React.MutableRefObject<MediaStream | null>;
   getStream: () => Promise<PermissionStatus>;
   permission: PermissionStatus;
+  analyserNodeRef: React.MutableRefObject<AnalyserNode | null>;
 };
 
 type EncodingProps = {
@@ -25,6 +26,7 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
 
   const encodingRef = useRef<EncodingValues>(DEFAULT_ENCODING_VALUES);
   const streamRef = useRef<MediaStream | null>(null);
+  const analyserNodeRef = useRef<AnalyserNode | null>(null);
 
   const getStream = async (): Promise<PermissionStatus> => {
     try {
@@ -41,6 +43,17 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
       setPermission('granted');
       onPermissionChange('granted');
       streamRef.current = stream;
+
+      const context = new AudioContext();
+      const input = context.createMediaStreamSource(streamRef.current);
+      const analyserNode = context.createAnalyser();
+      analyserNode.fftSize = 2048;
+      input.connect(analyserNode);
+
+      analyserNodeRef.current = analyserNode;
+
+      console.log(analyserNode);
+
       encodingRef.current = getStreamSettings(stream, encodingConstraints);
       return 'granted';
     } catch (e) {
@@ -50,7 +63,7 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
     }
   };
 
-  return { encodingRef, streamRef, getStream, permission };
+  return { encodingRef, streamRef, getStream, permission, analyserNodeRef };
 };
 
 export { useEncoding };
