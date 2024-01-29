@@ -154,19 +154,17 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
               );
             })}
           </div>
+        </div>
 
-          <div>
-            <div>Last transcript message received from assistant</div>
-            {assistantMessages.length > 0 ? (
-              <div>
-                {JSON.stringify(
-                  assistantMessages[assistantMessages.length - 1],
-                )}
-              </div>
-            ) : (
-              <div>No transcript available</div>
-            )}
-          </div>
+        <div>
+          <div>Last transcript message received from assistant:</div>
+          {assistantMessages.length > 0 ? (
+            <div>
+              {JSON.stringify(assistantMessages[assistantMessages.length - 1])}
+            </div>
+          ) : (
+            <div>No transcript available</div>
+          )}
         </div>
       </div>
     </div>
