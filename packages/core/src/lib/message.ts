@@ -8,11 +8,22 @@ export const AudioMessageSchema = z.object({
 export type AudioMessage = z.infer<typeof AudioMessageSchema>;
 
 export const TranscriptMessageSchema = z.object({
-  type: z.literal('transcript'),
-  data: z.object({
-    sender: z.string(),
+  type: z.enum(['user_message', 'assistant_message']),
+  message: z.object({
+    role: z.enum(['user', 'assistant']),
     content: z.string(),
   }),
+  models: z.array(
+    z.object({
+      model: z.string(),
+      entries: z.array(
+        z.object({
+          name: z.string(),
+          score: z.number(),
+        }),
+      ),
+    }),
+  ),
 });
 
 export type TranscriptMessage = z.infer<typeof TranscriptMessageSchema>;
@@ -36,6 +47,18 @@ export const parseAudioMessage = async (
     .catch(() => {
       return null;
     });
+};
+
+export const parseTranscriptMessage = (
+  message: unknown,
+): TranscriptMessage | null => {
+  if (typeof message === 'string') {
+    const parsed = TranscriptMessageSchema.safeParse(JSON.parse(message));
+    if (parsed.success) {
+      return parsed.data;
+    }
+  }
+  return null;
 };
 
 export type Message = z.infer<typeof MessageSchema>;
@@ -70,8 +93,17 @@ export const parseMessageType = async (
     }
   }
 
-  return {
-    success: false,
-    error: new Error('Unknown message type.'),
-  };
+  const transcriptMessage = parseTranscriptMessage(data);
+
+  if (transcriptMessage) {
+    return {
+      success: true,
+      message: transcriptMessage,
+    };
+  } else {
+    return {
+      success: false,
+      error: new Error('Failed to parse transcript'),
+    };
+  }
 };

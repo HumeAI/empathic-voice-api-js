@@ -16,7 +16,6 @@ function App() {
         <IframeReady />
         <MessageListener
           onUpdateConfig={(config) => {
-            console.log('config updated');
             const apiKey = config.apiKey;
             setApiKey(apiKey);
           }}

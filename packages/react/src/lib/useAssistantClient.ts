@@ -1,4 +1,4 @@
-import type { Config, Message } from '@humeai/assistant';
+import type { Config, TranscriptMessage } from '@humeai/assistant';
 import { AssistantClient } from '@humeai/assistant';
 import { useCallback, useRef, useState } from 'react';
 
@@ -16,7 +16,7 @@ export const useAssistantClient = (props: {
   const client = useRef<AssistantClient | null>(null);
 
   const [readyState, setReadyState] = useState<ReadyState>(ReadyState.IDLE);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<TranscriptMessage[]>([]);
 
   const onAudioMessage = useRef<
     ((arrayBuffer: ArrayBufferLike) => void) | undefined
@@ -35,9 +35,14 @@ export const useAssistantClient = (props: {
         onAudioMessage.current?.(message.data);
       }
 
-      setMessages((prev) => {
-        return prev.concat([message]);
-      });
+      if (
+        message.type === 'assistant_message' ||
+        message.type === 'user_message'
+      ) {
+        setMessages((prev) => {
+          return prev.concat([message]);
+        });
+      }
     });
 
     client.current.on('close', () => {

@@ -15,8 +15,12 @@ describe('client', () => {
         console.log('audio message');
       }
 
-      if (message.type === 'transcript') {
-        console.log('transcript message');
+      if (message.type === 'assistant_message') {
+        console.log('assistant message');
+      }
+
+      if (message.type === 'user_message') {
+        console.log('user message');
       }
     });
 
