@@ -1,5 +1,7 @@
 // cspell:ignore dataavailable
 
+import Meyda from 'meyda';
+import type { MeydaFeaturesObject } from 'meyda';
 import { useRef, useState } from 'react';
 
 import type { EncodingValues } from './microphone/constants';
@@ -52,14 +54,28 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
       streamRef.current = stream;
 
       const context = new AudioContext();
-      const input = context.createMediaStreamSource(streamRef.current);
-      const analyserNode = context.createAnalyser();
-      analyserNode.fftSize = 2048;
-      input.connect(analyserNode);
-
-      analyserNodeRef.current = analyserNode;
+      const input = context.createMediaStreamSource(stream);
 
       encodingRef.current = getStreamSettings(stream, encodingConstraints);
+
+      let analyzer: ReturnType<typeof Meyda.createMeydaAnalyzer>;
+      try {
+        analyzer = Meyda.createMeydaAnalyzer({
+          audioContext: context,
+          source: input,
+          featureExtractors: ['loudness'],
+          callback: (features: MeydaFeaturesObject) => {
+            const newFft = features.loudness.specific || [];
+            setFft(() => Array.from(newFft));
+          },
+        });
+
+        analyzer.start();
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : 'Unknown error';
+        console.error(`Failed to start audio analyzer: ${message}`);
+      }
+
       return 'granted';
     } catch (e) {
       onPermissionChange('denied');
@@ -67,46 +83,6 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
       return 'denied';
     }
   };
-
-  setInterval(() => {
-    if (analyserNodeRef.current) {
-      const data = new Uint8Array(analyserNodeRef.current.frequencyBinCount);
-      analyserNodeRef.current.getByteFrequencyData(data);
-
-      const getAverage = (array: Uint8Array) => {
-        const count = array.length;
-        return array.reduce((a, b) => {
-          return a + b / count;
-        }, 0);
-      };
-
-      const getBatches = (array: Uint8Array, n_batches: number) => {
-        const batchSize = array.length / n_batches;
-        const batches = [];
-        for (let i = 0; i < n_batches; i++) {
-          const batch = array.slice(i * batchSize, (i + 1) * batchSize);
-          batches.push(batch);
-        }
-
-        return batches;
-      };
-
-      const getAverageBatchHeight = (array: Uint8Array): number[] => {
-        const barHeights: number[] = [];
-        const batches = getBatches(array, 24);
-
-        for (let i = 0; i < 24; i++) {
-          const batch = batches[i];
-          const average = getAverage(batch!);
-          barHeights[i] = average;
-        }
-
-        return barHeights;
-      };
-
-      setFft(getAverageBatchHeight(data) as unknown as number[]);
-    }
-  }, 1000 / 60);
 
   return {
     encodingRef,
