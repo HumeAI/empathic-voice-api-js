@@ -21,7 +21,6 @@ export class AssistantClient {
 
   private constructor(config: Config) {
     this.url = createSocketUrl(config);
-    // this.url = `ws://localhost:8080?sample_rate=${config.sampleRate}&channels=${config.channels}`;
     this.socket = new ReconnectingWebsocket(this.url, [], {
       startClosed: true,
       maxRetries: config.reconnectAttempts,
