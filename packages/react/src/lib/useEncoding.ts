@@ -13,7 +13,12 @@ type EncodingHook = {
   getStream: () => Promise<PermissionStatus>;
   permission: PermissionStatus;
   analyserNodeRef: React.MutableRefObject<AnalyserNode | null>;
+  fft: number[];
 };
+
+function generateEmptyFft(): number[] {
+  return Array.from({ length: 24 }).map(() => 0);
+}
 
 type EncodingProps = {
   encodingConstraints: Partial<EncodingValues>;
@@ -27,6 +32,8 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
   const encodingRef = useRef<EncodingValues>(DEFAULT_ENCODING_VALUES);
   const streamRef = useRef<MediaStream | null>(null);
   const analyserNodeRef = useRef<AnalyserNode | null>(null);
+
+  const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
   const getStream = async (): Promise<PermissionStatus> => {
     try {
@@ -61,7 +68,54 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
     }
   };
 
-  return { encodingRef, streamRef, getStream, permission, analyserNodeRef };
+  setInterval(() => {
+    if (analyserNodeRef.current) {
+      const data = new Uint8Array(analyserNodeRef.current.frequencyBinCount);
+      analyserNodeRef.current.getByteFrequencyData(data);
+
+      const getAverage = (array: Uint8Array) => {
+        const count = array.length;
+        return array.reduce((a, b) => {
+          return a + b / count;
+        }, 0);
+      };
+
+      const getBatches = (array: Uint8Array, n_batches: number) => {
+        const batchSize = array.length / n_batches;
+        const batches = [];
+        for (let i = 0; i < n_batches; i++) {
+          const batch = array.slice(i * batchSize, (i + 1) * batchSize);
+          batches.push(batch);
+        }
+
+        return batches;
+      };
+
+      const getAverageBatchHeight = (array: Uint8Array): number[] => {
+        const barHeights: number[] = [];
+        const batches = getBatches(array, 24);
+
+        for (let i = 0; i < 24; i++) {
+          const batch = batches[i];
+          const average = getAverage(batch!);
+          barHeights[i] = average;
+        }
+
+        return barHeights;
+      };
+
+      setFft(getAverageBatchHeight(data) as unknown as number[]);
+    }
+  }, 1000 / 60);
+
+  return {
+    encodingRef,
+    streamRef,
+    getStream,
+    permission,
+    analyserNodeRef,
+    fft,
+  };
 };
 
 export { useEncoding };

@@ -4,8 +4,6 @@ import { useAssistant } from '@humeai/assistant-react';
 import { useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
 
-import { drawBars } from './drawBars';
-
 function getTop3Expressions(
   expressionOutputs: { name: string; score: number }[],
 ) {
@@ -24,7 +22,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
     readyState,
     unmute,
     messages,
-    analyserNodeRef,
+    micFft: _micFft,
   } = useAssistant({
     apiKey,
     hostname: 'api.hume.ai',
@@ -59,21 +57,8 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
       })
       .filter(Boolean);
   }, [messages]);
-  
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  const visualize = () => {
-    const analyserNode = analyserNodeRef.current;
-    const canvas = canvasRef.current;
-    const canvasCtx = canvas?.getContext('2d');
-    if (!analyserNode || !canvas || !canvasCtx) {
-      return;
-    }
-    const bufferLength = analyserNode.fftSize;
-    const dataArray = new Uint8Array(bufferLength);
-
-    drawBars(analyserNode, dataArray, canvasCtx);
-  };
 
   return (
     <div>
@@ -96,9 +81,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
               <button
                 className="rounded border border-neutral-500 p-2"
                 onClick={() => {
-                  void connect().then(() => {
-                    visualize();
-                  });
+                  void connect();
                 }}
               >
                 Connect to assistant
@@ -117,9 +100,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
                 <button
                   className="rounded border border-neutral-500 p-2"
                   onClick={() => {
-                    void connect().then(() => {
-                      visualize();
-                    });
+                    void connect();
                   }}
                 >
                   Connect to assistant
