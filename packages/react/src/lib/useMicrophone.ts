@@ -46,7 +46,6 @@ export const useMicrophone = (props: MicrophoneProps) => {
   }, []);
 
   const start = async () => {
-    console.log('start');
     const stream = streamRef.current;
     if (!stream) {
       throw new Error('No stream connected');
@@ -66,7 +65,6 @@ export const useMicrophone = (props: MicrophoneProps) => {
   };
 
   const stop = () => {
-    console.log('stop');
     try {
       recorder.current?.stop();
       recorder.current?.removeEventListener('dataavailable', dataHandler);
