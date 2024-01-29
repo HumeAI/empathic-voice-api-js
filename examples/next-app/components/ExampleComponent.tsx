@@ -1,9 +1,9 @@
 'use client';
 
 import { useAssistant } from '@humeai/assistant-react';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
-import { doMath, drawBars } from './drawBars';
+import { drawBars } from './drawBars';
 
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   const {
@@ -156,11 +156,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
           </div>
         </div>
       </div>
-      <div
-        style={{
-          border: '1px solid black',
-        }}
-      >
+      <div>
         <canvas ref={canvasRef} className="audio-react-recorder__canvas" />
       </div>
     </div>
