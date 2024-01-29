@@ -10,13 +10,9 @@ export enum ReadyState {
 }
 
 export const useAssistantClient = (props: {
-  config: Config;
   onAudioMessage?: (arrayBuffer: ArrayBufferLike) => void;
   onError: (message: string) => void;
 }) => {
-  const config = useRef<Config>(props.config);
-  config.current = props.config;
-
   const client = useRef<AssistantClient | null>(null);
 
   const [readyState, setReadyState] = useState<ReadyState>(ReadyState.IDLE);
@@ -27,8 +23,8 @@ export const useAssistantClient = (props: {
   >(props.onAudioMessage);
   onAudioMessage.current = props.onAudioMessage;
 
-  const connect = () => {
-    client.current = AssistantClient.create(config.current);
+  const connect = (config: Config) => {
+    client.current = AssistantClient.create(config);
 
     client.current.on('open', () => {
       setReadyState(ReadyState.OPEN);

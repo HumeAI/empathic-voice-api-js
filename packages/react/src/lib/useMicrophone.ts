@@ -1,37 +1,36 @@
 // cspell:ignore dataavailable
 
-import type { Channels } from '@humeai/assistant';
+import type { IBlobEvent, IMediaRecorder } from 'extendable-media-recorder';
+import {
+  MediaRecorder as ExtendableMediaRecorder,
+  register,
+} from 'extendable-media-recorder';
+import { connect } from 'extendable-media-recorder-wav-encoder';
+import type { MutableRefObject } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export type MicrophoneProps = {
-  numChannels?: Channels;
-  sampleRate?: number;
-  mimeType?: string;
+  streamRef: MutableRefObject<MediaStream | null>;
   onAudioCaptured: (b: ArrayBuffer) => void;
   onStartRecording?: () => void;
   onStopRecording?: () => void;
   onError: (message: string) => void;
-  onMicPermissionChange: (permission: 'prompt' | 'granted' | 'denied') => void;
 };
 
-export const useMicrophone = ({
-  numChannels,
-  sampleRate,
-  onAudioCaptured,
-  onMicPermissionChange,
-  onError,
-  ...props
-}: MicrophoneProps) => {
+export const useMicrophone = (props: MicrophoneProps) => {
+  const { streamRef, onAudioCaptured, onError } = props;
   const isMutedRef = useRef(false);
   const [isMuted, setIsMuted] = useState(false);
 
-  const mimeType = props.mimeType ?? 'audio/webm';
-  const recorder = useRef<MediaRecorder | null>(null);
+  const mimeType = 'audio/wav';
+  const recorder = useRef<IMediaRecorder | null>(null);
+
+  const encoderPortRef = useRef<MessagePort | null>(null);
 
   const sendAudio = useRef(onAudioCaptured);
   sendAudio.current = onAudioCaptured;
 
-  const dataHandler = useCallback((event: BlobEvent) => {
+  const dataHandler = useCallback((event: IBlobEvent) => {
     const blob = event.data;
 
     if (isMutedRef.current) {
@@ -46,56 +45,37 @@ export const useMicrophone = ({
       .catch(() => {});
   }, []);
 
-  const start = useCallback(async () => {
-    let stream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          channelCount: numChannels,
-          sampleRate,
-        },
-        video: false,
-      });
-      onMicPermissionChange('granted');
-    } catch (e) {
-      onMicPermissionChange('denied');
-      return;
+  const start = async () => {
+    const stream = streamRef.current;
+    if (!stream) {
+      throw new Error('No stream connected');
     }
 
-    try {
-      if (!stream) {
-        throw new Error('No stream connected');
-      }
-      recorder.current = new MediaRecorder(stream, { mimeType });
-
-      recorder.current.addEventListener('dataavailable', dataHandler);
-
-      recorder.current.start(250);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      onError(`Error with microphone: ${message}`);
+    if (!encoderPortRef.current) {
+      const port = await connect();
+      encoderPortRef.current = port;
+      await register(port);
     }
-  }, [
-    dataHandler,
-    mimeType,
-    numChannels,
-    sampleRate,
-    onMicPermissionChange,
-    onError,
-  ]);
 
-  const stop = useCallback(() => {
+    recorder.current = new ExtendableMediaRecorder(stream, {
+      mimeType,
+    });
+    recorder.current.addEventListener('dataavailable', dataHandler);
+    recorder.current.start(250);
+  };
+
+  const stop = () => {
     try {
       recorder.current?.stop();
       recorder.current?.removeEventListener('dataavailable', dataHandler);
+      streamRef.current?.getTracks().forEach((track) => track.stop());
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       onError(`Error stopping microphone: ${message}`);
+      console.log(e);
+      void true;
     }
-  }, [dataHandler, onError]);
+  };
 
   const mute = useCallback(() => {
     isMutedRef.current = true;
@@ -108,10 +88,18 @@ export const useMicrophone = ({
   }, []);
 
   useEffect(() => {
+    const currentStreamRef = streamRef.current;
     return () => {
-      stop();
+      try {
+        recorder.current?.stop();
+        recorder.current?.removeEventListener('dataavailable', dataHandler);
+        currentStreamRef?.getTracks().forEach((track) => track.stop());
+      } catch (e) {
+        console.log(e);
+        void true;
+      }
     };
-  }, [stop]);
+  }, [dataHandler, streamRef]);
 
   return {
     start,
