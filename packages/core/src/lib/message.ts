@@ -22,15 +22,28 @@ export const TranscriptMessageSchema = z.object({
           score: z.number(),
         }),
       ),
+      time: z
+        .object({
+          begin: z.number(),
+          end: z.number(),
+        })
+        .nullish(),
     }),
   ),
 });
 
 export type TranscriptMessage = z.infer<typeof TranscriptMessageSchema>;
 
+export const AssistantEndMessageSchema = z.object({
+  type: z.literal('assistant_end'),
+});
+
+export type AssistantEndMessage = z.infer<typeof AssistantEndMessageSchema>;
+
 export const MessageSchema = z.union([
   AudioMessageSchema,
   TranscriptMessageSchema,
+  AssistantEndMessageSchema,
 ]);
 
 export const parseAudioMessage = async (
@@ -53,9 +66,29 @@ export const parseTranscriptMessage = (
   message: unknown,
 ): TranscriptMessage | null => {
   if (typeof message === 'string') {
-    const parsed = TranscriptMessageSchema.safeParse(JSON.parse(message));
-    if (parsed.success) {
-      return parsed.data;
+    try {
+      const parsed = TranscriptMessageSchema.safeParse(JSON.parse(message));
+      if (parsed.success) {
+        return parsed.data;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+  return null;
+};
+
+export const parseAssistantEndMessage = (
+  message: unknown,
+): AssistantEndMessage | null => {
+  if (typeof message === 'string') {
+    try {
+      const parsed = AssistantEndMessageSchema.safeParse(JSON.parse(message));
+      if (parsed.success) {
+        return parsed.data;
+      }
+    } catch (e) {
+      return null;
     }
   }
   return null;
@@ -63,8 +96,8 @@ export const parseTranscriptMessage = (
 
 export type Message = z.infer<typeof MessageSchema>;
 
-export const parseMessageType = async (
-  event: MessageEvent,
+export const parseMessageData = async (
+  data: unknown,
 ): Promise<
   | {
       success: true;
@@ -75,8 +108,6 @@ export const parseMessageType = async (
       error: Error;
     }
 > => {
-  const data: unknown = event.data;
-
   if (data instanceof Blob) {
     const message = await parseAudioMessage(data);
 
@@ -94,16 +125,39 @@ export const parseMessageType = async (
   }
 
   const transcriptMessage = parseTranscriptMessage(data);
-
   if (transcriptMessage) {
     return {
       success: true,
       message: transcriptMessage,
     };
-  } else {
+  }
+
+  const assistantEndMessage = parseAssistantEndMessage(data);
+  if (assistantEndMessage) {
     return {
-      success: false,
-      error: new Error('Failed to parse transcript'),
+      success: true,
+      message: assistantEndMessage,
     };
   }
+
+  return {
+    success: false,
+    error: new Error('Failed to parse transcript'),
+  };
+};
+
+export const parseMessageType = async (
+  event: MessageEvent,
+): Promise<
+  | {
+      success: true;
+      message: Message;
+    }
+  | {
+      success: false;
+      error: Error;
+    }
+> => {
+  const data: unknown = event.data;
+  return parseMessageData(data);
 };

@@ -60,6 +60,7 @@ export const useAssistantClient = (props: {
   };
 
   const disconnect = () => {
+    setMessages([]);
     setReadyState(ReadyState.IDLE);
     client.current?.disconnect();
   };

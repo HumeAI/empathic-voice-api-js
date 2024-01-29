@@ -77,6 +77,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
         channels: encodingRef.current.channelCount,
       });
       void mic.start();
+      player.initPlayer();
       setStatus({ value: 'connected' });
     }
   };
