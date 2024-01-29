@@ -3,6 +3,7 @@
 import { useAssistant } from '@humeai/assistant-react';
 import { useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
+
 import { drawBars } from './drawBars';
 
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
@@ -16,7 +17,6 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
     mute,
     readyState,
     unmute,
-    micFft,
     analyserNodeRef,
   } = useAssistant({
     apiKey,
@@ -46,7 +46,6 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
     const canvas = canvasRef.current;
     const canvasCtx = canvas?.getContext('2d');
     if (!analyserNode || !canvas || !canvasCtx) {
-      console.log('no node or canvas context');
       return;
     }
     const bufferLength = analyserNode.fftSize;
@@ -76,7 +75,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
               <button
                 className="rounded border border-neutral-500 p-2"
                 onClick={async () => {
-                  await connect();
+                  void (await connect());
                   visualize();
                 }}
               >
@@ -95,8 +94,8 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
               <div className="flex flex-col gap-4">
                 <button
                   className="rounded border border-neutral-500 p-2"
-                  onClick={() => {
-                    void connect();
+                  onClick={async () => {
+                    void (await connect());
                     visualize();
                   }}
                 >
@@ -157,7 +156,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
         </div>
       </div>
       <div>
-        <canvas ref={canvasRef} className="audio-react-recorder__canvas" />
+        <canvas ref={canvasRef} />
       </div>
     </div>
   );

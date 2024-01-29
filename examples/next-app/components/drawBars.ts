@@ -23,7 +23,7 @@ const getAverage = (array: Uint8Array) => {
 
 const getBatches = (array: Uint8Array, n_batches: number) => {
   const batchSize = array.length / n_batches;
-  let batches = [];
+  const batches = [];
   for (let i = 0; i < n_batches; i++) {
     const batch = array.slice(i * batchSize, (i + 1) * batchSize);
     batches.push(batch);
@@ -32,7 +32,7 @@ const getBatches = (array: Uint8Array, n_batches: number) => {
   return batches;
 };
 
-const doMath = (array: Uint8Array): number[] => {
+const getAverageBatchHeight = (array: Uint8Array): number[] => {
   const barHeights: number[] = [];
   const batches = getBatches(array, N_BARS);
 
@@ -52,7 +52,6 @@ const drawBars = (
   canvasCtx: CanvasRenderingContext2D,
 ) => {
   const [height, width] = [canvasCtx.canvas.height, canvasCtx.canvas.width];
-  console.log(height, width);
 
   const draw = () => {
     requestAnimationFrame(draw);
@@ -62,7 +61,7 @@ const drawBars = (
     canvasCtx.fillRect(0, 0, width, height);
 
     let x = 0;
-    const bars = doMath(dataArray);
+    const bars = getAverageBatchHeight(dataArray);
     const barWidth = width / bars.length;
 
     for (let bar = 0; bar < bars.length; bar++) {
