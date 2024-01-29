@@ -4,6 +4,12 @@ import { useAssistant } from '@humeai/assistant-react';
 import { useMemo } from 'react';
 import { match } from 'ts-pattern';
 
+function getTop3Expressions(
+  expressionOutputs: { name: string; score: number }[],
+) {
+  return [...expressionOutputs].sort((a, b) => b.score - a.score).slice(0, 3);
+}
+
 export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   const {
     connect,
@@ -43,9 +49,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
         if (message.type === 'assistant_message') {
           return {
             message: message.message,
-            top3: [...message.models[0].entries]
-              .sort((a, b) => b.score - a.score)
-              .slice(0, 3),
+            top3: getTop3Expressions(message.models[0].entries),
           };
         }
         return null;
