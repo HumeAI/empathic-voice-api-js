@@ -81,7 +81,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     }
   };
 
-  const disconnect = () => {
+  const disconnect = useCallback(() => {
     if (storedPermission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
@@ -90,7 +90,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     client.disconnect();
     player.stopAll();
     mic.stop();
-  };
+  }, [client, player, mic, storedPermission]);
 
   useEffect(() => {
     if (status.value === 'error') {

@@ -39,15 +39,18 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
 
   const assistantMessages = useMemo(() => {
     return messages
-      .filter((message) => message.type === 'assistant_message')
       .map((message) => {
-        return {
-          message: message.message,
-          top3: [...message.models[0].entries]
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 3),
-        };
-      });
+        if (message.type === 'assistant_message') {
+          return {
+            message: message.message,
+            top3: [...message.models[0].entries]
+              .sort((a, b) => b.score - a.score)
+              .slice(0, 3),
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
   }, [messages]);
 
   return (
