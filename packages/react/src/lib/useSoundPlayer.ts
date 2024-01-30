@@ -100,7 +100,11 @@ export const useSoundPlayer = ({
         });
 
         analyzer.start();
-        void audioElement.play();
+        void audioElement.play().catch(() => {
+          onError(
+            `Could not play audio from the assistant. Please check your browser permissions and try again.`,
+          );
+        });
       });
     },
     [onError],
@@ -110,11 +114,14 @@ export const useSoundPlayer = ({
     if (!audioContext.current) {
       return;
     }
-    if (queue.clips.length === 0) {
-      setFft(generateEmptyFft());
+
+    if (queue.isProcessing) {
       return;
     }
-    if (queue.isProcessing) {
+
+    if (queue.clips.length === 0) {
+      // Queue length check must come after isProcessing check
+      // because a clip can be processing while the queue is 0
       setFft(generateEmptyFft());
       return;
     }
@@ -128,6 +135,7 @@ export const useSoundPlayer = ({
 
     if (currentClip.current) {
       void Promise.resolve(playClip(currentClip.current)).finally(() => {
+        setFft(generateEmptyFft());
         setQueue((prev) => ({
           isProcessing: false,
           clips: prev.clips,
