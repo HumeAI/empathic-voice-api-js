@@ -66,11 +66,11 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   });
 
   const connect = async () => {
+    setStatus({ value: 'connecting' });
     const permission = await getStream();
     if (permission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
-      setStatus({ value: 'connecting' });
       client.connect({
         ...config,
         sampleRate: encodingRef.current.sampleRate,
