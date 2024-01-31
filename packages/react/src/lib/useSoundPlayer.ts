@@ -24,6 +24,9 @@ export const useSoundPlayer = ({
   const currentClip = useRef<HTMLAudioElement | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
   const isInitialized = useRef(false);
+  const currentAnalyzer = useRef<ReturnType<
+    typeof Meyda.createMeydaAnalyzer
+  > | null>(null);
 
   const initPlayer = () => {
     audioContext.current = new AudioContext();
@@ -79,7 +82,9 @@ export const useSoundPlayer = ({
             setFft(() => Array.from(newFft));
           },
         });
+        currentAnalyzer.current = analyzer;
       } catch (e: unknown) {
+        currentAnalyzer.current = null;
         const message = e instanceof Error ? e.message : 'Unknown error';
         onError(`Failed to start audio analyzer: ${message}`);
         return;
@@ -89,18 +94,25 @@ export const useSoundPlayer = ({
         audioElement.addEventListener('ended', () => {
           audioElement.remove();
           analyzer.stop();
+          currentAnalyzer.current = null;
           resolve();
         });
 
         audioElement.addEventListener('error', (e) => {
           analyzer.stop();
+          currentAnalyzer.current = null;
+
           const message = e instanceof Error ? e.message : 'Unknown error';
           onError(`Error in audio player: ${message}`);
           reject();
         });
 
         analyzer.start();
-        void audioElement.play();
+        void audioElement.play().catch(() => {
+          onError(
+            `Could not play audio from the assistant. Please check your browser permissions and try again.`,
+          );
+        });
       });
     },
     [onError],
@@ -110,12 +122,12 @@ export const useSoundPlayer = ({
     if (!audioContext.current) {
       return;
     }
-    if (queue.clips.length === 0) {
-      setFft(generateEmptyFft());
+
+    if (queue.isProcessing) {
       return;
     }
-    if (queue.isProcessing) {
-      setFft(generateEmptyFft());
+
+    if (queue.clips.length === 0) {
       return;
     }
 
@@ -128,6 +140,7 @@ export const useSoundPlayer = ({
 
     if (currentClip.current) {
       void Promise.resolve(playClip(currentClip.current)).finally(() => {
+        setFft(generateEmptyFft());
         setQueue((prev) => ({
           isProcessing: false,
           clips: prev.clips,
@@ -142,6 +155,11 @@ export const useSoundPlayer = ({
       currentClip.current.remove();
     }
 
+    if (currentAnalyzer.current) {
+      currentAnalyzer.current.stop();
+    }
+
+    setFft(generateEmptyFft());
     setQueue(() => ({
       isProcessing: false,
       clips: [],
