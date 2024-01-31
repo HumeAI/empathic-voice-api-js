@@ -78,7 +78,6 @@ export const useSoundPlayer = ({
           source,
           featureExtractors: ['loudness'],
           callback: (features: MeydaFeaturesObject) => {
-            console.log('callback');
             const newFft = features.loudness.specific || [];
             setFft(() => Array.from(newFft));
           },
@@ -152,11 +151,6 @@ export const useSoundPlayer = ({
   }, [queue, playClip]);
 
   const stopAll = useCallback(() => {
-    if (audioContext.current) {
-      console.log('closing audio context');
-      audioContext.current.close();
-    }
-
     if (currentClip.current) {
       currentClip.current.pause();
       currentClip.current.remove();

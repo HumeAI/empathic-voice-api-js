@@ -10,7 +10,7 @@ function getTop3Expressions(
   return [...expressionOutputs].sort((a, b) => b.score - a.score).slice(0, 3);
 }
 
-export const Assistant = ({ apiKey }: { apiKey: string }) => {
+export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
   const {
     connect,
     disconnect,
