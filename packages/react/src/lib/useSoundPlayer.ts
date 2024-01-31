@@ -24,6 +24,9 @@ export const useSoundPlayer = ({
   const currentClip = useRef<HTMLAudioElement | null>(null);
   const audioContext = useRef<AudioContext | null>(null);
   const isInitialized = useRef(false);
+  const currentAnalyzer = useRef<ReturnType<
+    typeof Meyda.createMeydaAnalyzer
+  > | null>(null);
 
   const initPlayer = () => {
     audioContext.current = new AudioContext();
@@ -79,7 +82,9 @@ export const useSoundPlayer = ({
             setFft(() => Array.from(newFft));
           },
         });
+        currentAnalyzer.current = analyzer;
       } catch (e: unknown) {
+        currentAnalyzer.current = null;
         const message = e instanceof Error ? e.message : 'Unknown error';
         onError(`Failed to start audio analyzer: ${message}`);
         return;
@@ -89,11 +94,14 @@ export const useSoundPlayer = ({
         audioElement.addEventListener('ended', () => {
           audioElement.remove();
           analyzer.stop();
+          currentAnalyzer.current = null;
           resolve();
         });
 
         audioElement.addEventListener('error', (e) => {
           analyzer.stop();
+          currentAnalyzer.current = null;
+
           const message = e instanceof Error ? e.message : 'Unknown error';
           onError(`Error in audio player: ${message}`);
           reject();
@@ -120,9 +128,6 @@ export const useSoundPlayer = ({
     }
 
     if (queue.clips.length === 0) {
-      // Queue length check must come after isProcessing check
-      // because a clip can be processing while the queue is 0
-      setFft(generateEmptyFft());
       return;
     }
 
@@ -150,6 +155,11 @@ export const useSoundPlayer = ({
       currentClip.current.remove();
     }
 
+    if (currentAnalyzer.current) {
+      currentAnalyzer.current.stop();
+    }
+
+    setFft(generateEmptyFft());
     setQueue(() => ({
       isProcessing: false,
       clips: [],
