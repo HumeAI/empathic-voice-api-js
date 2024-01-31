@@ -16,11 +16,10 @@ type EncodingHook = {
 
 type EncodingProps = {
   encodingConstraints: Partial<EncodingValues>;
-  onPermissionChange: (permission: PermissionStatus) => void;
 };
 
 const useEncoding = (props: EncodingProps): EncodingHook => {
-  const { encodingConstraints, onPermissionChange } = props;
+  const { encodingConstraints } = props;
   const [permission, setPermission] = useState<PermissionStatus>('prompt');
 
   const encodingRef = useRef<EncodingValues>(DEFAULT_ENCODING_VALUES);
@@ -39,12 +38,10 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
       });
 
       setPermission('granted');
-      onPermissionChange('granted');
       streamRef.current = stream;
       encodingRef.current = getStreamSettings(stream, encodingConstraints);
       return 'granted';
     } catch (e) {
-      onPermissionChange('denied');
       setPermission('denied');
       return 'denied';
     }

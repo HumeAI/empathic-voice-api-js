@@ -57,22 +57,93 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
       .filter(Boolean);
   }, [messages]);
 
+  const assistantFftAnimation = (
+    <div className="grid h-32 grid-cols-1 grid-rows-2 p-4">
+      <div className="flex items-end gap-1">
+        {normalizedFft.map((val, i) => {
+          return (
+            <div
+              key={`fft-top-${i}`}
+              style={{ height: `${val}%` }}
+              className={
+                'w-2 rounded-full bg-neutral-500 transition-all duration-75'
+              }
+            ></div>
+          );
+        })}
+      </div>
+      <div className="flex items-start gap-1">
+        {normalizedFft.map((val, i) => {
+          return (
+            <div
+              key={`fft-bottom-${i}`}
+              style={{ height: `${val}%` }}
+              className={
+                'w-2 rounded-full bg-neutral-500 transition-all duration-75'
+              }
+            ></div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
   return (
     <div>
       <div className={'font-light'}>
-        <div>Playing: {isPlaying ? 'true' : 'false'}</div>
-        <div>Ready State: {readyState}</div>
         <div className="flex max-w-sm flex-col gap-4">
           {match(status.value)
             .with('connected', () => (
-              <button
-                className="rounded border border-neutral-500 p-2"
-                onClick={() => {
-                  disconnect();
-                }}
-              >
-                Disconnect
-              </button>
+              <>
+                <div className="flex gap-2">
+                  <button
+                    className="rounded border border-neutral-500 p-2"
+                    onClick={() => {
+                      disconnect();
+                    }}
+                  >
+                    Disconnect
+                  </button>
+
+                  {isMuted ? (
+                    <button
+                      className="rounded border border-neutral-500 p-2"
+                      onClick={() => unmute()}
+                    >
+                      Unmute mic
+                    </button>
+                  ) : (
+                    <button
+                      className="rounded border border-neutral-500 p-2"
+                      onClick={() => mute()}
+                    >
+                      Mute mic
+                    </button>
+                  )}
+                </div>
+
+                {assistantFftAnimation}
+
+                <div>Playing: {isPlaying ? 'true' : 'false'}</div>
+                <div>Ready State: {readyState}</div>
+
+                <div>
+                  <div className={'font-medium'}>
+                    Last transcript message received from assistant:
+                  </div>
+                  {assistantMessages.length > 0 ? (
+                    <div>
+                      {JSON.stringify(
+                        assistantMessages[assistantMessages.length - 1],
+                        null,
+                        2,
+                      )}
+                    </div>
+                  ) : (
+                    <div>No transcript available</div>
+                  )}
+                </div>
+              </>
             ))
             .with('disconnected', () => (
               <button
@@ -102,69 +173,13 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
                 >
                   Connect to assistant
                 </button>
+
+                <div>
+                  <span className="text-red-500">{status.reason}</span>
+                </div>
               </div>
             ))
             .exhaustive()}
-
-          {isMuted ? (
-            <button
-              className="rounded border border-neutral-500 p-2"
-              onClick={() => unmute()}
-            >
-              Unmute mic
-            </button>
-          ) : (
-            <button
-              className="rounded border border-neutral-500 p-2"
-              onClick={() => mute()}
-            >
-              Mute mic
-            </button>
-          )}
-        </div>
-
-        {status.value === 'error' && (
-          <span className="text-red-500">{status.reason}</span>
-        )}
-
-        <div className="grid h-32 grid-cols-1 grid-rows-2 p-4">
-          <div className="flex items-end gap-1">
-            {normalizedFft.map((val, i) => {
-              return (
-                <div
-                  key={`fft-top-${i}`}
-                  style={{ height: `${val}%` }}
-                  className={
-                    'w-2 rounded-full bg-neutral-500 transition-all duration-75'
-                  }
-                ></div>
-              );
-            })}
-          </div>
-          <div className="flex items-start gap-1">
-            {normalizedFft.map((val, i) => {
-              return (
-                <div
-                  key={`fft-bottom-${i}`}
-                  style={{ height: `${val}%` }}
-                  className={
-                    'w-2 rounded-full bg-neutral-500 transition-all duration-75'
-                  }
-                ></div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div>
-          <div>Last transcript message received from assistant:</div>
-          {assistantMessages.length > 0 ? (
-            <div>
-              {JSON.stringify(assistantMessages[assistantMessages.length - 1])}
-            </div>
-          ) : (
-            <div>No transcript available</div>
-          )}
         </div>
       </div>
     </div>

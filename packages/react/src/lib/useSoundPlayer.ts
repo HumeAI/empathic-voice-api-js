@@ -99,6 +99,7 @@ export const useSoundPlayer = ({
         });
 
         audioElement.addEventListener('error', (e) => {
+          audioElement.remove();
           analyzer.stop();
           currentAnalyzer.current = null;
 

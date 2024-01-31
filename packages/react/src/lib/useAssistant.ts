@@ -34,19 +34,11 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     encodingRef,
     streamRef,
     getStream,
-    permission: storedPermission,
+    permission: micPermission,
   } = useEncoding({
     encodingConstraints: {
       sampleRate: config.sampleRate,
       channelCount: config.channels,
-    },
-    onPermissionChange: (permission) => {
-      if (permission === 'denied') {
-        setStatus({ value: 'error', reason: 'Microphone permission denied' });
-      }
-      if (permission === 'granted') {
-        setStatus({ value: 'disconnected' });
-      }
     },
   });
 
@@ -66,39 +58,53 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   });
 
   const connect = async () => {
+    setStatus({ value: 'connecting' });
     const permission = await getStream();
+
     if (permission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
     } else {
-      setStatus({ value: 'connecting' });
-      client.connect({
-        ...config,
-        sampleRate: encodingRef.current.sampleRate,
-        channels: encodingRef.current.channelCount,
-      });
-      void mic.start();
-      player.initPlayer();
-      setStatus({ value: 'connected' });
+      return client
+        .connect({
+          ...config,
+          sampleRate: encodingRef.current.sampleRate,
+          channels: encodingRef.current.channelCount,
+        })
+        .then(() => {
+          return mic.start();
+        })
+        .then(() => {
+          player.initPlayer();
+          setStatus({ value: 'connected' });
+        })
+        .catch(() => {
+          setStatus({
+            value: 'error',
+            reason: 'Could not connect to assistant. Please try again.',
+          });
+        });
     }
   };
 
   const disconnect = useCallback(() => {
-    if (storedPermission === 'denied') {
+    if (micPermission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
-    } else {
+    } else if (status.value !== 'error') {
+      // if status was 'error', keep the error status so we can show the error message to the end user.
+      // otherwise, set status to 'disconnected'
       setStatus({ value: 'disconnected' });
     }
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [client, player, mic, storedPermission]);
+  }, [client, player, mic, micPermission, status.value]);
 
   useEffect(() => {
     if (status.value === 'error') {
       // If the status is ever set to `error`, disconnect the assistant.
       disconnect();
     }
-  }, [status, disconnect]);
+  }, [status.value, disconnect]);
 
   return {
     connect,
