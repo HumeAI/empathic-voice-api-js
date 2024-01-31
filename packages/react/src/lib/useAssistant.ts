@@ -40,14 +40,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
       sampleRate: config.sampleRate,
       channelCount: config.channels,
     },
-    onPermissionChange: (permission) => {
-      if (permission === 'denied') {
-        setStatus({ value: 'error', reason: 'Microphone permission denied' });
-      }
-      if (permission === 'granted') {
-        setStatus({ value: 'disconnected' });
-      }
-    },
   });
 
   const client = useAssistantClient({
@@ -68,7 +60,6 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
   const connect = async () => {
     setStatus({ value: 'connecting' });
     const permission = await getStream();
-    setStatus({ value: 'connecting' });
 
     if (permission === 'denied') {
       setStatus({ value: 'error', reason: 'Microphone permission denied' });
