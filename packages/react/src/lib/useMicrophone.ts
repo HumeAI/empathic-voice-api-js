@@ -68,6 +68,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
     try {
       recorder.current?.stop();
       recorder.current?.removeEventListener('dataavailable', dataHandler);
+      recorder.current = null;
       streamRef.current?.getTracks().forEach((track) => track.stop());
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
@@ -88,12 +89,13 @@ export const useMicrophone = (props: MicrophoneProps) => {
   }, []);
 
   useEffect(() => {
-    const currentStreamRef = streamRef.current;
     return () => {
       try {
         recorder.current?.stop();
         recorder.current?.removeEventListener('dataavailable', dataHandler);
-        currentStreamRef?.getTracks().forEach((track) => track.stop());
+
+        streamRef.current?.getTracks().forEach((track) => track.stop());
+        streamRef.current = null;
       } catch (e) {
         console.log(e);
         void true;
