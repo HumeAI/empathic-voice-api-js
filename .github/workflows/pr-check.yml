@@ -54,3 +54,7 @@ jobs:
       # Check that project unit tests are successful
       - name: Run unit tests
         run: pnpm test
+
+      # Check that packages can build without errors
+      - name: Builds without errors
+        run: pnpm build
