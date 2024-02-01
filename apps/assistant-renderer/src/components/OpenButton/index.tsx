@@ -1,17 +1,15 @@
 import { motion } from 'framer-motion';
 import { useRef, ComponentRef } from 'react';
 import { useButton, mergeProps } from 'react-aria';
-import { useLayoutStore } from '../../store/layout';
 import { HumeLogo } from '../HumeLogo';
 import { useSafeMotion } from '../../utils/useSafeMotion';
 
-export const OpenButton = () => {
-  const open = useLayoutStore((store) => store.open);
+export const OpenButton = ({ onPress }: { onPress: () => void }) => {
   const openButtonRef = useRef<ComponentRef<typeof motion.div>>(null);
   const { buttonProps: openButtonProps } = useButton(
     {
       onPress: () => {
-        open();
+        onPress();
       },
     },
     openButtonRef,

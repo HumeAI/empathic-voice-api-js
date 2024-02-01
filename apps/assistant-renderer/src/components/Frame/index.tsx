@@ -1,12 +1,10 @@
 import { motion } from 'framer-motion';
 import { FC, PropsWithChildren } from 'react';
-import { LayoutState } from '../../store/layout';
+import { LayoutState, useLayoutStore } from '../../store/layout';
 import { cva } from 'class-variance-authority';
 import { match } from 'ts-pattern';
 
-export type FrameProps = PropsWithChildren<{
-  state: LayoutState;
-}>;
+export type FrameProps = PropsWithChildren;
 
 const frameStyles = cva(
   [
@@ -43,7 +41,9 @@ const frameDimensions = (state: LayoutState) =>
     }))
     .exhaustive();
 
-export const Frame: FC<FrameProps> = ({ state, children }) => {
+export const Frame: FC<FrameProps> = ({ children }) => {
+  const state = useLayoutStore((store) => store.state);
+
   return (
     <motion.div
       className={frameStyles({ state })}
