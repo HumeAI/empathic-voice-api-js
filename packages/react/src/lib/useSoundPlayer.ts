@@ -155,7 +155,7 @@ export const useSoundPlayer = ({
 
     if (audioContext.current) {
       if (audioContext.current.state !== 'closed') {
-        audioContext.current.close();
+        void audioContext.current.close();
       }
       audioContext.current = null;
     }
