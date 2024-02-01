@@ -151,13 +151,24 @@ export const useSoundPlayer = ({
   }, [queue, playClip]);
 
   const stopAll = useCallback(() => {
+    isInitialized.current = false;
+
+    if (audioContext.current) {
+      if (audioContext.current.state !== 'closed') {
+        void audioContext.current.close();
+      }
+      audioContext.current = null;
+    }
+
     if (currentClip.current) {
       currentClip.current.pause();
       currentClip.current.remove();
+      currentClip.current = null;
     }
 
     if (currentAnalyzer.current) {
       currentAnalyzer.current.stop();
+      currentAnalyzer.current = null;
     }
 
     setFft(generateEmptyFft());
