@@ -54,3 +54,9 @@ jobs:
       # Check that project unit tests are successful
       - name: Run unit tests
         run: pnpm test
+
+      # Check that packages can build without errors
+      - name: Builds without errors
+        env:
+          NODE_ENV: production
+        run: pnpm build
