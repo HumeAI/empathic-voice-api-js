@@ -92,7 +92,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     client.disconnect();
     player.stopAll();
     mic.stop();
-  }, [client, player, mic, micPermission]);
+  }, [client, player, mic]);
 
   const disconnect = useCallback(
     (disconnectOnError?: boolean) => {
@@ -108,7 +108,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
         setStatus({ value: 'disconnected' });
       }
     },
-    [client, player, mic, micPermission, status.value],
+    [micPermission, status.value, disconnectFromAssistant],
   );
 
   useEffect(() => {
@@ -121,7 +121,7 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
       setStatus({ value: 'error', reason: errorMessage });
       disconnectFromAssistant();
     }
-  }, [errorMessage, status.value, disconnect]);
+  }, [errorMessage, status.value, disconnect, disconnectFromAssistant]);
 
   return {
     connect,
