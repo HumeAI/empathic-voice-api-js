@@ -6,7 +6,8 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "test": "turbo test",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "iframe:dev": "turbo run dev --filter=@humeai/assistent --filter=@humeai/assistent-react --filter=assistant-renderer --filter=example-vite-app-embed"
   },
   "devDependencies": {
     "@humeai/eslint-config": "workspace:*",

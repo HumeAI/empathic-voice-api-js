@@ -1,17 +1,10 @@
-import { useAssistant } from '@humeai/assistant-react';
 import { motion } from 'framer-motion';
 import { CloseButton } from '../CloseButton';
-import { FC } from 'react';
+import { FC, PropsWithChildren } from 'react';
 
-export type ConversationUIProps = {
-  apiKey: string;
-};
+export type ConversationFrameProps = PropsWithChildren;
 
-export const ConversationUI: FC<ConversationUIProps> = ({ apiKey }) => {
-  const { readyState } = useAssistant({
-    apiKey,
-  });
-
+export const ConversationFrame: FC<ConversationFrameProps> = ({ children }) => {
   return (
     <motion.div
       initial={{
@@ -26,7 +19,7 @@ export const ConversationUI: FC<ConversationUIProps> = ({ apiKey }) => {
       className={'w-full h-full overflow-hidden min-w-0 flex flex-col'}
     >
       <motion.div
-        className={'grow px-4 flex items-center justify-center'}
+        className={'grow px-4 flex items-center justify-center grow-1 flex-col'}
         initial={{
           opacity: 0,
         }}
@@ -41,7 +34,7 @@ export const ConversationUI: FC<ConversationUIProps> = ({ apiKey }) => {
           duration: 0.3,
         }}
       >
-        <div className={'font-medium'}>[connection: {readyState}]</div>
+        {children}
       </motion.div>
       <motion.div
         className={
