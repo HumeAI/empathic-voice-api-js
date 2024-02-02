@@ -16,7 +16,7 @@ export const Views: FC<ViewsProps> = ({ apiKey }) => {
   const layoutState = useLayoutStore((store) => store.state);
   const open = useLayoutStore((store) => store.open);
 
-  const { connect, readyState, fft } = useAssistant({ apiKey });
+  const { connect, fft } = useAssistant({ apiKey });
 
   if (layoutState === LayoutState.CLOSED) {
     return (

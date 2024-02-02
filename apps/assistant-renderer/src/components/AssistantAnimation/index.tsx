@@ -27,8 +27,8 @@ type AssistantAnimationRendererProps = {
 };
 
 export const AssistantAnimation: FC<AssistantAnimationRendererProps> = ({
-  state,
-  prosody,
+  // state,
+  // prosody,
   fft,
 }) => {
   return (
