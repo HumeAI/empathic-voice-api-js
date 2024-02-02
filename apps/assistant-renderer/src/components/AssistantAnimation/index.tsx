@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { FC } from 'react';
 
+// eslint-disable-next-line react-refresh/only-export-components
 export enum AssistantAnimationState {
   LISTENING = 'listening',
   TALKING = 'talking',
