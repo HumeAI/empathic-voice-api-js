@@ -2,9 +2,14 @@ import { motion } from 'framer-motion';
 import { CloseButton } from '../CloseButton';
 import { FC, PropsWithChildren } from 'react';
 
-export type ConversationFrameProps = PropsWithChildren;
+export type ConversationFrameProps = PropsWithChildren<{
+  onClose: () => void;
+}>;
 
-export const ConversationFrame: FC<ConversationFrameProps> = ({ children }) => {
+export const ConversationFrame: FC<ConversationFrameProps> = ({
+  onClose,
+  children,
+}) => {
   return (
     <motion.div
       initial={{
@@ -41,7 +46,7 @@ export const ConversationFrame: FC<ConversationFrameProps> = ({ children }) => {
           'grow-0 shrink-0 px-2 h-[50px] flex items-center justify-end'
         }
       >
-        <CloseButton />
+        <CloseButton onPress={() => onClose()} />
       </motion.div>
     </motion.div>
   );

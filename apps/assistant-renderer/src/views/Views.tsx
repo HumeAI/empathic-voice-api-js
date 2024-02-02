@@ -15,8 +15,9 @@ export type ViewsProps = {
 export const Views: FC<ViewsProps> = ({ apiKey }) => {
   const layoutState = useLayoutStore((store) => store.state);
   const open = useLayoutStore((store) => store.open);
+  const close = useLayoutStore((store) => store.close);
 
-  const { connect, fft } = useAssistant({ apiKey });
+  const { connect, disconnect, fft } = useAssistant({ apiKey });
 
   if (layoutState === LayoutState.CLOSED) {
     return (
@@ -30,7 +31,12 @@ export const Views: FC<ViewsProps> = ({ apiKey }) => {
   }
 
   return (
-    <ConversationFrame>
+    <ConversationFrame
+      onClose={() => {
+        close();
+        disconnect();
+      }}
+    >
       <AssistantAnimation
         state={AssistantAnimationState.IDLE}
         prosody={{

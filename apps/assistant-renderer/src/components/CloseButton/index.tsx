@@ -1,17 +1,19 @@
 import { motion } from 'framer-motion';
-import { useRef, ComponentRef } from 'react';
+import { useRef, ComponentRef, FC } from 'react';
 import { useButton, mergeProps } from 'react-aria';
-import { useLayoutStore } from '../../store/layout';
 import { useSafeMotion } from '../../utils/useSafeMotion';
 import { X } from 'lucide-react';
 
-export const CloseButton = () => {
-  const close = useLayoutStore((store) => store.close);
+export type CloseButtonProps = {
+  onPress: () => void;
+};
+
+export const CloseButton: FC<CloseButtonProps> = ({ onPress }) => {
   const closeButtonRef = useRef<ComponentRef<typeof motion.div>>(null);
   const { buttonProps: closeButtonProps } = useButton(
     {
       onPress: () => {
-        close();
+        onPress();
       },
     },
     closeButtonRef,
