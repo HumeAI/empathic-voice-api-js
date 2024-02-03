@@ -88,20 +88,28 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     }
   };
 
-  const disconnect = useCallback(() => {
-    if (micPermission === 'denied') {
-      setStatus({ value: 'error', reason: 'Microphone permission denied' });
-    }
-
+  const disconnectFromAssistant = useCallback(() => {
     client.disconnect();
     player.stopAll();
     mic.stop();
-    if (status.value !== 'error') {
-      // if status was 'error', keep the error status so we can show the error message to the end user.
-      // otherwise, set status to 'disconnected'
-      setStatus({ value: 'disconnected' });
-    }
-  }, [client, player, mic, micPermission, status.value]);
+  }, [client, player, mic]);
+
+  const disconnect = useCallback(
+    (disconnectOnError?: boolean) => {
+      if (micPermission === 'denied') {
+        setStatus({ value: 'error', reason: 'Microphone permission denied' });
+      }
+
+      disconnectFromAssistant();
+
+      if (status.value !== 'error' && !disconnectOnError) {
+        // if status was 'error', keep the error status so we can show the error message to the end user.
+        // otherwise, set status to 'disconnected'
+        setStatus({ value: 'disconnected' });
+      }
+    },
+    [micPermission, status.value, disconnectFromAssistant],
+  );
 
   useEffect(() => {
     if (
@@ -111,9 +119,9 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     ) {
       // If the status is ever set to `error`, disconnect the assistant.
       setStatus({ value: 'error', reason: errorMessage });
-      disconnect();
+      disconnectFromAssistant();
     }
-  }, [errorMessage, status.value, disconnect]);
+  }, [errorMessage, status.value, disconnect, disconnectFromAssistant]);
 
   return {
     connect,

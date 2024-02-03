@@ -29,7 +29,6 @@ export const useAssistantClient = (props: {
 
       client.current.on('open', () => {
         setReadyState(ReadyState.OPEN);
-        console.log('connected websocket');
         resolve(ReadyState.OPEN);
       });
 
