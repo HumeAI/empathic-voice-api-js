@@ -16,13 +16,14 @@ export const useSoundPlayer = ({
 
   const audioContext = useRef<AudioContext | null>(null);
   const isInitialized = useRef(false);
+
+  const audioElement = useRef<HTMLAudioElement | null>(null);
   const currentAnalyzer = useRef<ReturnType<
     typeof Meyda.createMeydaAnalyzer
   > | null>(null);
+
   const clipQueue = useRef<Array<string>>([]);
   const isProcessing = useRef(false);
-
-  const audioElement = useRef<HTMLAudioElement | null>(null);
 
   const handleAudioEnded = useCallback(() => {
     isProcessing.current = false;
@@ -40,15 +41,18 @@ export const useSoundPlayer = ({
     }
   }, []);
 
-  const handleAudioError = useCallback((e: unknown) => {
-    isProcessing.current = false;
+  const handleAudioError = useCallback(
+    (e: unknown) => {
+      isProcessing.current = false;
 
-    currentAnalyzer.current?.stop();
-    currentAnalyzer.current = null;
+      currentAnalyzer.current?.stop();
+      currentAnalyzer.current = null;
 
-    const message = e instanceof Error ? e.message : 'Unknown error';
-    onError(`Error in audio player: ${message}`);
-  }, []);
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      onError(`Error in audio player: ${message}`);
+    },
+    [onError],
+  );
 
   const initPlayer = () => {
     audioContext.current = new AudioContext();
@@ -123,6 +127,7 @@ export const useSoundPlayer = ({
       audioContext.current = null;
     }
 
+    audioElement.current?.pause();
     audioElement.current?.removeEventListener('ended', handleAudioEnded);
     audioElement.current?.removeEventListener('error', handleAudioError);
     audioElement.current?.remove();
@@ -132,8 +137,11 @@ export const useSoundPlayer = ({
       currentAnalyzer.current = null;
     }
 
+    clipQueue.current = [];
+    isProcessing.current = false;
+
     setFft(generateEmptyFft());
-  }, []);
+  }, [handleAudioEnded, handleAudioError]);
 
   return {
     addToQueue,
