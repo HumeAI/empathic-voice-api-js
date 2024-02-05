@@ -45,7 +45,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       .catch(() => {});
   }, []);
 
-  const start = async () => {
+  const start = useCallback(async () => {
     const stream = streamRef.current;
     if (!stream) {
       throw new Error('No stream connected');
@@ -62,9 +62,9 @@ export const useMicrophone = (props: MicrophoneProps) => {
     });
     recorder.current.addEventListener('dataavailable', dataHandler);
     recorder.current.start(250);
-  };
+  }, [dataHandler, streamRef]);
 
-  const stop = () => {
+  const stop = useCallback(() => {
     try {
       recorder.current?.stop();
       recorder.current?.removeEventListener('dataavailable', dataHandler);
@@ -76,7 +76,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       console.log(e);
       void true;
     }
-  };
+  }, [dataHandler, onError, streamRef]);
 
   const mute = useCallback(() => {
     isMutedRef.current = true;

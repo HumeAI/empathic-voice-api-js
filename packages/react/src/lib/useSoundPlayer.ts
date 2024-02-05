@@ -54,7 +54,7 @@ export const useSoundPlayer = ({
     [onError],
   );
 
-  const initPlayer = () => {
+  const initPlayer = useCallback(() => {
     audioContext.current = new AudioContext();
     isInitialized.current = true;
 
@@ -86,7 +86,7 @@ export const useSoundPlayer = ({
       onError(`Failed to start audio analyzer: ${message}`);
       return;
     }
-  };
+  }, [handleAudioEnded, handleAudioError, onError]);
 
   const addToQueue = useCallback(
     (clip: ArrayBuffer) => {

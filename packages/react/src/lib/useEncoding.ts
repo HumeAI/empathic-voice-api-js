@@ -1,6 +1,6 @@
 // cspell:ignore dataavailable
 
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import type { EncodingValues } from './microphone/constants';
 import { DEFAULT_ENCODING_VALUES } from './microphone/constants';
@@ -25,7 +25,7 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
   const encodingRef = useRef<EncodingValues>(DEFAULT_ENCODING_VALUES);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const getStream = async (): Promise<PermissionStatus> => {
+  const getStream = useCallback(async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
@@ -40,12 +40,12 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
       setPermission('granted');
       streamRef.current = stream;
       encodingRef.current = getStreamSettings(stream, encodingConstraints);
-      return 'granted';
+      return 'granted' as const;
     } catch (e) {
       setPermission('denied');
-      return 'denied';
+      return 'denied' as const;
     }
-  };
+  }, [encodingConstraints]);
 
   return { encodingRef, streamRef, getStream, permission };
 };

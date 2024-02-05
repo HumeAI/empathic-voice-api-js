@@ -100,7 +100,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     onError,
   });
 
-  const connect = async () => {
+  const connect = useCallback(async () => {
     setErrorMessage('');
     setStatus({ value: 'connecting' });
     const permission = await getStream();
@@ -128,7 +128,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
           });
         });
     }
-  };
+  }, [client, config, encodingRef, getStream, mic, player]);
 
   const disconnectFromAssistant = useCallback(() => {
     client.disconnect();
