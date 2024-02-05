@@ -17,14 +17,14 @@ function App() {
       <IframeGuard fallback={IframeFallback}>
         <MessageListener
           onUpdateConfig={(config) => {
-            const apiKey = config.apiKey;
+            const apiKey = config.auth.value;
             setApiKey(apiKey);
           }}
         />
         {apiKey ? (
           <Frame>
             <AnimatePresence mode={'wait'}>
-              <AssistantProvider apiKey={apiKey}>
+              <AssistantProvider auth={{ type: 'apiKey', value: apiKey }}>
                 <Views />
               </AssistantProvider>
             </AnimatePresence>

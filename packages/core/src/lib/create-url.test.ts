@@ -4,13 +4,26 @@ import { createConfig } from './create-config';
 import { createSocketUrl } from './create-url';
 
 describe('create-url', () => {
-  test('createSocketUrl', () => {
-    const config = createConfig({
-      apiKey: 'hume-api-key-1234',
-    });
+  test.each([
+    {
+      auth: {
+        type: 'apiKey',
+        value: 'hume-api-key-1234',
+      },
+    } as const,
+    {
+      auth: {
+        type: 'access_token',
+        value: 'hume-access-token-1234',
+      },
+    } as const,
+  ])('createSocketUrl', (cfg) => {
+    const config = createConfig(cfg);
 
     expect(createSocketUrl(config)).toBe(
-      `wss://api.hume.ai/v0/assistant/chat?access_token=${config.apiKey}&tts=hume_ai`,
+      `wss://api.hume.ai/v0/assistant/chat?${config.auth.type}=${
+        config.auth.value
+      }&tts=${config.tts.toString()}`,
     );
   });
 });

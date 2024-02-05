@@ -9,7 +9,10 @@ function App() {
     <>
       <div>Demo of embedding assistant as an iframe</div>
       <EmbeddedAssistant
-        apiKey={apiKey}
+        auth={{
+          type: 'apiKey',
+          value: apiKey,
+        }}
         rendererUrl={
           import.meta.env.PROD
             ? 'https://assistant-widget.hume.ai/'

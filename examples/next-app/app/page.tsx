@@ -10,7 +10,10 @@ export default function Home() {
       <h1 className={'font-medium'}>Hume Assistant Example Component</h1>
 
       {apiKey ? (
-        <AssistantProvider apiKey={apiKey} hostname={'api.hume.ai'}>
+        <AssistantProvider
+          auth={{ type: 'apiKey', value: apiKey }}
+          hostname={'api.hume.ai'}
+        >
           <ExampleComponent />
         </AssistantProvider>
       ) : (
