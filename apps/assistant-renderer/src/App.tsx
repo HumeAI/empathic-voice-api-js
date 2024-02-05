@@ -6,6 +6,7 @@ import { MessageListener } from '@/components/MessageListener';
 import { useConfigStore } from '@/store/config';
 import { Frame } from './components/Frame';
 import { AnimatePresence } from 'framer-motion';
+import { AssistantProvider } from '@humeai/assistant-react';
 
 function App() {
   const setApiKey = useConfigStore((store) => store.setApiKey);
@@ -23,7 +24,9 @@ function App() {
         {apiKey ? (
           <Frame>
             <AnimatePresence mode={'wait'}>
-              <Views apiKey={apiKey} />
+              <AssistantProvider apiKey={apiKey}>
+                <Views />
+              </AssistantProvider>
             </AnimatePresence>
           </Frame>
         ) : null}

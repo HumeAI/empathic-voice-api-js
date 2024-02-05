@@ -2,7 +2,7 @@ import type { Config, TranscriptMessage } from '@humeai/assistant';
 import { AssistantClient } from '@humeai/assistant';
 import { useCallback, useRef, useState } from 'react';
 
-export enum ReadyState {
+export enum AssistantReadyState {
   IDLE = 'idle',
   CONNECTING = 'connecting',
   OPEN = 'open',
@@ -15,7 +15,9 @@ export const useAssistantClient = (props: {
 }) => {
   const client = useRef<AssistantClient | null>(null);
 
-  const [readyState, setReadyState] = useState<ReadyState>(ReadyState.IDLE);
+  const [readyState, setReadyState] = useState<AssistantReadyState>(
+    AssistantReadyState.IDLE,
+  );
   const [messages, setMessages] = useState<TranscriptMessage[]>([]);
 
   const onAudioMessage = useRef<
@@ -28,8 +30,8 @@ export const useAssistantClient = (props: {
       client.current = AssistantClient.create(config);
 
       client.current.on('open', () => {
-        setReadyState(ReadyState.OPEN);
-        resolve(ReadyState.OPEN);
+        setReadyState(AssistantReadyState.OPEN);
+        resolve(AssistantReadyState.OPEN);
       });
 
       client.current.on('message', (message) => {
@@ -48,7 +50,7 @@ export const useAssistantClient = (props: {
       });
 
       client.current.on('close', () => {
-        setReadyState(ReadyState.CLOSED);
+        setReadyState(AssistantReadyState.CLOSED);
       });
 
       client.current.on('error', (e) => {
@@ -57,7 +59,7 @@ export const useAssistantClient = (props: {
         reject(e);
       });
 
-      setReadyState(ReadyState.CONNECTING);
+      setReadyState(AssistantReadyState.CONNECTING);
 
       client.current.connect();
     });
@@ -65,7 +67,7 @@ export const useAssistantClient = (props: {
 
   const disconnect = () => {
     setMessages([]);
-    setReadyState(ReadyState.IDLE);
+    setReadyState(AssistantReadyState.IDLE);
     client.current?.disconnect();
   };
 

@@ -1,3 +1,5 @@
+import { AssistantProvider } from '@humeai/assistant-react';
+
 import { ExampleComponent } from '@/components/ExampleComponent';
 
 export default function Home() {
@@ -8,7 +10,9 @@ export default function Home() {
       <h1 className={'font-medium'}>Hume Assistant Example Component</h1>
 
       {apiKey ? (
-        <ExampleComponent apiKey={apiKey} />
+        <AssistantProvider apiKey={apiKey} hostname={'api.hume.ai'}>
+          <ExampleComponent />
+        </AssistantProvider>
       ) : (
         <div>Missing API Key</div>
       )}
