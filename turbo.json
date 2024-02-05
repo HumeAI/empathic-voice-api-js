@@ -17,7 +17,7 @@
       "dependsOn": ["^build", "^test"]
     },
     "pack": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["@humeai/assistant#build", "@humeai/assistant-react#build"]
     }
   }
 }
