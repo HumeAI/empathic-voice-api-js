@@ -106,7 +106,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     const permission = await getStream();
 
     if (permission === 'denied') {
-      setStatus({ value: 'error', reason: 'Microphone permission denied' });
+      setErrorMessage('Microphone permission denied');
     } else {
       return client
         .connect({
@@ -122,10 +122,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
           setStatus({ value: 'connected' });
         })
         .catch(() => {
-          setStatus({
-            value: 'error',
-            reason: 'Could not connect to assistant. Please try again.',
-          });
+          setErrorMessage(
+            'We could not connect to the assistant. Please try again.',
+          );
         });
     }
   }, [client, config, encodingRef, getStream, mic, player]);
