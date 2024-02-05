@@ -15,16 +15,20 @@ export const Views: FC<ViewsProps> = () => {
   const open = useLayoutStore((store) => store.open);
   const close = useLayoutStore((store) => store.close);
 
-  const { connect, disconnect, fft } = useAssistant();
+  const { connect, disconnect, fft, status } = useAssistant();
 
   if (layoutState === LayoutState.CLOSED) {
     return (
-      <OpenButton
-        onPress={() => {
-          open();
-          connect();
-        }}
-      />
+      <>
+        <OpenButton
+          status={status.value}
+          onPress={() => {
+            void connect().then(() => {
+              open();
+            });
+          }}
+        />
+      </>
     );
   }
 
@@ -35,14 +39,17 @@ export const Views: FC<ViewsProps> = () => {
         disconnect();
       }}
     >
-      <AssistantAnimation
-        state={AssistantAnimationState.IDLE}
-        prosody={{
-          emotions: [],
-        }}
-        fft={fft}
-      />
-      {/* <div>readystate: {readyState}</div> */}
+      {status.value === 'error' ? (
+        <div className="text-center">Error: {status.reason}</div>
+      ) : (
+        <AssistantAnimation
+          state={AssistantAnimationState.IDLE}
+          prosody={{
+            emotions: [],
+          }}
+          fft={fft}
+        />
+      )}
     </ConversationFrame>
   );
 };

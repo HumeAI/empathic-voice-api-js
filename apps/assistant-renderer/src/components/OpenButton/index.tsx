@@ -4,7 +4,13 @@ import { useButton, mergeProps } from 'react-aria';
 import { HumeLogo } from '../HumeLogo';
 import { useSafeMotion } from '../../utils/useSafeMotion';
 
-export const OpenButton = ({ onPress }: { onPress: () => void }) => {
+export const OpenButton = ({
+  onPress,
+  status,
+}: {
+  onPress: () => void;
+  status: string;
+}) => {
   const openButtonRef = useRef<ComponentRef<typeof motion.div>>(null);
   const { buttonProps: openButtonProps } = useButton(
     {
@@ -37,7 +43,13 @@ export const OpenButton = ({ onPress }: { onPress: () => void }) => {
       }
       {...mergeProps(openButtonProps, buttonTransition)}
     >
-      <HumeLogo className={'w-5 h-5'} />
+      <HumeLogo
+        className={
+          status === 'connecting'
+            ? 'w-5 h-5 animate-[spin_1s_linear_infinite]'
+            : 'w-5 h-5'
+        }
+      />
     </motion.div>
   );
 };

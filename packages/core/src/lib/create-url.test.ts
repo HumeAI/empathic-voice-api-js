@@ -10,7 +10,7 @@ describe('create-url', () => {
     });
 
     expect(createSocketUrl(config)).toBe(
-      `wss://api.hume.ai/v0/assistant/chat?access_token=${config.apiKey}`,
+      `wss://api.hume.ai/v0/assistant/chat?access_token=${config.apiKey}&tts=hume_ai`,
     );
   });
 });

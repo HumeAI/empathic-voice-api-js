@@ -56,7 +56,7 @@ export const useAssistantClient = (props: {
 
         client.current.on('error', (e) => {
           const message = e instanceof Error ? e.message : 'Unknown error';
-          props.onError(`Error with websocket connection: ${message}`);
+          props.onError(message);
           reject(e);
         });
 
