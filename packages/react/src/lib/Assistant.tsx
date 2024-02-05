@@ -1,7 +1,19 @@
-import { createConfig } from '@humeai/assistant';
-import { useCallback, useEffect, useState } from 'react';
+import { createConfig, TranscriptMessage } from '@humeai/assistant';
+import React, {
+  createContext,
+  FC,
+  PropsWithChildren,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 
-import { useAssistantClient } from './useAssistantClient';
+import {
+  type AssistantReadyState,
+  useAssistantClient,
+} from './useAssistantClient';
 import { useEncoding } from './useEncoding';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
@@ -16,7 +28,37 @@ type AssistantStatus =
       reason: string;
     };
 
-export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
+export type AssistantContextType = {
+  connect: () => Promise<void>;
+  disconnect: () => void;
+  fft: number[];
+  isMuted: boolean;
+  isPlaying: boolean;
+  messages: TranscriptMessage[];
+  mute: () => void;
+  unmute: () => void;
+  readyState: AssistantReadyState;
+  status: AssistantStatus;
+};
+
+const AssistantContext = createContext<AssistantContextType | null>(null);
+
+export type AssistantProviderProps = PropsWithChildren<
+  Parameters<typeof createConfig>[0]
+>;
+
+export const useAssistant = () => {
+  const ctx = useContext(AssistantContext);
+  if (!ctx) {
+    throw new Error('useAssistant must be used within an AssistantProvider');
+  }
+  return ctx;
+};
+
+export const AssistantProvider: FC<AssistantProviderProps> = ({
+  children,
+  ...props
+}) => {
   const [status, setStatus] = useState<AssistantStatus>({
     value: 'disconnected',
   });
@@ -123,16 +165,36 @@ export const useAssistant = (props: Parameters<typeof createConfig>[0]) => {
     }
   }, [errorMessage, status.value, disconnect, disconnectFromAssistant]);
 
-  return {
-    connect,
-    disconnect,
-    fft: player.fft,
-    isMuted: mic.isMuted,
-    isPlaying: player.isPlaying,
-    messages: client.messages,
-    mute: mic.mute,
-    readyState: client.readyState,
-    status,
-    unmute: mic.unmute,
-  };
+  const ctx = useMemo(
+    () => ({
+      connect,
+      disconnect,
+      fft: player.fft,
+      isMuted: mic.isMuted,
+      isPlaying: player.isPlaying,
+      messages: client.messages,
+      mute: mic.mute,
+      readyState: client.readyState,
+      status,
+      unmute: mic.unmute,
+    }),
+    [
+      client.messages,
+      client.readyState,
+      connect,
+      disconnect,
+      mic.isMuted,
+      mic.mute,
+      mic.unmute,
+      player.fft,
+      player.isPlaying,
+      status,
+    ],
+  );
+
+  return (
+    <AssistantContext.Provider value={ctx}>
+      {children}
+    </AssistantContext.Provider>
+  );
 };

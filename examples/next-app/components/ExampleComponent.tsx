@@ -10,7 +10,7 @@ function getTop3Expressions(
   return [...expressionOutputs].sort((a, b) => b.score - a.score).slice(0, 3);
 }
 
-export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
+export const ExampleComponent = () => {
   const {
     connect,
     disconnect,
@@ -22,10 +22,7 @@ export const ExampleComponent = ({ apiKey }: { apiKey: string }) => {
     readyState,
     unmute,
     messages,
-  } = useAssistant({
-    apiKey,
-    hostname: 'api.hume.ai',
-  });
+  } = useAssistant();
 
   const normalizedFft = useMemo(() => {
     const max = 2.5;

@@ -8,16 +8,14 @@ import {
   AssistantAnimationState,
 } from '@/components/AssistantAnimation';
 
-export type ViewsProps = {
-  apiKey: string;
-};
+export type ViewsProps = Record<never, never>;
 
-export const Views: FC<ViewsProps> = ({ apiKey }) => {
+export const Views: FC<ViewsProps> = () => {
   const layoutState = useLayoutStore((store) => store.state);
   const open = useLayoutStore((store) => store.open);
   const close = useLayoutStore((store) => store.close);
 
-  const { connect, disconnect, fft } = useAssistant({ apiKey });
+  const { connect, disconnect, fft } = useAssistant();
 
   if (layoutState === LayoutState.CLOSED) {
     return (
