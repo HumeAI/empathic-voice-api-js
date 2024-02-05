@@ -4,7 +4,7 @@ export const createSocketUrl = (config: Config): string => {
   const url = new URL(`wss://${config.hostname}`);
 
   url.pathname = '/v0/assistant/chat';
-  url.searchParams.set('apiKey', config.apiKey);
+  url.searchParams.set('access_token', config.apiKey);
 
   if (config.channels) {
     url.searchParams.set('channels', config.channels.toString());
