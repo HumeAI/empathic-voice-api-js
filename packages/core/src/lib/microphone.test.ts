@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseTrackEncodingConstraints } from './getMicrophoneDefaults';
+import { parseTrackEncodingConstraints } from './microphone';
 
 describe('parseTrackEncodingConstraints', () => {
   it('should return default values when no constraints are provided', () => {

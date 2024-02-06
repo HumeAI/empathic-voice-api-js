@@ -55,7 +55,7 @@ module.exports = {
   ],
   rules: {
     'arrow-body-style': 'off',
-    'no-console': 'error',
+    'no-console': 'warn',
     'no-debugger': 'error',
     'no-nested-ternary': 'error',
     'prettier/prettier': 'error',

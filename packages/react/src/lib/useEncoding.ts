@@ -2,23 +2,19 @@
 
 import { useCallback, useRef, useState } from 'react';
 
-import type { EncodingValues } from './microphone/constants';
-import { DEFAULT_ENCODING_VALUES } from './microphone/constants';
-import { getStreamSettings } from './microphone/getMicrophoneDefaults';
+import {
+  type EncodingValues,
+  DEFAULT_ENCODING_VALUES,
+  getStreamSettings,
+} from '@humeai/assistant';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';
-type EncodingHook = {
-  encodingRef: React.MutableRefObject<EncodingValues>;
-  streamRef: React.MutableRefObject<MediaStream | null>;
-  getStream: () => Promise<PermissionStatus>;
-  permission: PermissionStatus;
-};
 
 type EncodingProps = {
   encodingConstraints: Partial<EncodingValues>;
 };
 
-const useEncoding = (props: EncodingProps): EncodingHook => {
+const useEncoding = (props: EncodingProps) => {
   const { encodingConstraints } = props;
   const [permission, setPermission] = useState<PermissionStatus>('prompt');
 
