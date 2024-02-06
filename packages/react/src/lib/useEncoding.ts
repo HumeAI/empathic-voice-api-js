@@ -1,13 +1,10 @@
 // cspell:ignore dataavailable
 
 import { useCallback, useRef, useState } from 'react';
-import Meyda from 'meyda';
-import type { MeydaFeaturesObject } from 'meyda';
 
 import type { EncodingValues } from './microphone/constants';
 import { DEFAULT_ENCODING_VALUES } from './microphone/constants';
 import { getStreamSettings } from './microphone/getMicrophoneDefaults';
-import { generateEmptyFft } from './useSoundPlayer';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';
 type EncodingHook = {

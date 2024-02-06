@@ -2,6 +2,7 @@ import { arrayBufferToBlob } from '@humeai/assistant';
 import type { MeydaFeaturesObject } from 'meyda';
 import Meyda from 'meyda';
 import { useCallback, useRef, useState } from 'react';
+
 import { generateEmptyFft } from './generateEmptyFft';
 
 export const useSoundPlayer = ({

@@ -1,16 +1,16 @@
 // cspell:ignore dataavailable
 
-import Meyda from 'meyda';
-import type { MeydaFeaturesObject } from 'meyda';
-
 import type { IBlobEvent, IMediaRecorder } from 'extendable-media-recorder';
 import {
   MediaRecorder as ExtendableMediaRecorder,
   register,
 } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
-import type { MutableRefObject } from 'react';
+import Meyda from 'meyda';
+import type { MeydaFeaturesObject } from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { MutableRefObject } from 'react';
+
 import { generateEmptyFft } from './generateEmptyFft';
 
 export type MicrophoneProps = {

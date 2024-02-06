@@ -15,9 +15,7 @@ describe('useEncoding', () => {
     );
     expect(result.current.encodingRef.current).toEqual(DEFAULT_ENCODING_VALUES);
     expect(result.current.streamRef.current).toBeNull();
-    expect(result.current.analyserNodeRef.current).toBeNull();
     expect(result.current.permission).toBe('prompt');
-    expect(result.current.fft).toEqual(Array.from({ length: 24 }).map(() => 0));
   });
 
   it('getStream function works correctly', async () => {

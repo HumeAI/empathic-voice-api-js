@@ -30,7 +30,7 @@ export const ExampleComponent = () => {
   const {
     connect,
     disconnect,
-    fft,
+    fft: audioFft,
     status,
     isMuted,
     isPlaying,
@@ -42,8 +42,8 @@ export const ExampleComponent = () => {
   } = useAssistant();
 
   const normalizedFft = useMemo(() => {
-    return normalizeFft(fft);
-  }, [fft]);
+    return normalizeFft(audioFft);
+  }, [audioFft]);
 
   const normalizedMicFft = useMemo(() => {
     return normalizeFft(micFft);
