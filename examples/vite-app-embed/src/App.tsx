@@ -10,7 +10,11 @@ function App() {
       <div>Demo of embedding assistant as an iframe</div>
       <EmbeddedAssistant
         apiKey={apiKey}
-        rendererUrl={'http://localhost:3000'}
+        rendererUrl={
+          import.meta.env.PROD
+            ? 'https://assistant-widget.hume.ai/'
+            : 'http://localhost:3000'
+        }
       />
     </>
   );
