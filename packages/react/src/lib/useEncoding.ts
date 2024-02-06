@@ -6,6 +6,7 @@ import {
   type EncodingValues,
   DEFAULT_ENCODING_VALUES,
   getStreamSettings,
+  getAudioStream,
 } from '@humeai/assistant';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';
@@ -23,15 +24,7 @@ const useEncoding = (props: EncodingProps) => {
 
   const getStream = useCallback(async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          ...encodingConstraints,
-        },
-        video: false,
-      });
+      const stream = await getAudioStream(encodingConstraints);
 
       setPermission('granted');
       streamRef.current = stream;

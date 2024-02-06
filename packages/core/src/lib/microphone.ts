@@ -13,6 +13,20 @@ export const DEFAULT_ENCODING_VALUES: EncodingValues = {
   channelCount: DEFAULT_CHANNELS,
 };
 
+export const getAudioStream = async (
+  encodingConstraints: Partial<EncodingValues>,
+): Promise<MediaStream> => {
+  return navigator.mediaDevices.getUserMedia({
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+      ...encodingConstraints,
+    },
+    video: false,
+  });
+};
+
 /**
  * macbook pro
  * arc -     pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 1 channels, s16, 768 kb/s
