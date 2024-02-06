@@ -1,7 +1,7 @@
 'use client';
 
 import { useAssistant } from '@humeai/assistant-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { match } from 'ts-pattern';
 
 function getTop3Expressions(
@@ -22,7 +22,7 @@ export const ExampleComponent = () => {
     readyState,
     unmute,
     messages,
-    micFft: _micFft,
+    micFft,
   } = useAssistant();
 
   const normalizedFft = useMemo(() => {
@@ -40,6 +40,26 @@ export const ExampleComponent = () => {
       return Math.round(upperBounded * 100);
     });
   }, [fft]);
+  
+  const normalizedMicFft = useMemo(() => {
+    const max = 2.5;
+    const min = Math.min(...fft);
+
+    // define a minimum possible value because we want the bar to have
+    // a height even when the audio is off
+    const minNormalizedValue = 0.01;
+    return Array.from(fft).map((x) => {
+      // normalize & avoid divide by zero
+      const normalized = max === min ? max : (x - min) / (max - min);
+      const lowerBounded = Math.max(minNormalizedValue, normalized);
+      const upperBounded = Math.min(1, lowerBounded);
+      return Math.round(upperBounded * 100);
+    });
+  }, [micFft]);
+
+  useEffect(() => {
+    console.log('micFft', micFft);
+  }, [micFft])
 
   const assistantMessages = useMemo(() => {
     return messages
@@ -58,7 +78,7 @@ export const ExampleComponent = () => {
   const assistantFftAnimation = (
     <div className="grid h-32 grid-cols-1 grid-rows-2 p-4">
       <div className="flex items-end gap-1">
-        {normalizedFft.map((val, i) => {
+        {normalizedMicFft.map((val, i) => {
           return (
             <div
               key={`fft-top-${i}`}
@@ -71,7 +91,7 @@ export const ExampleComponent = () => {
         })}
       </div>
       <div className="flex items-start gap-1">
-        {normalizedFft.map((val, i) => {
+        {normalizedMicFft.map((val, i) => {
           return (
             <div
               key={`fft-bottom-${i}`}
