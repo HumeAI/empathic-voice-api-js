@@ -1,7 +1,7 @@
 'use client';
 
 import { useAssistant } from '@humeai/assistant-react';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { match } from 'ts-pattern';
 
 function getTop3Expressions(
@@ -9,6 +9,22 @@ function getTop3Expressions(
 ) {
   return [...expressionOutputs].sort((a, b) => b.score - a.score).slice(0, 3);
 }
+
+const normalizeFft = (fft: number[]) => {
+  const max = 2.5;
+  const min = Math.min(...fft);
+
+  // define a minimum possible value because we want the bar to have
+  // a height even when the audio is off
+  const minNormalizedValue = 0.01;
+  return Array.from(fft).map((x) => {
+    // normalize & avoid divide by zero
+    const normalized = max === min ? max : (x - min) / (max - min);
+    const lowerBounded = Math.max(minNormalizedValue, normalized);
+    const upperBounded = Math.min(1, lowerBounded);
+    return Math.round(upperBounded * 100);
+  });
+};
 
 export const ExampleComponent = () => {
   const {
@@ -26,40 +42,12 @@ export const ExampleComponent = () => {
   } = useAssistant();
 
   const normalizedFft = useMemo(() => {
-    const max = 2.5;
-    const min = Math.min(...fft);
-
-    // define a minimum possible value because we want the bar to have
-    // a height even when the audio is off
-    const minNormalizedValue = 0.01;
-    return Array.from(fft).map((x) => {
-      // normalize & avoid divide by zero
-      const normalized = max === min ? max : (x - min) / (max - min);
-      const lowerBounded = Math.max(minNormalizedValue, normalized);
-      const upperBounded = Math.min(1, lowerBounded);
-      return Math.round(upperBounded * 100);
-    });
+    return normalizeFft(fft);
   }, [fft]);
-  
+
   const normalizedMicFft = useMemo(() => {
-    const max = 2.5;
-    const min = Math.min(...fft);
-
-    // define a minimum possible value because we want the bar to have
-    // a height even when the audio is off
-    const minNormalizedValue = 0.01;
-    return Array.from(micFft).map((x) => {
-      // normalize & avoid divide by zero
-      const normalized = max === min ? max : (x - min) / (max - min);
-      const lowerBounded = Math.max(minNormalizedValue, normalized);
-      const upperBounded = Math.min(1, lowerBounded);
-      return Math.round(upperBounded * 100);
-    });
+    return normalizeFft(micFft);
   }, [micFft]);
-
-  useEffect(() => {
-    console.log('micFft', micFft);
-  }, [micFft])
 
   const assistantMessages = useMemo(() => {
     return messages
@@ -75,10 +63,10 @@ export const ExampleComponent = () => {
       .filter(Boolean);
   }, [messages]);
 
-  const assistantFftAnimation = (
+  const assistantFftAnimation = (fft: number[]) => (
     <div className="grid h-32 grid-cols-1 grid-rows-2 p-4">
       <div className="flex items-end gap-1">
-        {normalizedMicFft.map((val, i) => {
+        {fft.map((val, i) => {
           return (
             <div
               key={`fft-top-${i}`}
@@ -91,7 +79,7 @@ export const ExampleComponent = () => {
         })}
       </div>
       <div className="flex items-start gap-1">
-        {normalizedMicFft.map((val, i) => {
+        {fft.map((val, i) => {
           return (
             <div
               key={`fft-bottom-${i}`}
@@ -140,7 +128,8 @@ export const ExampleComponent = () => {
                   )}
                 </div>
 
-                {assistantFftAnimation}
+                {assistantFftAnimation(normalizedFft)}
+                {assistantFftAnimation(normalizedMicFft)}
 
                 <div>Playing: {isPlaying ? 'true' : 'false'}</div>
                 <div>Ready State: {readyState}</div>
