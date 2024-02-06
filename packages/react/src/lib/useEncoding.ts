@@ -1,13 +1,11 @@
 // cspell:ignore dataavailable
-
-import { useCallback, useRef, useState } from 'react';
-
 import {
-  type EncodingValues,
   DEFAULT_ENCODING_VALUES,
-  getStreamSettings,
+  type EncodingValues,
   getAudioStream,
+  getStreamSettings,
 } from '@humeai/assistant';
+import { useCallback, useRef, useState } from 'react';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';
 
