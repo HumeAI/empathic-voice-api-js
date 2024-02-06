@@ -27,7 +27,10 @@ const appendMessage = (message: Message) => {
 };
 
 const config = createConfig({
-  apiKey: String(import.meta.env['VITE_HUME_API_KEY']),
+  auth: {
+    type: 'apiKey',
+    value: String(import.meta.env['VITE_HUME_API_KEY']),
+  },
 });
 
 const client = AssistantClient.create(config);

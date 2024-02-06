@@ -4,15 +4,20 @@ import {
   parseClientToFrameAction,
   UPDATE_CONFIG_ACTION,
 } from './embed-messages';
+import { TTSService } from '..';
 
 describe('parseEmbedMessage', () => {
   it('should parse embed message', async () => {
     const test = () => {
       const action = UPDATE_CONFIG_ACTION({
-        apiKey: '',
+        auth: {
+          type: 'apiKey',
+          value: '',
+        },
         hostname: '',
         reconnectAttempts: 0,
         debug: false,
+        tts: TTSService.DEFAULT,
       });
       return parseClientToFrameAction(action);
     };

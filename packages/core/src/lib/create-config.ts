@@ -1,12 +1,11 @@
 import { z } from 'zod';
 
 import { AudioEncoding, Channels } from './audio';
+import { AuthStrategy } from './auth';
 import { TTSService } from './tts';
 
 export const ConfigSchema = z.object({
-  apiKey: z.string({
-    description: 'An API key is required for the Hume API.',
-  }),
+  auth: AuthStrategy,
   hostname: z.string({
     description: 'Hostname of the Hume API.',
   }),
@@ -29,7 +28,8 @@ export const ConfigSchema = z.object({
     .nativeEnum(TTSService, {
       description: 'Text-To-Speech service.',
     })
-    .optional(),
+    .optional()
+    .default(TTSService.DEFAULT),
   reconnectAttempts: z
     .number({
       description: 'Number of times to attempt to reconnect to the API.',
@@ -46,20 +46,21 @@ export const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 
-export const defaultConfig: Omit<Config, 'apiKey'> = {
+export const defaultConfig: Omit<Config, 'auth'> = {
   hostname: 'api.hume.ai',
   reconnectAttempts: 30,
   debug: false,
+  tts: TTSService.DEFAULT,
 };
 
 export const createConfig = (
-  config: Pick<Config, 'apiKey'> & Partial<Omit<Config, 'apiKey'>>,
+  config: Pick<Config, 'auth'> & Partial<Omit<Config, 'auth'>>,
 ): Config => {
-  if (!config.apiKey) throw new Error('API key is required.');
+  if (!config.auth) throw new Error('Auth strategy is required.');
 
   return ConfigSchema.parse({
     ...defaultConfig,
     ...config,
-    apiKey: config.apiKey,
+    auth: config.auth,
   });
 };

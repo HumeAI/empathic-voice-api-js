@@ -31,7 +31,7 @@ export class EmbeddedAssistant {
     rendererUrl,
     ...config
   }: Partial<EmbeddedAssistantConfig> &
-    NonNullable<Pick<EmbeddedAssistantConfig, 'apiKey'>>): EmbeddedAssistant {
+    NonNullable<Pick<EmbeddedAssistantConfig, 'auth'>>): EmbeddedAssistant {
     const parsedConfig = createConfig(config);
 
     return new EmbeddedAssistant({

@@ -6,7 +6,10 @@ import { defaultConfig } from './create-config';
 describe('client', () => {
   it('to start closed', () => {
     const client = AssistantClient.create({
-      apiKey: 'test',
+      auth: {
+        type: 'apiKey',
+        value: 'test',
+      },
       ...defaultConfig,
     });
 
