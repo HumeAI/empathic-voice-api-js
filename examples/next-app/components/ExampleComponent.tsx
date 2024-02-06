@@ -48,7 +48,7 @@ export const ExampleComponent = () => {
     // define a minimum possible value because we want the bar to have
     // a height even when the audio is off
     const minNormalizedValue = 0.01;
-    return Array.from(fft).map((x) => {
+    return Array.from(micFft).map((x) => {
       // normalize & avoid divide by zero
       const normalized = max === min ? max : (x - min) / (max - min);
       const lowerBounded = Math.max(minNormalizedValue, normalized);

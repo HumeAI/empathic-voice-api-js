@@ -111,11 +111,19 @@ export const useMicrophone = (props: MicrophoneProps) => {
   }, [dataHandler, onError, streamRef]);
 
   const mute = useCallback(() => {
+    if (currentAnalyzer.current) {
+      currentAnalyzer.current.stop();
+      setFft(generateEmptyFft());
+    }
+
     isMutedRef.current = true;
     setIsMuted(true);
   }, []);
 
   const unmute = useCallback(() => {
+    if (currentAnalyzer.current) {
+      currentAnalyzer.current.start();
+    }
     isMutedRef.current = false;
     setIsMuted(false);
   }, []);
