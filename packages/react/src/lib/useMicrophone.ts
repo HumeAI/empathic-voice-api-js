@@ -11,7 +11,7 @@ import {
 import { connect } from 'extendable-media-recorder-wav-encoder';
 import type { MutableRefObject } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { generateEmptyFft } from './useSoundPlayer';
+import { generateEmptyFft } from './generateEmptyFft';
 
 export type MicrophoneProps = {
   streamRef: MutableRefObject<MediaStream | null>;
@@ -75,7 +75,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       currentAnalyzer.current.start();
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Unknown error';
-      console.error(`Failed to start audio analyzer: ${message}`);
+      console.error(`Failed to start mic analyzer: ${message}`);
     }
 
     if (!encoderPortRef.current) {
