@@ -10,11 +10,27 @@ function getTop3Expressions(
   return [...expressionOutputs].sort((a, b) => b.score - a.score).slice(0, 3);
 }
 
+const normalizeFft = (fft: number[]) => {
+  const max = 2.5;
+  const min = Math.min(...fft);
+
+  // define a minimum possible value because we want the bar to have
+  // a height even when the audio is off
+  const minNormalizedValue = 0.01;
+  return Array.from(fft).map((x) => {
+    // normalize & avoid divide by zero
+    const normalized = max === min ? max : (x - min) / (max - min);
+    const lowerBounded = Math.max(minNormalizedValue, normalized);
+    const upperBounded = Math.min(1, lowerBounded);
+    return Math.round(upperBounded * 100);
+  });
+};
+
 export const ExampleComponent = () => {
   const {
     connect,
     disconnect,
-    fft,
+    fft: audioFft,
     status,
     isMuted,
     isPlaying,
@@ -22,23 +38,16 @@ export const ExampleComponent = () => {
     readyState,
     unmute,
     messages,
+    micFft,
   } = useAssistant();
 
   const normalizedFft = useMemo(() => {
-    const max = 2.5;
-    const min = Math.min(...fft);
+    return normalizeFft(audioFft);
+  }, [audioFft]);
 
-    // define a minimum possible value because we want the bar to have
-    // a height even when the audio is off
-    const minNormalizedValue = 0.01;
-    return Array.from(fft).map((x) => {
-      // normalize & avoid divide by zero
-      const normalized = max === min ? max : (x - min) / (max - min);
-      const lowerBounded = Math.max(minNormalizedValue, normalized);
-      const upperBounded = Math.min(1, lowerBounded);
-      return Math.round(upperBounded * 100);
-    });
-  }, [fft]);
+  const normalizedMicFft = useMemo(() => {
+    return normalizeFft(micFft);
+  }, [micFft]);
 
   const assistantMessages = useMemo(() => {
     return messages
@@ -54,10 +63,10 @@ export const ExampleComponent = () => {
       .filter(Boolean);
   }, [messages]);
 
-  const assistantFftAnimation = (
+  const assistantFftAnimation = (fft: number[]) => (
     <div className="grid h-32 grid-cols-1 grid-rows-2 p-4">
       <div className="flex items-end gap-1">
-        {normalizedFft.map((val, i) => {
+        {fft.map((val, i) => {
           return (
             <div
               key={`fft-top-${i}`}
@@ -70,7 +79,7 @@ export const ExampleComponent = () => {
         })}
       </div>
       <div className="flex items-start gap-1">
-        {normalizedFft.map((val, i) => {
+        {fft.map((val, i) => {
           return (
             <div
               key={`fft-bottom-${i}`}
@@ -119,7 +128,8 @@ export const ExampleComponent = () => {
                   )}
                 </div>
 
-                {assistantFftAnimation}
+                {assistantFftAnimation(normalizedFft)}
+                {assistantFftAnimation(normalizedMicFft)}
 
                 <div>Playing: {isPlaying ? 'true' : 'false'}</div>
                 <div>Ready State: {readyState}</div>

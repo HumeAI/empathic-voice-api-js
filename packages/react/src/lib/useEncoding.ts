@@ -39,7 +39,9 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
 
       setPermission('granted');
       streamRef.current = stream;
+
       encodingRef.current = getStreamSettings(stream, encodingConstraints);
+
       return 'granted' as const;
     } catch (e) {
       setPermission('denied');
@@ -47,7 +49,12 @@ const useEncoding = (props: EncodingProps): EncodingHook => {
     }
   }, [encodingConstraints]);
 
-  return { encodingRef, streamRef, getStream, permission };
+  return {
+    encodingRef,
+    streamRef,
+    getStream,
+    permission,
+  };
 };
 
 export { useEncoding };

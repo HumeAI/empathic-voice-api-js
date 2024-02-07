@@ -39,6 +39,7 @@ export type AssistantContextType = {
   unmute: () => void;
   readyState: AssistantReadyState;
   status: AssistantStatus;
+  micFft: number[];
 };
 
 const AssistantContext = createContext<AssistantContextType | null>(null);
@@ -169,6 +170,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       connect,
       disconnect,
       fft: player.fft,
+      micFft: mic.fft,
       isMuted: mic.isMuted,
       isPlaying: player.isPlaying,
       messages: client.messages,
@@ -183,6 +185,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       connect,
       disconnect,
       mic.isMuted,
+      mic.fft,
       mic.mute,
       mic.unmute,
       player.fft,

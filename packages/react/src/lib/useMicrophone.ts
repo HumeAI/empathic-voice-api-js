@@ -6,8 +6,12 @@ import {
   register,
 } from 'extendable-media-recorder';
 import { connect } from 'extendable-media-recorder-wav-encoder';
-import type { MutableRefObject } from 'react';
+import Meyda from 'meyda';
+import type { MeydaFeaturesObject } from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { MutableRefObject } from 'react';
+
+import { generateEmptyFft } from './generateEmptyFft';
 
 export type MicrophoneProps = {
   streamRef: MutableRefObject<MediaStream | null>;
@@ -20,7 +24,10 @@ export type MicrophoneProps = {
 export const useMicrophone = (props: MicrophoneProps) => {
   const { streamRef, onAudioCaptured, onError } = props;
   const isMutedRef = useRef(false);
+
   const [isMuted, setIsMuted] = useState(false);
+  const [fft, setFft] = useState<number[]>(generateEmptyFft());
+  const currentAnalyzer = useRef<Meyda.MeydaAnalyzer | null>(null);
 
   const mimeType = 'audio/wav';
   const recorder = useRef<IMediaRecorder | null>(null);
@@ -51,6 +58,26 @@ export const useMicrophone = (props: MicrophoneProps) => {
       throw new Error('No stream connected');
     }
 
+    const context = new AudioContext();
+    const input = context.createMediaStreamSource(stream);
+
+    try {
+      currentAnalyzer.current = Meyda.createMeydaAnalyzer({
+        audioContext: context,
+        source: input,
+        featureExtractors: ['loudness'],
+        callback: (features: MeydaFeaturesObject) => {
+          const newFft = features.loudness.specific || [];
+          setFft(() => Array.from(newFft));
+        },
+      });
+
+      currentAnalyzer.current.start();
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Unknown error';
+      console.error(`Failed to start mic analyzer: ${message}`);
+    }
+
     if (!encoderPortRef.current) {
       const port = await connect();
       encoderPortRef.current = port;
@@ -66,6 +93,11 @@ export const useMicrophone = (props: MicrophoneProps) => {
 
   const stop = useCallback(() => {
     try {
+      if (currentAnalyzer.current) {
+        currentAnalyzer.current.stop();
+        currentAnalyzer.current = null;
+      }
+
       recorder.current?.stop();
       recorder.current?.removeEventListener('dataavailable', dataHandler);
       recorder.current = null;
@@ -79,11 +111,19 @@ export const useMicrophone = (props: MicrophoneProps) => {
   }, [dataHandler, onError, streamRef]);
 
   const mute = useCallback(() => {
+    if (currentAnalyzer.current) {
+      currentAnalyzer.current.stop();
+      setFft(generateEmptyFft());
+    }
+
     isMutedRef.current = true;
     setIsMuted(true);
   }, []);
 
   const unmute = useCallback(() => {
+    if (currentAnalyzer.current) {
+      currentAnalyzer.current.start();
+    }
     isMutedRef.current = false;
     setIsMuted(false);
   }, []);
@@ -93,6 +133,11 @@ export const useMicrophone = (props: MicrophoneProps) => {
       try {
         recorder.current?.stop();
         recorder.current?.removeEventListener('dataavailable', dataHandler);
+
+        if (currentAnalyzer.current) {
+          currentAnalyzer.current.stop();
+          currentAnalyzer.current = null;
+        }
 
         streamRef.current?.getTracks().forEach((track) => track.stop());
         streamRef.current = null;
@@ -109,5 +154,6 @@ export const useMicrophone = (props: MicrophoneProps) => {
     mute,
     unmute,
     isMuted,
+    fft,
   };
 };
