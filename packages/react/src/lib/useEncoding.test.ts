@@ -1,8 +1,8 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_ENCODING_VALUES } from '../microphone/constants';
-import { useEncoding } from '../useEncoding';
+import { DEFAULT_ENCODING_VALUES } from './microphone/constants';
+import { useEncoding } from './useEncoding';
 
 describe('useEncoding', () => {
   it('is defined', () => {
