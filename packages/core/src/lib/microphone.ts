@@ -1,12 +1,59 @@
 import { detect } from 'detect-browser';
 
-import type { EncodingValues } from './constants';
-import {
-  DEFAULT_ENCODING_VALUES,
-  getDefaultEncodingByBrowser,
-} from './constants';
+const DEFAULT_CHANNELS = 1;
+const DEFAULT_SAMPLE_RATE = 48000;
 
-const parseTrackEncodingConstraints = (
+export type EncodingValues = {
+  sampleRate: number;
+  channelCount: number;
+};
+
+export const DEFAULT_ENCODING_VALUES: EncodingValues = {
+  sampleRate: DEFAULT_SAMPLE_RATE,
+  channelCount: DEFAULT_CHANNELS,
+};
+
+export const getAudioStream = async (
+  encodingConstraints: Partial<EncodingValues>,
+): Promise<MediaStream> => {
+  return navigator.mediaDevices.getUserMedia({
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true,
+      ...encodingConstraints,
+    },
+    video: false,
+  });
+};
+
+/**
+ * macbook pro
+ * arc -     pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 1 channels, s16, 768 kb/s
+ * chrome -  pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 1 channels, s16, 768 kb/s
+ * firefox - pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 1 channels, s16, 768 kb/s
+ * safari -  pcm_s16le ([1][0][0][0] / 0x0001), 48000 Hz, 2 channels, s16, 1536 kb/s
+ */
+export const getDefaultEncodingByBrowser = (
+  browserName: string | undefined,
+): EncodingValues => {
+  switch (browserName) {
+    case 'safari':
+      return {
+        sampleRate: DEFAULT_SAMPLE_RATE,
+        channelCount: 2,
+      };
+    case 'chrome':
+    case 'firefox':
+    default:
+      return {
+        sampleRate: DEFAULT_SAMPLE_RATE,
+        channelCount: DEFAULT_CHANNELS,
+      };
+  }
+};
+
+export const parseTrackEncodingConstraints = (
   trackCapabilities: MediaTrackCapabilities,
   encodingConstraints: Partial<EncodingValues>,
   browserName?: string,
@@ -59,7 +106,7 @@ const parseTrackEncodingConstraints = (
   };
 };
 
-const getStreamSettings = (
+export const getStreamSettings = (
   stream: MediaStream,
   encodingConstraints: Partial<typeof DEFAULT_ENCODING_VALUES>,
 ): EncodingValues => {
@@ -99,5 +146,3 @@ const getStreamSettings = (
     return supportedConstraints;
   }
 };
-
-export { getStreamSettings, parseTrackEncodingConstraints };
