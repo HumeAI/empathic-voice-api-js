@@ -94,30 +94,30 @@ export const MessageConsole = ({
   }, [messages]);
 
   return (
-    <div className="h-64 px-6 overflow-auto w-full">
+    <div className="h-64 w-full overflow-auto px-6">
       {formattedMessages.map(({ message, sender, sortedEmotions }, index) => {
         return (
           <div
             key={index}
-            className="pb-3 flex flex-wrap flex-row items-start w-full"
+            className="flex w-full flex-row flex-wrap items-start pb-3"
           >
             <div className={'w-full'}>
-              <div className={'text-[10px] font-mono uppercase text-tan-700'}>
+              <div className={'font-mono text-[10px] uppercase text-beige'}>
                 {sender}
               </div>
             </div>
             <div className={'basis-1/2'}>
-              <div className={'text-sm font-medium pr-4'}>
+              <div className={'pr-4 text-sm font-medium'}>
                 {message.message.content}
               </div>
             </div>
-            <div className="basis-1/2 flex flex-col gap-1">
+            <div className="flex basis-1/2 flex-col gap-1">
               {sortedEmotions.map((e) => {
                 return (
                   <div key={index + e.name + e.score} className={'text-xs'}>
                     <div className={'flex items-center pb-0.5'}>
                       <span
-                        className={'truncate grow tracking-tight text-white'}
+                        className={'grow truncate tracking-tight text-white'}
                       >
                         {e.name}
                       </span>
@@ -125,10 +125,10 @@ export const MessageConsole = ({
                         {e.score}
                       </span>
                     </div>
-                    <div className={'h-[4px] w-full relative rounded-full'}>
+                    <div className={'relative h-[4px] w-full rounded-full'}>
                       <div
                         className={
-                          'absolute top-0 left-0 w-[var(--w)] bg-beige h-full rounded-full'
+                          'absolute left-0 top-0 h-full w-[var(--w)] rounded-full bg-beige'
                         }
                         style={{
                           background: emotionColors[e.name] ?? 'black',
@@ -139,7 +139,7 @@ export const MessageConsole = ({
                       <AnimatePresence>
                         <motion.div
                           className={
-                            'absolute top-0 left-0 w-[var(--w)] bg-beige h-full rounded-full'
+                            'absolute left-0 top-0 h-full w-[var(--w)] rounded-full bg-beige'
                           }
                           initial={{
                             width: 0,
