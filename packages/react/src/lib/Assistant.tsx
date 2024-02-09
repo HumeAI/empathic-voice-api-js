@@ -46,7 +46,9 @@ const AssistantContext = createContext<AssistantContextType | null>(null);
 
 export type AssistantProviderProps = PropsWithChildren<
   Parameters<typeof createConfig>[0]
->;
+> & {
+  onMessage?: (message: TranscriptMessage) => void;
+};
 
 export const useAssistant = () => {
   const ctx = useContext(AssistantContext);
@@ -58,6 +60,7 @@ export const useAssistant = () => {
 
 export const AssistantProvider: FC<AssistantProviderProps> = ({
   children,
+  onMessage,
   ...props
 }) => {
   const [status, setStatus] = useState<AssistantStatus>({
@@ -90,6 +93,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     onAudioMessage: (arrayBuffer) => {
       player.addToQueue(arrayBuffer);
     },
+    onTranscriptMessage: onMessage,
     onError,
   });
 

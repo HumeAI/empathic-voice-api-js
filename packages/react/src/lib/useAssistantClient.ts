@@ -11,6 +11,7 @@ export enum AssistantReadyState {
 
 export const useAssistantClient = (props: {
   onAudioMessage?: (arrayBuffer: ArrayBufferLike) => void;
+  onTranscriptMessage?: (message: TranscriptMessage) => void;
   onError: (message: string) => void;
 }) => {
   const client = useRef<AssistantClient | null>(null);
@@ -20,10 +21,15 @@ export const useAssistantClient = (props: {
   );
   const [messages, setMessages] = useState<TranscriptMessage[]>([]);
 
-  const onAudioMessage = useRef<
-    ((arrayBuffer: ArrayBufferLike) => void) | undefined
-  >(props.onAudioMessage);
+  const onAudioMessage = useRef<typeof props.onAudioMessage>(
+    props.onAudioMessage,
+  );
   onAudioMessage.current = props.onAudioMessage;
+
+  const onTranscriptMessage = useRef<typeof props.onTranscriptMessage>(
+    props.onTranscriptMessage,
+  );
+  onTranscriptMessage.current = props.onTranscriptMessage;
 
   const connect = useCallback(
     (config: Config) => {
@@ -44,6 +50,7 @@ export const useAssistantClient = (props: {
             message.type === 'assistant_message' ||
             message.type === 'user_message'
           ) {
+            onTranscriptMessage.current?.(message);
             setMessages((prev) => {
               return prev.concat([message]);
             });
