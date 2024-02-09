@@ -40,5 +40,8 @@
     "postcss": "^8",
     "tailwindcss": "^3.3.0",
     "typescript": "^5"
-  }
+  },
+  "browserslist": [
+    "last 2 Chrome versions, last 2 iOS major versions, Firefox ESR, not dead"
+  ]
 }
