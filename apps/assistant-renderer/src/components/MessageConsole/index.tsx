@@ -2,59 +2,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef } from 'react';
 import type { TranscriptMessage } from '@humeai/assistant-react';
 import { match } from 'ts-pattern';
+import { expressionColors } from 'expression-colors';
 
-const emotionColors: Record<string, string> = {
-  Admiration: '#FFC58F',
-  Adoration: '#FFC6CC',
-  'Aesthetic Appreciation': '#E2CBFF',
-  Amusement: '#FEBF52',
-  Anger: '#B21816',
-  Anxiety: '#6E42CC',
-  Awe: '#7DABD3',
-  Awkwardness: '#D7D99D',
-  Boredom: '#A4A4A4',
-  Calmness: '#A9CCE1',
-  Concentration: '#336CFF',
-  Contemplation: '#B0AEEF',
-  Confusion: '#C66A26',
-  Contempt: '#76842D',
-  Contentment: '#E5C6B4',
-  Craving: '#54591C',
-  Determination: '#FF5C00',
-  Disappointment: '#006C7C',
-  Disgust: '#1A7A41',
-  Distress: '#C5F264',
-  Doubt: '#998644',
-  Ecstasy: '#FF48A4',
-  Embarrassment: '#63C653',
-  'Empathic Pain': '#CA5555',
-  Entrancement: '#7554D6',
-  Envy: '#1D4921',
-  Excitement: '#FFF974',
-  Fear: '#D1C9EF',
-  Guilt: '#879AA1',
-  Horror: '#772E7A',
-  Interest: '#A9CCE1',
-  Joy: '#FFD600',
-  Love: '#F44F4C',
-  Neutral: '#879AA1',
-  Nostalgia: '#B087A1',
-  Pain: '#8C1D1D',
-  Pride: '#9A4CB6',
-  Realization: '#217AA8',
-  Relief: '#FE927A',
-  Romance: '#F0CC86',
-  Sadness: '#305575',
-  Satisfaction: '#A6DDAF',
-  'Sexual Desire': '#AA0D59',
-  Shame: '#8A6262',
-  Surprise: '#70E63A',
-  'Surprise (negative)': '#70E63A',
-  'Surprise (positive)': '#7AFFFF',
-  Sympathy: '#7F88E0',
-  Tiredness: '#757575',
-  Triumph: '#EC8132',
-};
+type Emotion = keyof typeof expressionColors;
 
 export const MessageConsole = ({
   messages,
@@ -113,6 +63,8 @@ export const MessageConsole = ({
             </div>
             <div className="flex basis-1/2 flex-col gap-1">
               {sortedEmotions.map((e) => {
+                const barColor =
+                  expressionColors[e.name as Emotion]?.hex ?? 'white';
                 return (
                   <div key={index + e.name + e.score} className={'text-xs'}>
                     <div className={'flex items-center pb-0.5'}>
@@ -131,7 +83,7 @@ export const MessageConsole = ({
                           'absolute left-0 top-0 h-full w-[var(--w)] rounded-full bg-beige'
                         }
                         style={{
-                          background: emotionColors[e.name] ?? 'black',
+                          background: barColor,
                           width: '100%',
                           opacity: 0.1,
                         }}
@@ -151,7 +103,7 @@ export const MessageConsole = ({
                             },
                           }}
                           style={{
-                            background: emotionColors[e.name] ?? 'black',
+                            background: barColor,
                           }}
                         />
                       </AnimatePresence>
