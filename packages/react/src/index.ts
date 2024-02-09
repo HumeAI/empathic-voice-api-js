@@ -17,4 +17,5 @@ export {
   WIDGET_IFRAME_IS_READY_ACTION,
   TRANSCRIPT_MESSAGE_ACTION,
   RESIZE_FRAME_ACTION,
+  type TranscriptMessage,
 } from '@humeai/assistant';
