@@ -7,6 +7,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -50,6 +51,12 @@ export type AssistantProviderProps = PropsWithChildren<
   Parameters<typeof createConfig>[0]
 > & {
   onMessage?: (message: TranscriptMessage) => void;
+  onError?: (
+    err:
+      | { type: 'socket_error'; message: string }
+      | { type: 'audio_error'; message: string }
+      | { type: 'mic_error'; message: string },
+  ) => void;
 };
 
 export const useAssistant = () => {
@@ -71,12 +78,14 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const config = createConfig(props);
 
-  const onError = useCallback((message: string) => {
-    setErrorMessage(message);
-  }, []);
+  const onError = useRef(props.onError);
+  onError.current = props.onError;
 
   const player = useSoundPlayer({
-    onError,
+    onError: (message) => {
+      setErrorMessage(message);
+      onError.current?.({ type: 'audio_error', message });
+    },
   });
 
   const {
@@ -96,7 +105,10 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       player.addToQueue(arrayBuffer);
     },
     onTranscriptMessage: onMessage,
-    onError,
+    onError: (message) => {
+      setErrorMessage(message);
+      onError.current?.({ type: 'socket_error', message });
+    },
   });
 
   const mic = useMicrophone({
@@ -104,7 +116,10 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     onAudioCaptured: (arrayBuffer) => {
       client.sendAudio(arrayBuffer);
     },
-    onError,
+    onError: (message) => {
+      setErrorMessage(message);
+      onError.current?.({ type: 'mic_error', message });
+    },
   });
 
   const connect = useCallback(async () => {
@@ -113,7 +128,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     const permission = await getStream();
 
     if (permission === 'denied') {
-      setErrorMessage('Microphone permission denied');
+      const message = 'Microphone permission denied';
+      setErrorMessage(message);
+      onError.current?.({ type: 'mic_error', message });
     } else {
       return client
         .connect({
@@ -129,9 +146,10 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
           setStatus({ value: 'connected' });
         })
         .catch(() => {
-          setErrorMessage(
-            'We could not connect to the assistant. Please try again.',
-          );
+          const message =
+            'We could not connect to the assistant. Please try again.';
+          setErrorMessage(message);
+          onError.current?.({ type: 'socket_error', message });
         });
     }
   }, [client, config, encodingRef, getStream, mic, player]);
@@ -186,6 +204,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       readyState: client.readyState,
       status,
       unmute: mic.unmute,
+      errorMessage,
     }),
     [
       client.messages,
@@ -201,6 +220,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       player.fft,
       player.isPlaying,
       status,
+      errorMessage,
     ],
   );
 
