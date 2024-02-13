@@ -20,6 +20,11 @@ export const useAssistantClient = (props: {
     AssistantReadyState.IDLE,
   );
   const [messages, setMessages] = useState<TranscriptMessage[]>([]);
+  const [lastAssistantMessage, setLastAssistantMessage] =
+    useState<TranscriptMessage | null>(null);
+  const [lastUserMessage, setLastUser] = useState<TranscriptMessage | null>(
+    null,
+  );
 
   const onAudioMessage = useRef<typeof props.onAudioMessage>(
     props.onAudioMessage,
@@ -44,6 +49,14 @@ export const useAssistantClient = (props: {
         client.current.on('message', (message) => {
           if (message.type === 'audio') {
             onAudioMessage.current?.(message.data);
+          }
+
+          if (message.type === 'assistant_message') {
+            setLastAssistantMessage(message);
+          }
+
+          if (message.type === 'user_message') {
+            setLastUser(message);
           }
 
           if (
@@ -88,6 +101,8 @@ export const useAssistantClient = (props: {
   return {
     readyState,
     messages,
+    lastAssistantMessage,
+    lastUserMessage,
     sendAudio,
     connect,
     disconnect,
