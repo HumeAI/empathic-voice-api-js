@@ -48,6 +48,11 @@ export type AssistantContextType = {
   readyState: AssistantReadyState;
   status: AssistantStatus;
   micFft: number[];
+  error: AssistantError | null;
+  isAudioError: boolean;
+  isError: boolean;
+  isMicrophoneError: boolean;
+  isSocketError: boolean;
 };
 
 const AssistantContext = createContext<AssistantContextType | null>(null);
@@ -201,26 +206,27 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
   }, [status.value, disconnect, disconnectFromAssistant, error]);
 
   const ctx = useMemo(
-    () => ({
-      connect,
-      disconnect,
-      fft: player.fft,
-      micFft: mic.fft,
-      isMuted: mic.isMuted,
-      isPlaying: player.isPlaying,
-      messages: client.messages,
-      lastAssistantMessage: client.lastAssistantMessage,
-      lastUserMessage: client.lastUserMessage,
-      mute: mic.mute,
-      readyState: client.readyState,
-      status,
-      unmute: mic.unmute,
-      error,
-      isAudioError,
-      isError,
-      isMicrophoneError,
-      isSocketError,
-    }),
+    () =>
+      ({
+        connect,
+        disconnect,
+        fft: player.fft,
+        micFft: mic.fft,
+        isMuted: mic.isMuted,
+        isPlaying: player.isPlaying,
+        messages: client.messages,
+        lastAssistantMessage: client.lastAssistantMessage,
+        lastUserMessage: client.lastUserMessage,
+        mute: mic.mute,
+        readyState: client.readyState,
+        status,
+        unmute: mic.unmute,
+        error,
+        isAudioError,
+        isError,
+        isMicrophoneError,
+        isSocketError,
+      }) satisfies AssistantContextType,
     [
       connect,
       disconnect,
