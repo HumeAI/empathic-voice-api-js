@@ -35,6 +35,8 @@ export type AssistantContextType = {
   isMuted: boolean;
   isPlaying: boolean;
   messages: TranscriptMessage[];
+  lastAssistantMessage: TranscriptMessage | null;
+  lastUserMessage: TranscriptMessage | null;
   mute: () => void;
   unmute: () => void;
   readyState: AssistantReadyState;
@@ -178,6 +180,8 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       isMuted: mic.isMuted,
       isPlaying: player.isPlaying,
       messages: client.messages,
+      lastAssistantMessage: client.lastAssistantMessage,
+      lastUserMessage: client.lastUserMessage,
       mute: mic.mute,
       readyState: client.readyState,
       status,
@@ -185,6 +189,8 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     }),
     [
       client.messages,
+      client.lastAssistantMessage,
+      client.lastUserMessage,
       client.readyState,
       connect,
       disconnect,
