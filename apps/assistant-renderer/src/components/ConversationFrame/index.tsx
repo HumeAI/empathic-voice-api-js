@@ -21,10 +21,10 @@ export const ConversationFrame: FC<ConversationFrameProps> = ({
       exit={{
         opacity: 0,
       }}
-      className={'w-full h-full overflow-hidden min-w-0 flex flex-col'}
+      className={'flex h-full w-full min-w-0 flex-col overflow-hidden'}
     >
       <motion.div
-        className={'grow px-4 flex items-center justify-center grow-1 flex-col'}
+        className={'flex grow flex-col items-center justify-center px-4'}
         initial={{
           opacity: 0,
         }}
@@ -43,7 +43,7 @@ export const ConversationFrame: FC<ConversationFrameProps> = ({
       </motion.div>
       <motion.div
         className={
-          'grow-0 shrink-0 px-2 h-[50px] flex items-center justify-end'
+          'flex h-[50px] shrink-0 grow-0 items-center justify-end px-2'
         }
       >
         <CloseButton onPress={() => onClose()} />

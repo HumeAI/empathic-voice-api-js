@@ -66,3 +66,35 @@ body {
   --font-sans: 'Fellix', sans-serif;
   --font-mono: 'PP Fraktion Mono', monospace;
 }
+
+@layer base {
+  body {
+    pointer-events: inherit !important;
+    color: inherit;
+
+    --scrollbar-width: 12px;
+    --scrollbar-min-size: 32px;
+    --scrollbar-track-color: theme('colors.beige');
+    --scrollbar-color: theme('colors.beige');
+  }
+
+  body *::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+    height: var(--scrollbar-width);
+  }
+
+  body *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  body *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  body *::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-color);
+    border-radius: var(--scrollbar-width);
+    border: 3.5px solid transparent;
+    background-clip: content-box;
+  }
+}

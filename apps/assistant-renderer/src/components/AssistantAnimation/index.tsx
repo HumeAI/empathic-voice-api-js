@@ -33,12 +33,12 @@ export const AssistantAnimation: FC<AssistantAnimationRendererProps> = ({
   fft,
 }) => {
   return (
-    <div className={'relative w-full h-full'}>
+    <div className={'relative h-full w-full'}>
       <motion.svg
         viewBox={'0 0 100 100'}
         width={100}
         height={100}
-        className={'absolute inset-0 w-full h-full'}
+        className={'absolute inset-0 h-full w-full'}
       >
         {Array.from({ length: 24 }).map((_, index) => {
           const value = (fft[index] ?? 0) / 4;

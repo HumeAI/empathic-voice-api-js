@@ -39,15 +39,15 @@ export const OpenButton = ({
     <motion.div
       ref={openButtonRef}
       className={
-        'absolute inset-0 grid place-content-center size-[50px] cursor-pointer w-full'
+        'absolute inset-0 grid size-[50px] w-full cursor-pointer place-content-center'
       }
       {...mergeProps(openButtonProps, buttonTransition)}
     >
       <HumeLogo
         className={
           status === 'connecting'
-            ? 'w-5 h-5 animate-[spin_1s_linear_infinite]'
-            : 'w-5 h-5'
+            ? 'h-5 w-5 animate-[spin_1s_linear_infinite]'
+            : 'h-5 w-5'
         }
       />
     </motion.div>
