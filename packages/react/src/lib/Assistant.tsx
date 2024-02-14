@@ -122,9 +122,12 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       player.addToQueue(arrayBuffer);
     },
     onTranscriptMessage: onMessage,
-    onError: (message) => {
-      updateError({ type: 'socket_error', message });
-    },
+    onError: useCallback(
+      (message) => {
+        updateError({ type: 'socket_error', message });
+      },
+      [updateError],
+    ),
   });
 
   const mic = useMicrophone({
@@ -132,9 +135,12 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     onAudioCaptured: (arrayBuffer) => {
       client.sendAudio(arrayBuffer);
     },
-    onError: (message) => {
-      updateError({ type: 'mic_error', message });
-    },
+    onError: useCallback(
+      (message) => {
+        updateError({ type: 'mic_error', message });
+      },
+      [updateError],
+    ),
   });
 
   const connect = useCallback(async () => {
