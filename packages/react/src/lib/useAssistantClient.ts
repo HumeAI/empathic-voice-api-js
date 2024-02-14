@@ -22,9 +22,8 @@ export const useAssistantClient = (props: {
   const [messages, setMessages] = useState<TranscriptMessage[]>([]);
   const [lastAssistantMessage, setLastAssistantMessage] =
     useState<TranscriptMessage | null>(null);
-  const [lastUserMessage, setLastUser] = useState<TranscriptMessage | null>(
-    null,
-  );
+  const [lastUserMessage, setLastUserMessage] =
+    useState<TranscriptMessage | null>(null);
 
   const onAudioMessage = useRef<typeof props.onAudioMessage>(
     props.onAudioMessage,
@@ -56,7 +55,7 @@ export const useAssistantClient = (props: {
           }
 
           if (message.type === 'user_message') {
-            setLastUser(message);
+            setLastUserMessage(message);
           }
 
           if (
@@ -90,6 +89,8 @@ export const useAssistantClient = (props: {
 
   const disconnect = useCallback(() => {
     setMessages([]);
+    setLastAssistantMessage(null);
+    setLastUserMessage(null);
     setReadyState(AssistantReadyState.IDLE);
     client.current?.disconnect();
   }, []);
