@@ -7,6 +7,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 
@@ -17,6 +18,11 @@ import {
 import { useEncoding } from './useEncoding';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
+
+type AssistantError =
+  | { type: 'socket_error'; message: string }
+  | { type: 'audio_error'; message: string }
+  | { type: 'mic_error'; message: string };
 
 type AssistantStatus =
   | {
@@ -42,6 +48,11 @@ export type AssistantContextType = {
   readyState: AssistantReadyState;
   status: AssistantStatus;
   micFft: number[];
+  error: AssistantError | null;
+  isAudioError: boolean;
+  isError: boolean;
+  isMicrophoneError: boolean;
+  isSocketError: boolean;
 };
 
 const AssistantContext = createContext<AssistantContextType | null>(null);
@@ -50,6 +61,7 @@ export type AssistantProviderProps = PropsWithChildren<
   Parameters<typeof createConfig>[0]
 > & {
   onMessage?: (message: TranscriptMessage) => void;
+  onError?: (err: AssistantError) => void;
 };
 
 export const useAssistant = () => {
@@ -68,15 +80,29 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
   const [status, setStatus] = useState<AssistantStatus>({
     value: 'disconnected',
   });
-  const [errorMessage, setErrorMessage] = useState('');
-  const config = createConfig(props);
 
-  const onError = useCallback((message: string) => {
-    setErrorMessage(message);
+  // error handling
+  const [error, setError] = useState<AssistantError | null>(null);
+  const isError = error !== null;
+  const isMicrophoneError = error?.type === 'mic_error';
+  const isSocketError = error?.type === 'socket_error';
+  const isAudioError = error?.type === 'audio_error';
+  const onError = useRef(props.onError);
+  onError.current = props.onError;
+
+  const updateError = useCallback((err: AssistantError | null) => {
+    setError(err);
+    if (err !== null) {
+      onError.current?.(err);
+    }
   }, []);
 
+  const config = createConfig(props);
+
   const player = useSoundPlayer({
-    onError,
+    onError: (message) => {
+      updateError({ type: 'audio_error', message });
+    },
   });
 
   const {
@@ -96,7 +122,12 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       player.addToQueue(arrayBuffer);
     },
     onTranscriptMessage: onMessage,
-    onError,
+    onError: useCallback(
+      (message) => {
+        updateError({ type: 'socket_error', message });
+      },
+      [updateError],
+    ),
   });
 
   const mic = useMicrophone({
@@ -104,16 +135,24 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     onAudioCaptured: (arrayBuffer) => {
       client.sendAudio(arrayBuffer);
     },
-    onError,
+    onError: useCallback(
+      (message) => {
+        updateError({ type: 'mic_error', message });
+      },
+      [updateError],
+    ),
   });
 
   const connect = useCallback(async () => {
-    setErrorMessage('');
+    updateError(null);
     setStatus({ value: 'connecting' });
     const permission = await getStream();
 
     if (permission === 'denied') {
-      setErrorMessage('Microphone permission denied');
+      updateError({
+        type: 'mic_error',
+        message: 'Microphone permission denied',
+      });
     } else {
       return client
         .connect({
@@ -129,12 +168,13 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
           setStatus({ value: 'connected' });
         })
         .catch(() => {
-          setErrorMessage(
-            'We could not connect to the assistant. Please try again.',
-          );
+          updateError({
+            type: 'socket_error',
+            message: 'We could not connect to the assistant. Please try again.',
+          });
         });
     }
-  }, [client, config, encodingRef, getStream, mic, player]);
+  }, [client, config, encodingRef, getStream, mic, player, updateError]);
 
   const disconnectFromAssistant = useCallback(() => {
     client.disconnect();
@@ -161,46 +201,57 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
 
   useEffect(() => {
     if (
-      errorMessage &&
+      error !== null &&
       status.value !== 'error' &&
       status.value !== 'disconnected'
     ) {
       // If the status is ever set to `error`, disconnect the assistant.
-      setStatus({ value: 'error', reason: errorMessage });
+      setStatus({ value: 'error', reason: error.message });
       disconnectFromAssistant();
     }
-  }, [errorMessage, status.value, disconnect, disconnectFromAssistant]);
+  }, [status.value, disconnect, disconnectFromAssistant, error]);
 
   const ctx = useMemo(
-    () => ({
+    () =>
+      ({
+        connect,
+        disconnect,
+        fft: player.fft,
+        micFft: mic.fft,
+        isMuted: mic.isMuted,
+        isPlaying: player.isPlaying,
+        messages: client.messages,
+        lastAssistantMessage: client.lastAssistantMessage,
+        lastUserMessage: client.lastUserMessage,
+        mute: mic.mute,
+        readyState: client.readyState,
+        status,
+        unmute: mic.unmute,
+        error,
+        isAudioError,
+        isError,
+        isMicrophoneError,
+        isSocketError,
+      }) satisfies AssistantContextType,
+    [
       connect,
       disconnect,
-      fft: player.fft,
-      micFft: mic.fft,
-      isMuted: mic.isMuted,
-      isPlaying: player.isPlaying,
-      messages: client.messages,
-      lastAssistantMessage: client.lastAssistantMessage,
-      lastUserMessage: client.lastUserMessage,
-      mute: mic.mute,
-      readyState: client.readyState,
-      status,
-      unmute: mic.unmute,
-    }),
-    [
+      player.fft,
+      player.isPlaying,
+      mic.fft,
+      mic.isMuted,
+      mic.mute,
+      mic.unmute,
       client.messages,
       client.lastAssistantMessage,
       client.lastUserMessage,
       client.readyState,
-      connect,
-      disconnect,
-      mic.isMuted,
-      mic.fft,
-      mic.mute,
-      mic.unmute,
-      player.fft,
-      player.isPlaying,
       status,
+      error,
+      isAudioError,
+      isError,
+      isMicrophoneError,
+      isSocketError,
     ],
   );
 
