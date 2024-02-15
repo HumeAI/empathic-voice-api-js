@@ -12,7 +12,9 @@ export enum AssistantReadyState {
 export const useAssistantClient = (props: {
   onAudioMessage?: (arrayBuffer: ArrayBufferLike) => void;
   onTranscriptMessage?: (message: TranscriptMessage) => void;
-  onError: (message: string) => void;
+  onError?: (message: string) => void;
+  onOpen?: () => void;
+  onClose?: () => void;
 }) => {
   const client = useRef<AssistantClient | null>(null);
 
@@ -25,6 +27,8 @@ export const useAssistantClient = (props: {
   const [lastUserMessage, setLastUserMessage] =
     useState<TranscriptMessage | null>(null);
 
+  // this pattern might look hacky but it allows us to use the latest props
+  // in callbacks set up inside useEffect without re-rendering the useEffect
   const onAudioMessage = useRef<typeof props.onAudioMessage>(
     props.onAudioMessage,
   );
@@ -35,57 +39,65 @@ export const useAssistantClient = (props: {
   );
   onTranscriptMessage.current = props.onTranscriptMessage;
 
-  const connect = useCallback(
-    (config: Config) => {
-      return new Promise((resolve, reject) => {
-        client.current = AssistantClient.create(config);
+  const onError = useRef<typeof props.onError>(props.onError);
+  onError.current = props.onError;
 
-        client.current.on('open', () => {
-          setReadyState(AssistantReadyState.OPEN);
-          resolve(AssistantReadyState.OPEN);
-        });
+  const onOpen = useRef<typeof props.onOpen>(props.onOpen);
+  onOpen.current = props.onOpen;
 
-        client.current.on('message', (message) => {
-          if (message.type === 'audio') {
-            onAudioMessage.current?.(message.data);
-          }
+  const onClose = useRef<typeof props.onClose>(props.onClose);
+  onClose.current = props.onClose;
 
-          if (message.type === 'assistant_message') {
-            setLastAssistantMessage(message);
-          }
+  const connect = useCallback((config: Config) => {
+    return new Promise((resolve, reject) => {
+      client.current = AssistantClient.create(config);
 
-          if (message.type === 'user_message') {
-            setLastUserMessage(message);
-          }
-
-          if (
-            message.type === 'assistant_message' ||
-            message.type === 'user_message'
-          ) {
-            onTranscriptMessage.current?.(message);
-            setMessages((prev) => {
-              return prev.concat([message]);
-            });
-          }
-        });
-
-        client.current.on('close', () => {
-          setReadyState(AssistantReadyState.CLOSED);
-        });
-
-        client.current.on('error', (e) => {
-          const message = e instanceof Error ? e.message : 'Unknown error';
-          props.onError(message);
-          reject(e);
-        });
-
-        setReadyState(AssistantReadyState.CONNECTING);
-
-        client.current.connect();
+      client.current.on('open', () => {
+        onOpen.current?.();
+        setReadyState(AssistantReadyState.OPEN);
+        resolve(AssistantReadyState.OPEN);
       });
-    },
-    [props],
-  );
+
+      client.current.on('message', (message) => {
+        if (message.type === 'audio') {
+          onAudioMessage.current?.(message.data);
+        }
+
+        if (message.type === 'assistant_message') {
+          setLastAssistantMessage(message);
+        }
+
+        if (message.type === 'user_message') {
+          setLastUserMessage(message);
+        }
+
+        if (
+          message.type === 'assistant_message' ||
+          message.type === 'user_message'
+        ) {
+          onTranscriptMessage.current?.(message);
+          setMessages((prev) => {
+            return prev.concat([message]);
+          });
+        }
+      });
+
+      client.current.on('close', () => {
+        onClose.current?.();
+        setReadyState(AssistantReadyState.CLOSED);
+      });
+
+      client.current.on('error', (e) => {
+        const message = e instanceof Error ? e.message : 'Unknown error';
+        onError.current?.(message);
+        reject(e);
+      });
+
+      setReadyState(AssistantReadyState.CONNECTING);
+
+      client.current.connect();
+    });
+  }, []);
 
   const disconnect = useCallback(() => {
     setMessages([]);

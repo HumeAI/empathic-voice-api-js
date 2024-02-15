@@ -11,6 +11,7 @@ import React, {
   useState,
 } from 'react';
 
+import { noop } from './noop';
 import {
   type AssistantReadyState,
   useAssistantClient,
@@ -62,6 +63,8 @@ export type AssistantProviderProps = PropsWithChildren<
 > & {
   onMessage?: (message: TranscriptMessage) => void;
   onError?: (err: AssistantError) => void;
+  onOpen?: () => void;
+  onClose?: () => void;
 };
 
 export const useAssistant = () => {
@@ -87,8 +90,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
   const isMicrophoneError = error?.type === 'mic_error';
   const isSocketError = error?.type === 'socket_error';
   const isAudioError = error?.type === 'audio_error';
-  const onError = useRef(props.onError);
-  onError.current = props.onError;
+
+  const onError = useRef(props.onError ?? noop);
+  onError.current = props.onError ?? noop;
 
   const updateError = useCallback((err: AssistantError | null) => {
     setError(err);
@@ -96,6 +100,15 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       onError.current?.(err);
     }
   }, []);
+
+  const onClientError: NonNullable<
+    Parameters<typeof useAssistantClient>[0]['onError']
+  > = useCallback(
+    (message) => {
+      updateError({ type: 'socket_error', message });
+    },
+    [updateError],
+  );
 
   const config = createConfig(props);
 
@@ -122,12 +135,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       player.addToQueue(arrayBuffer);
     },
     onTranscriptMessage: onMessage,
-    onError: useCallback(
-      (message) => {
-        updateError({ type: 'socket_error', message });
-      },
-      [updateError],
-    ),
+    onError: onClientError,
+    onOpen: props.onOpen,
+    onClose: props.onClose,
   });
 
   const mic = useMicrophone({
@@ -153,26 +163,36 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
         type: 'mic_error',
         message: 'Microphone permission denied',
       });
-    } else {
-      return client
-        .connect({
-          ...config,
-          sampleRate: encodingRef.current.sampleRate,
-          channels: encodingRef.current.channelCount,
-        })
-        .then(() => {
-          return mic.start();
-        })
-        .then(() => {
-          player.initPlayer();
-          setStatus({ value: 'connected' });
-        })
-        .catch(() => {
-          updateError({
-            type: 'socket_error',
-            message: 'We could not connect to the assistant. Please try again.',
-          });
-        });
+      return;
+    }
+
+    const err = await client
+      .connect({
+        ...config,
+        sampleRate: encodingRef.current.sampleRate,
+        channels: encodingRef.current.channelCount,
+      })
+      .then(() => null)
+      .catch(() => new Error('Could not connect to the assistant'));
+
+    if (err) {
+      updateError({
+        type: 'socket_error',
+        message: 'We could not connect to the assistant. Please try again.',
+      });
+      return;
+    }
+
+    const [micPromise, playerPromise] = await Promise.allSettled([
+      mic.start(),
+      player.initPlayer(),
+    ]);
+
+    if (
+      micPromise.status === 'fulfilled' &&
+      playerPromise.status === 'fulfilled'
+    ) {
+      setStatus({ value: 'connected' });
     }
   }, [client, config, encodingRef, getStream, mic, player, updateError]);
 
