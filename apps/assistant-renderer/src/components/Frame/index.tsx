@@ -11,15 +11,16 @@ const frameStyles = cva(
     'rounded-[25px]',
     'backdrop-blur-sm',
     'absolute bottom-0 right-0',
-    'text-white',
+    'text-black',
     'transition-colors',
+    'shadow-custom',
   ],
   {
     variants: {
       state: {
-        [LayoutState.OPEN]: ['bg-black/80'],
-        [LayoutState.CLOSED]: ['bg-black/60'],
-        [LayoutState.MINIMIZED]: ['bg-black/60'],
+        [LayoutState.OPEN]: ['bg-tan-200/90'],
+        [LayoutState.CLOSED]: ['bg-tan-200'],
+        [LayoutState.MINIMIZED]: ['bg-tan-200'],
       },
     },
   },

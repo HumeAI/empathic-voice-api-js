@@ -48,7 +48,7 @@ export const AssistantAnimation: FC<AssistantAnimationRendererProps> = ({
           return (
             <motion.rect
               key={index}
-              fill={'white'}
+              fill={'black'}
               height={height}
               width={2}
               x={2 + (index * 100 - 4) / 24}

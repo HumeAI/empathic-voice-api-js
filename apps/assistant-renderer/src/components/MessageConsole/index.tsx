@@ -52,7 +52,7 @@ export const MessageConsole = ({
             className="flex w-full flex-row flex-wrap items-start pb-3"
           >
             <div className={'w-full'}>
-              <div className={'font-mono text-[10px] uppercase text-beige'}>
+              <div className={'font-mono text-[10px] uppercase text-gray-500'}>
                 {sender}
               </div>
             </div>
@@ -69,18 +69,18 @@ export const MessageConsole = ({
                   <div key={index + e.name + e.score} className={'text-xs'}>
                     <div className={'flex items-center pb-0.5'}>
                       <span
-                        className={'grow truncate tracking-tight text-white'}
+                        className={'grow truncate tracking-tight text-black'}
                       >
                         {e.name}
                       </span>
-                      <span className={'grow-0 tabular-nums text-beige'}>
+                      <span className={'grow-0 tabular-nums text-gray-400'}>
                         {e.score}
                       </span>
                     </div>
                     <div className={'relative h-[4px] w-full rounded-full'}>
                       <div
                         className={
-                          'absolute left-0 top-0 h-full w-[var(--w)] rounded-full bg-beige'
+                          'absolute left-0 top-0 h-full w-[var(--w)] rounded-full bg-black'
                         }
                         style={{
                           background: barColor,
@@ -91,7 +91,7 @@ export const MessageConsole = ({
                       <AnimatePresence>
                         <motion.div
                           className={
-                            'absolute left-0 top-0 h-full w-[var(--w)] rounded-full bg-beige'
+                            'absolute left-0 top-0 h-full w-[var(--w)] rounded-full bg-black'
                           }
                           initial={{
                             width: 0,

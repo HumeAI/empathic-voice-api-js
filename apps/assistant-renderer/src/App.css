@@ -128,8 +128,8 @@ body {
 
     --scrollbar-width: 12px;
     --scrollbar-min-size: 32px;
-    --scrollbar-track-color: theme('colors.tan.400');
-    --scrollbar-color: theme('colors.tan.400');
+    --scrollbar-track-color: theme('colors.tan.700');
+    --scrollbar-color: theme('colors.tan.700');
   }
 
   body *::-webkit-scrollbar {

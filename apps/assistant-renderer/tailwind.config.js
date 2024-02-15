@@ -2,6 +2,11 @@
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
+    extend: {
+      boxShadow: {
+        custom: 'inset rgba(var(--hume-tan-700)) 0px 0px 32px -12px',
+      },
+    },
     fontFamily: {
       sans: ['var(--font-sans)'],
       mono: ['var(--font-mono)'],
