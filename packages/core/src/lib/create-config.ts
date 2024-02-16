@@ -42,6 +42,11 @@ export const ConfigSchema = z.object({
     })
     .optional()
     .default(false),
+  systemPrompt: z
+    .string({
+      description: 'System prompt to use for the Assistant.',
+    })
+    .optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
