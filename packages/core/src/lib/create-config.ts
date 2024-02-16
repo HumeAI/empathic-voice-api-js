@@ -4,6 +4,9 @@ import { AudioEncoding, Channels } from './audio';
 import { AuthStrategy } from './auth';
 import { TTSService } from './tts';
 
+// https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
+const MAX_SYSTEM_PROMPT_LENGTH = 2000;
+
 export const ConfigSchema = z.object({
   auth: AuthStrategy,
   hostname: z.string({
@@ -46,7 +49,7 @@ export const ConfigSchema = z.object({
     .string({
       description: 'System prompt to use for the Assistant.',
     })
-    .max(2000)
+    .max(MAX_SYSTEM_PROMPT_LENGTH)
     .optional(),
 });
 
