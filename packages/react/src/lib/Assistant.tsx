@@ -14,6 +14,7 @@ import React, {
 import { noop } from './noop';
 import {
   type AssistantReadyState,
+  ConnectionMessage,
   useAssistantClient,
 } from './useAssistantClient';
 import { useEncoding } from './useEncoding';
@@ -41,7 +42,7 @@ export type AssistantContextType = {
   fft: number[];
   isMuted: boolean;
   isPlaying: boolean;
-  messages: TranscriptMessage[];
+  messages: (TranscriptMessage | ConnectionMessage)[];
   lastAssistantMessage: TranscriptMessage | null;
   lastUserMessage: TranscriptMessage | null;
   mute: () => void;
