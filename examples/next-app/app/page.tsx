@@ -1,9 +1,9 @@
+import { fetchAccessToken } from '@humeai/assistant';
 import { AssistantProvider } from '@humeai/assistant-react';
 import dynamic from 'next/dynamic';
 import type { FC, PropsWithChildren } from 'react';
 
 import { ExampleComponent } from '@/components/ExampleComponent';
-import { fetchAccessToken } from '@/utils/fetch-access-token';
 
 const NoOp: FC<PropsWithChildren<Record<never, never>>> = ({ children }) => (
   <>{children}</>
