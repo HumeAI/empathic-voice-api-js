@@ -22,6 +22,6 @@ export const fetchAccessToken = async (args: {
 
   const data = (await res.json()) as { access_token: string };
 
-  const access_token = String(data['access_token']);
-  return access_token;
+  const accessToken = String(data['access_token']);
+  return accessToken;
 };
