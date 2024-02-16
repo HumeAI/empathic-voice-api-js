@@ -22,6 +22,18 @@ describe('create-config', () => {
     });
   });
 
+  it('throws an error if the system prompt is too long', () => {
+    expect(() => {
+      createConfig({
+        systemPrompt: 'a'.repeat(2001),
+        auth: {
+          type: 'apiKey',
+          value: 'hume-api-key-1234',
+        },
+      });
+    }).toThrow();
+  });
+
   it('throws an error if the API key is missing', () => {
     expect(() => {
       // @ts-expect-error - testing invalid input

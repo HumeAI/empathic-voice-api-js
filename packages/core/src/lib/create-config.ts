@@ -46,6 +46,7 @@ export const ConfigSchema = z.object({
     .string({
       description: 'System prompt to use for the Assistant.',
     })
+    .max(2000)
     .optional(),
 });
 
