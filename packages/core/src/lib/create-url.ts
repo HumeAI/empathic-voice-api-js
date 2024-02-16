@@ -19,10 +19,6 @@ export const createSocketUrl = (config: Config): string => {
     url.searchParams.set('channels', config.channels.toString());
   }
 
-  if (config.encoding) {
-    url.searchParams.set('encoding', config.encoding);
-  }
-
   if (config.sampleRate) {
     url.searchParams.set('sample_rate', config.sampleRate.toString());
   }
