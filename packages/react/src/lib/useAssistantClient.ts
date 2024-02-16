@@ -9,6 +9,14 @@ export enum AssistantReadyState {
   CLOSED = 'closed',
 }
 
+export type ConnectionMessage =
+  | {
+      type: 'socket_connected';
+    }
+  | {
+      type: 'socket_disconnected';
+    };
+
 export const useAssistantClient = (props: {
   onAudioMessage?: (arrayBuffer: ArrayBufferLike) => void;
   onTranscriptMessage?: (message: TranscriptMessage) => void;
@@ -21,7 +29,9 @@ export const useAssistantClient = (props: {
   const [readyState, setReadyState] = useState<AssistantReadyState>(
     AssistantReadyState.IDLE,
   );
-  const [messages, setMessages] = useState<TranscriptMessage[]>([]);
+  const [messages, setMessages] = useState<
+    (TranscriptMessage | ConnectionMessage)[]
+  >([]);
   const [lastAssistantMessage, setLastAssistantMessage] =
     useState<TranscriptMessage | null>(null);
   const [lastUserMessage, setLastUserMessage] =
@@ -56,6 +66,13 @@ export const useAssistantClient = (props: {
         onOpen.current?.();
         setReadyState(AssistantReadyState.OPEN);
         resolve(AssistantReadyState.OPEN);
+        setMessages((prev) =>
+          prev.concat([
+            {
+              type: 'socket_connected',
+            },
+          ]),
+        );
       });
 
       client.current.on('message', (message) => {
@@ -85,6 +102,13 @@ export const useAssistantClient = (props: {
       client.current.on('close', () => {
         onClose.current?.();
         setReadyState(AssistantReadyState.CLOSED);
+        setMessages((prev) =>
+          prev.concat([
+            {
+              type: 'socket_disconnected',
+            },
+          ]),
+        );
       });
 
       client.current.on('error', (e) => {
