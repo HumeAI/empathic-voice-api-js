@@ -1,6 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef } from 'react';
-import type { TranscriptMessage } from '@humeai/assistant-react';
+import type {
+  ConnectionMessage,
+  TranscriptMessage,
+} from '@humeai/assistant-react';
 import { match } from 'ts-pattern';
 import { expressionColors } from 'expression-colors';
 
@@ -9,7 +12,7 @@ type Emotion = keyof typeof expressionColors;
 export const MessageConsole = ({
   messages,
 }: {
-  messages: TranscriptMessage[];
+  messages: (TranscriptMessage | ConnectionMessage)[];
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -17,10 +20,26 @@ export const MessageConsole = ({
   }, [messages]);
 
   const formattedMessages = useMemo(() => {
-    return messages.map((message) => {
+    return messages.reduce<
+      {
+        sender: 'user' | 'assistant';
+        message: TranscriptMessage;
+        sortedEmotions: {
+          score: string;
+          name: string;
+        }[];
+      }[]
+    >((state, message) => {
+      if (
+        message.type === 'socket_connected' ||
+        message.type === 'socket_disconnected'
+      ) {
+        return state;
+      }
+
       const sender = match(message.type)
-        .with('user_message', () => 'user')
-        .with('assistant_message', () => 'assistant')
+        .with('user_message', () => 'user' as const)
+        .with('assistant_message', () => 'assistant' as const)
         .otherwise(() => null);
 
       const prosodyModel = message.models.find(
@@ -35,12 +54,18 @@ export const MessageConsole = ({
           return { ...entry, score: Number(entry.score).toFixed(3) };
         });
 
-      return {
-        sender,
-        message,
-        sortedEmotions,
-      };
-    });
+      if(sender === null) {
+        return state;
+      }
+
+      return state.concat([
+        {
+          sender,
+          message,
+          sortedEmotions,
+        },
+      ]);
+    }, []);
   }, [messages]);
 
   return (
