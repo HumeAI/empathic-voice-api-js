@@ -27,5 +27,9 @@ export const createSocketUrl = (config: Config): string => {
     url.searchParams.set('tts', config.tts.toString());
   }
 
+  if (config.systemPrompt) {
+    url.searchParams.set('system_prompt', config.systemPrompt);
+  }
+
   return url.href;
 };

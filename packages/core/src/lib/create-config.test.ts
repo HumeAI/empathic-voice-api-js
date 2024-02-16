@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { createConfig } from '..';
+import { createConfig, MAX_SYSTEM_PROMPT_LENGTH } from '..';
 
 describe('create-config', () => {
   it('creates a new config object with defaults', () => {
@@ -20,6 +20,18 @@ describe('create-config', () => {
       debug: false,
       reconnectAttempts: 30,
     });
+  });
+
+  it('throws an error if the system prompt is too long', () => {
+    expect(() => {
+      createConfig({
+        systemPrompt: 'a'.repeat(MAX_SYSTEM_PROMPT_LENGTH + 1),
+        auth: {
+          type: 'apiKey',
+          value: 'hume-api-key-1234',
+        },
+      });
+    }).toThrow();
   });
 
   it('throws an error if the API key is missing', () => {
