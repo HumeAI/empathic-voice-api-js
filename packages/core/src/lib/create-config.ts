@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { AudioEncoding, Channels } from './audio';
+import { Channels } from './audio';
 import { AuthStrategy } from './auth';
 import { TTSService } from './tts';
 
@@ -12,11 +12,6 @@ export const ConfigSchema = z.object({
   channels: z
     .nativeEnum(Channels, {
       description: 'Number of channels in the input audio.',
-    })
-    .optional(),
-  encoding: z
-    .nativeEnum(AudioEncoding, {
-      description: 'Encoding type of the input audio.',
     })
     .optional(),
   sampleRate: z
