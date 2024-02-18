@@ -1,3 +1,4 @@
+import { match } from 'ts-pattern';
 import { describe, expect, it } from 'vitest';
 
 import { AssistantClient } from './client';
@@ -14,17 +15,23 @@ describe('client', () => {
     });
 
     client.on('message', (message) => {
-      if (message.type === 'audio') {
-        console.log('audio message');
-      }
-
-      if (message.type === 'assistant_message') {
-        console.log('assistant message');
-      }
-
-      if (message.type === 'user_message') {
-        console.log('user message');
-      }
+      match(message.type)
+        .with('audio', () => {
+          console.log('audio message');
+        })
+        .with('audio_output', () => {
+          console.log('audio json message');
+        })
+        .with('assistant_message', () => {
+          console.log('assistant message');
+        })
+        .with('user_message', () => {
+          console.log('user message');
+        })
+        .with('assistant_end', () => {
+          console.log('assistant end');
+        })
+        .exhaustive();
     });
 
     expect(client.readyState).toBe(3);

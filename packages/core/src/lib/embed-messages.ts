@@ -34,7 +34,7 @@ import { z } from 'zod';
 
 import type { Config } from './create-config';
 import { ConfigSchema } from './create-config';
-import { type TranscriptMessage, TranscriptMessageSchema } from './message';
+import { type JSONMessage, JSONMessageSchema } from './message';
 
 // ---------------------------------------------------------------------------
 // Client to frame actions
@@ -88,7 +88,7 @@ export const FrameToClientActionSchema = z.union([
   }),
   z.object({
     type: z.literal('transcript_message'),
-    payload: TranscriptMessageSchema,
+    payload: JSONMessageSchema,
   }),
   z.object({
     type: z.literal('resize_frame'),
@@ -117,7 +117,7 @@ export const WIDGET_IFRAME_IS_READY_ACTION = {
   type: 'widget_iframe_is_ready',
 } satisfies FrameToClientAction;
 
-export const TRANSCRIPT_MESSAGE_ACTION = (message: TranscriptMessage) => {
+export const TRANSCRIPT_MESSAGE_ACTION = (message: JSONMessage) => {
   return {
     type: 'transcript_message',
     payload: message,

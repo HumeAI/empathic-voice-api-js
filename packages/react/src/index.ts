@@ -17,5 +17,7 @@ export {
   WIDGET_IFRAME_IS_READY_ACTION,
   TRANSCRIPT_MESSAGE_ACTION,
   RESIZE_FRAME_ACTION,
+  type JSONMessage,
+  type AudioMessage,
   type TranscriptMessage,
 } from '@humeai/assistant';

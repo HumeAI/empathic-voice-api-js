@@ -1,107 +1,26 @@
 import z from 'zod';
 
-export const AudioMessageSchema = z.object({
-  type: z.literal('audio'),
-  data: z.instanceof(ArrayBuffer),
-});
+import { AssistantEndMessageSchema } from '@/models/assistant-end-message';
+import type { AudioMessage } from '@/models/audio-message';
+import { parseAudioMessage } from '@/models/audio-message';
+import { AudioOutputMessageSchema } from '@/models/audio-output-message';
+import { TranscriptMessageSchema } from '@/models/transcript-message';
+import { unwrapJson } from '@/utils/unwrapJson';
 
-export type AudioMessage = z.infer<typeof AudioMessageSchema>;
-
-export const TranscriptMessageSchema = z.object({
-  type: z.enum(['user_message', 'assistant_message']),
-  message: z.object({
-    role: z.enum(['user', 'assistant']),
-    content: z.string(),
-  }),
-  models: z.array(
-    z.object({
-      model: z.string(),
-      entries: z.array(
-        z.object({
-          name: z.string(),
-          score: z.number(),
-        }),
-      ),
-      time: z
-        .object({
-          begin: z.number(),
-          end: z.number(),
-        })
-        .nullish(),
-    }),
-  ),
-});
-
-export type TranscriptMessage = z.infer<typeof TranscriptMessageSchema>;
-
-export const AssistantEndMessageSchema = z.object({
-  type: z.literal('assistant_end'),
-});
-
-export type AssistantEndMessage = z.infer<typeof AssistantEndMessageSchema>;
-
-export const MessageSchema = z.union([
-  AudioMessageSchema,
+export const JSONMessageSchema = z.union([
+  AudioOutputMessageSchema,
   TranscriptMessageSchema,
   AssistantEndMessageSchema,
 ]);
 
-export const parseAudioMessage = async (
-  blob: Blob,
-): Promise<AudioMessage | null> => {
-  return blob
-    .arrayBuffer()
-    .then((buffer) => {
-      return {
-        type: 'audio' as const,
-        data: buffer,
-      };
-    })
-    .catch(() => {
-      return null;
-    });
-};
-
-export const parseTranscriptMessage = (
-  message: unknown,
-): TranscriptMessage | null => {
-  if (typeof message === 'string') {
-    try {
-      const parsed = TranscriptMessageSchema.safeParse(JSON.parse(message));
-      if (parsed.success) {
-        return parsed.data;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
-};
-
-export const parseAssistantEndMessage = (
-  message: unknown,
-): AssistantEndMessage | null => {
-  if (typeof message === 'string') {
-    try {
-      const parsed = AssistantEndMessageSchema.safeParse(JSON.parse(message));
-      if (parsed.success) {
-        return parsed.data;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
-};
-
-export type Message = z.infer<typeof MessageSchema>;
+export type JSONMessage = z.infer<typeof JSONMessageSchema>;
 
 export const parseMessageData = async (
   data: unknown,
 ): Promise<
   | {
       success: true;
-      message: Message;
+      message: JSONMessage | AudioMessage;
     }
   | {
       success: false;
@@ -124,25 +43,25 @@ export const parseMessageData = async (
     }
   }
 
-  const transcriptMessage = parseTranscriptMessage(data);
-  if (transcriptMessage) {
+  if (typeof data !== 'string') {
     return {
-      success: true,
-      message: transcriptMessage,
+      success: false,
+      error: new Error('Failed to parse message from socket'),
     };
   }
 
-  const assistantEndMessage = parseAssistantEndMessage(data);
-  if (assistantEndMessage) {
+  const obj = unwrapJson(data, JSONMessageSchema);
+
+  if (obj === null) {
     return {
-      success: true,
-      message: assistantEndMessage,
+      success: false,
+      error: new Error('Failed to parse message from socket'),
     };
   }
 
   return {
-    success: false,
-    error: new Error('Failed to parse transcript'),
+    success: true,
+    message: obj,
   };
 };
 
@@ -151,7 +70,7 @@ export const parseMessageType = async (
 ): Promise<
   | {
       success: true;
-      message: Message;
+      message: JSONMessage | AudioMessage;
     }
   | {
       success: false;

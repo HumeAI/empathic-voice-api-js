@@ -17,6 +17,7 @@ describe('MessageConsole', () => {
     const mockMessages = [
       {
         type: 'user_message' as const,
+        id: 'abc',
         message: { role: 'user' as const, content: 'Hello, world!' },
         models: [
           {
@@ -32,6 +33,7 @@ describe('MessageConsole', () => {
             ],
           },
         ],
+        receivedAt: new Date(),
       },
     ];
 

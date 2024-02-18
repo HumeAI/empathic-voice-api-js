@@ -54,7 +54,7 @@ export const MessageConsole = ({
           return { ...entry, score: Number(entry.score).toFixed(3) };
         });
 
-      if(sender === null) {
+      if (sender === null) {
         return state;
       }
 
