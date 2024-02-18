@@ -9,6 +9,7 @@ export * from './lib/microphone';
 export * from './lib/fetch-access-token';
 
 export * from './models/audio-message';
+export * from './models/audio-output-message';
 export * from './models/transcript-message';
 export * from './models/assistant-end-message';
 

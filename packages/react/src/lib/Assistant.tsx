@@ -1,4 +1,9 @@
-import { createConfig, TranscriptMessage } from '@humeai/assistant';
+import {
+  AudioMessage,
+  AudioOutputMessage,
+  createConfig,
+  TranscriptMessage,
+} from '@humeai/assistant';
 import React, {
   createContext,
   FC,
@@ -85,6 +90,17 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     value: 'disconnected',
   });
 
+  const [assistantMessageMap, setAssistantMessageMap] = useState<
+    Record<string, TranscriptMessage>
+  >({});
+  const [messages, setMessages] = useState<
+    (TranscriptMessage | ConnectionMessage)[]
+  >([]);
+  const [lastAssistantMessage, setLastAssistantMessage] =
+    useState<TranscriptMessage | null>(null);
+  const [lastUserMessage, setLastUserMessage] =
+    useState<TranscriptMessage | null>(null);
+
   // error handling
   const [error, setError] = useState<AssistantError | null>(null);
   const isError = error !== null;
@@ -117,6 +133,18 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     onError: (message) => {
       updateError({ type: 'audio_error', message });
     },
+    onPlayAudio: (id: string) => {
+      const matchingTranscript = assistantMessageMap[id];
+      if (matchingTranscript) {
+        setLastAssistantMessage(matchingTranscript);
+        setMessages((prev) => prev.concat([matchingTranscript]));
+        setAssistantMessageMap((prev) => {
+          const newMap = { ...prev };
+          delete newMap[id];
+          return newMap;
+        });
+      }
+    },
   });
 
   const {
@@ -132,13 +160,46 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
   });
 
   const client = useAssistantClient({
-    onAudioMessage: (base64String: string) => {
-      player.addToQueue(base64String);
+    onAudioMessage: (message: AudioOutputMessage) => {
+      player.addToQueue(message);
     },
-    onTranscriptMessage: onMessage,
+    onTranscriptMessage: useCallback(
+      (message: TranscriptMessage) => {
+        onMessage?.(message);
+        if (message.type === 'assistant_message') {
+          setAssistantMessageMap((prev) => ({
+            ...prev,
+            [message.id]: message,
+          }));
+        } else {
+          setMessages((prev) => prev.concat([message]));
+        }
+      },
+      [onMessage],
+    ),
     onError: onClientError,
-    onOpen: props.onOpen,
-    onClose: props.onClose,
+    onOpen: useCallback(() => {
+      setMessages((prev) =>
+        prev.concat([
+          {
+            type: 'socket_connected',
+            receivedAt: new Date(),
+          },
+        ]),
+      );
+      props.onOpen?.();
+    }, [props.onOpen]),
+    onClose: useCallback(() => {
+      setMessages((prev) =>
+        prev.concat([
+          {
+            type: 'socket_disconnected',
+            receivedAt: new Date(),
+          },
+        ]),
+      );
+      props.onClose?.();
+    }, [props.onClose]),
   });
 
   const mic = useMicrophone({
@@ -201,6 +262,10 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     client.disconnect();
     player.stopAll();
     mic.stop();
+
+    setMessages([]);
+    setLastAssistantMessage(null);
+    setLastUserMessage(null);
   }, [client, player, mic]);
 
   const disconnect = useCallback(
@@ -241,9 +306,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
         micFft: mic.fft,
         isMuted: mic.isMuted,
         isPlaying: player.isPlaying,
-        messages: client.messages,
-        lastAssistantMessage: client.lastAssistantMessage,
-        lastUserMessage: client.lastUserMessage,
+        messages: messages,
+        lastAssistantMessage: lastAssistantMessage,
+        lastUserMessage: lastUserMessage,
         mute: mic.mute,
         readyState: client.readyState,
         status,
@@ -263,9 +328,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       mic.isMuted,
       mic.mute,
       mic.unmute,
-      client.messages,
-      client.lastAssistantMessage,
-      client.lastUserMessage,
+      messages,
+      lastAssistantMessage,
+      lastUserMessage,
       client.readyState,
       status,
       error,
