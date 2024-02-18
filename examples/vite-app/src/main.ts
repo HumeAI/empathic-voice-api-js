@@ -1,4 +1,4 @@
-import type { Message } from '@humeai/assistant';
+import type { AudioMessage, JSONMessage } from '@humeai/assistant';
 import { AssistantClient, createConfig } from '@humeai/assistant';
 
 const body = document.querySelector('body')!;
@@ -13,7 +13,7 @@ const messageHistory = document.createElement('div');
 container.appendChild(messageHistory);
 messageHistory.innerHTML = `<div style="margin-top:20px;">Message History:</div>`;
 
-const appendMessage = (message: Message) => {
+const appendMessage = (message: JSONMessage | AudioMessage) => {
   const timestamp = new Date().toLocaleTimeString();
 
   const messageContainer = document.createElement('div');

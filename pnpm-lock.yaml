@@ -264,6 +264,9 @@ importers:
       reconnecting-websocket:
         specifier: ^4.4.0
         version: 4.4.0
+      ts-pattern:
+        specifier: ^5.0.6
+        version: 5.0.6
       zod:
         specifier: ^3.22.4
         version: 3.22.4

@@ -6,4 +6,9 @@ export default defineConfig({
     environment: 'jsdom',
     watch: false,
   },
+  resolve: {
+    alias: {
+      '@': new URL('./src', import.meta.url).pathname,
+    },
+  },
 });

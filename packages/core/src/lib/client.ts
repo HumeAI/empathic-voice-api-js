@@ -2,12 +2,14 @@ import ReconnectingWebsocket from 'reconnecting-websocket';
 
 import type { Config } from './create-config';
 import { createSocketUrl } from './create-url';
-import type { Message } from './message';
+import type { JSONMessage } from './message';
 import { parseMessageType } from './message';
+
+import type { AudioMessage } from '@/models/audio-message';
 
 export type AssistantEventMap = {
   open?: () => void;
-  message?: (message: Message) => void;
+  message?: (message: JSONMessage | AudioMessage) => void;
   close?: () => void;
   error?: (error: Error) => void;
 };

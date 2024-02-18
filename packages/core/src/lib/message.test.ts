@@ -16,6 +16,7 @@ describe('parseMessageData', () => {
           role: 'user',
           content: 'Hi.',
         },
+        id: 'abc',
         models: [
           {
             model: 'prosody',
