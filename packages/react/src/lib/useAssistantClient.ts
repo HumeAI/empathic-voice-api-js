@@ -12,9 +12,11 @@ export enum AssistantReadyState {
 export type ConnectionMessage =
   | {
       type: 'socket_connected';
+      receivedAt: Date;
     }
   | {
       type: 'socket_disconnected';
+      receivedAt: Date;
     };
 
 export const useAssistantClient = (props: {
@@ -70,6 +72,7 @@ export const useAssistantClient = (props: {
           prev.concat([
             {
               type: 'socket_connected',
+              receivedAt: new Date(),
             },
           ]),
         );
@@ -106,6 +109,7 @@ export const useAssistantClient = (props: {
           prev.concat([
             {
               type: 'socket_disconnected',
+              receivedAt: new Date(),
             },
           ]),
         );
