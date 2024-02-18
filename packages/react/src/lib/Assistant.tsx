@@ -132,8 +132,8 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
   });
 
   const client = useAssistantClient({
-    onAudioMessage: (arrayBuffer) => {
-      player.addToQueue(arrayBuffer);
+    onAudioMessage: (base64String: string) => {
+      player.addToQueue(base64String);
     },
     onTranscriptMessage: onMessage,
     onError: onClientError,

@@ -1,4 +1,4 @@
-import { arrayBufferToBlob } from '@humeai/assistant';
+import { base64ToBlob } from '@humeai/assistant';
 import type { MeydaFeaturesObject } from 'meyda';
 import Meyda from 'meyda';
 import { useCallback, useRef, useState } from 'react';
@@ -87,7 +87,7 @@ export const useSoundPlayer = ({
   }, [handleAudioEnded, handleAudioError, onError]);
 
   const addToQueue = useCallback(
-    (clip: ArrayBuffer) => {
+    (clip: string) => {
       if (!isInitialized.current) {
         onError('Audio player has not been initialized');
         return;
@@ -95,7 +95,7 @@ export const useSoundPlayer = ({
       try {
         // defining MIME type on the blob is required for the audio
         // player to work in safari
-        const blob = arrayBufferToBlob(clip, 'audio/mp3');
+        const blob = base64ToBlob(clip, 'audio/mp3');
         const url = URL.createObjectURL(blob);
 
         // add clip to queue

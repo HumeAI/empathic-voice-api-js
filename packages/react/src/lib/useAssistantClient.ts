@@ -20,7 +20,7 @@ export type ConnectionMessage =
     };
 
 export const useAssistantClient = (props: {
-  onAudioMessage?: (arrayBuffer: ArrayBufferLike) => void;
+  onAudioMessage?: (base64String: string) => void;
   onTranscriptMessage?: (message: TranscriptMessage) => void;
   onError?: (message: string) => void;
   onOpen?: () => void;
@@ -79,7 +79,7 @@ export const useAssistantClient = (props: {
       });
 
       client.current.on('message', (message) => {
-        if (message.type === 'audio') {
+        if (message.type === 'audio_output') {
           onAudioMessage.current?.(message.data);
         }
 
