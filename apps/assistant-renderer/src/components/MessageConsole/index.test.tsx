@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { MessageConsole } from './index';
+import { TranscriptMessage } from '@humeai/assistant-react';
 
 describe('MessageConsole', () => {
   const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
@@ -14,10 +15,9 @@ describe('MessageConsole', () => {
   });
 
   it('only shows the top 5 emotions', () => {
-    const mockMessages = [
+    const mockMessages: TranscriptMessage[] = [
       {
         type: 'user_message' as const,
-        id: 'abc',
         message: { role: 'user' as const, content: 'Hello, world!' },
         models: [
           {
