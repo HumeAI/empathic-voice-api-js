@@ -46,6 +46,11 @@ export const ConfigSchema = z.object({
     })
     .max(MAX_SYSTEM_PROMPT_LENGTH)
     .optional(),
+  no_binary: z
+    .boolean({
+      description: 'System prompt to use for the Assistant.',
+    })
+    .optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
