@@ -1,8 +1,4 @@
-import {
-  AudioMessage,
-  AudioOutputMessage,
-  base64ToBlob,
-} from '@humeai/assistant';
+import { type AudioOutputMessage, base64ToBlob } from '@humeai/assistant';
 import type { MeydaFeaturesObject } from 'meyda';
 import Meyda from 'meyda';
 import { useCallback, useRef, useState } from 'react';
@@ -34,6 +30,9 @@ export const useSoundPlayer = (props: {
   const onPlayAudio = useRef<typeof props.onPlayAudio>(props.onPlayAudio);
   onPlayAudio.current = props.onPlayAudio;
 
+  const onError = useRef<typeof props.onError>(props.onError);
+  onError.current = props.onError;
+
   const handleAudioEnded = useCallback(() => {
     isProcessing.current = false;
 
@@ -51,18 +50,15 @@ export const useSoundPlayer = (props: {
     }
   }, []);
 
-  const handleAudioError = useCallback(
-    (e: unknown) => {
-      isProcessing.current = false;
+  const handleAudioError = useCallback((e: unknown) => {
+    isProcessing.current = false;
 
-      currentAnalyzer.current?.stop();
-      currentAnalyzer.current = null;
+    currentAnalyzer.current?.stop();
+    currentAnalyzer.current = null;
 
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      props.onError(`Error in audio player: ${message}`);
-    },
-    [props.onError],
-  );
+    const message = e instanceof Error ? e.message : 'Unknown error';
+    onError.current(`Error in audio player: ${message}`);
+  }, []);
 
   const initPlayer = useCallback(() => {
     audioContext.current = new AudioContext();
@@ -93,42 +89,39 @@ export const useSoundPlayer = (props: {
     } catch (e: unknown) {
       currentAnalyzer.current = null;
       const message = e instanceof Error ? e.message : 'Unknown error';
-      props.onError(`Failed to start audio analyzer: ${message}`);
+      onError.current(`Failed to start audio analyzer: ${message}`);
       return;
     }
-  }, [handleAudioEnded, handleAudioError, props.onError]);
+  }, [handleAudioEnded, handleAudioError]);
 
-  const addToQueue = useCallback(
-    (message: AudioOutputMessage) => {
-      if (!isInitialized.current) {
-        props.onError('Audio player has not been initialized');
-        return;
+  const addToQueue = useCallback((message: AudioOutputMessage) => {
+    if (!isInitialized.current) {
+      onError.current('Audio player has not been initialized');
+      return;
+    }
+    try {
+      // defining MIME type on the blob is required for the audio
+      // player to work in safari
+      const blob = base64ToBlob(message.data, 'audio/mp3');
+      const url = URL.createObjectURL(blob);
+
+      // add clip to queue
+      clipQueue.current.push({
+        id: message.id,
+        clip: url,
+      });
+
+      // if it's the only clip in the queue, start playing it
+      if (clipQueue.current.length === 1 && audioElement.current) {
+        isProcessing.current = true;
+        onPlayAudio.current(message.id);
+        audioElement.current.src = url;
+        currentAnalyzer.current?.start();
       }
-      try {
-        // defining MIME type on the blob is required for the audio
-        // player to work in safari
-        const blob = base64ToBlob(message.data, 'audio/mp3');
-        const url = URL.createObjectURL(blob);
-
-        // add clip to queue
-        clipQueue.current.push({
-          id: message.id,
-          clip: url,
-        });
-
-        // if it's the only clip in the queue, start playing it
-        if (clipQueue.current.length === 1 && audioElement.current) {
-          isProcessing.current = true;
-          props.onPlayAudio(message.id);
-          audioElement.current.src = url;
-          currentAnalyzer.current?.start();
-        }
-      } catch (e) {
-        void true;
-      }
-    },
-    [props.onError],
-  );
+    } catch (e) {
+      void true;
+    }
+  }, []);
 
   const stopAll = useCallback(() => {
     isInitialized.current = false;

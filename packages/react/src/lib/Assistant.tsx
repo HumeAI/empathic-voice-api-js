@@ -25,6 +25,7 @@ import {
 import { useEncoding } from './useEncoding';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
+import { useMessages } from './useMessages';
 
 type AssistantError =
   | { type: 'socket_error'; message: string }
@@ -90,17 +91,6 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     value: 'disconnected',
   });
 
-  const [assistantMessageMap, setAssistantMessageMap] = useState<
-    Record<string, TranscriptMessage>
-  >({});
-  const [messages, setMessages] = useState<
-    (TranscriptMessage | ConnectionMessage)[]
-  >([]);
-  const [lastAssistantMessage, setLastAssistantMessage] =
-    useState<TranscriptMessage | null>(null);
-  const [lastUserMessage, setLastUserMessage] =
-    useState<TranscriptMessage | null>(null);
-
   // error handling
   const [error, setError] = useState<AssistantError | null>(null);
   const isError = error !== null;
@@ -110,6 +100,8 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
 
   const onError = useRef(props.onError ?? noop);
   onError.current = props.onError ?? noop;
+
+  const messageStore = useMessages();
 
   const updateError = useCallback((err: AssistantError | null) => {
     setError(err);
@@ -134,16 +126,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       updateError({ type: 'audio_error', message });
     },
     onPlayAudio: (id: string) => {
-      const matchingTranscript = assistantMessageMap[id];
-      if (matchingTranscript) {
-        setLastAssistantMessage(matchingTranscript);
-        setMessages((prev) => prev.concat([matchingTranscript]));
-        setAssistantMessageMap((prev) => {
-          const newMap = { ...prev };
-          delete newMap[id];
-          return newMap;
-        });
-      }
+      messageStore.onPlayAudio(id);
     },
   });
 
@@ -166,38 +149,17 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     onTranscriptMessage: useCallback(
       (message: TranscriptMessage) => {
         onMessage?.(message);
-        if (message.type === 'assistant_message') {
-          setAssistantMessageMap((prev) => ({
-            ...prev,
-            [message.id]: message,
-          }));
-        } else {
-          setMessages((prev) => prev.concat([message]));
-        }
+        messageStore.onTranscriptMessage(message);
       },
       [onMessage],
     ),
     onError: onClientError,
     onOpen: useCallback(() => {
-      setMessages((prev) =>
-        prev.concat([
-          {
-            type: 'socket_connected',
-            receivedAt: new Date(),
-          },
-        ]),
-      );
+      messageStore.createConnectMessage();
       props.onOpen?.();
     }, [props.onOpen]),
     onClose: useCallback(() => {
-      setMessages((prev) =>
-        prev.concat([
-          {
-            type: 'socket_disconnected',
-            receivedAt: new Date(),
-          },
-        ]),
-      );
+      messageStore.createDisconnectMessage();
       props.onClose?.();
     }, [props.onClose]),
   });
@@ -262,10 +224,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     client.disconnect();
     player.stopAll();
     mic.stop();
-
-    setMessages([]);
-    setLastAssistantMessage(null);
-    setLastUserMessage(null);
+    messageStore.disconnect();
   }, [client, player, mic]);
 
   const disconnect = useCallback(
@@ -306,9 +265,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
         micFft: mic.fft,
         isMuted: mic.isMuted,
         isPlaying: player.isPlaying,
-        messages: messages,
-        lastAssistantMessage: lastAssistantMessage,
-        lastUserMessage: lastUserMessage,
+        messages: messageStore.messages,
+        lastAssistantMessage: messageStore.lastAssistantMessage,
+        lastUserMessage: messageStore.lastUserMessage,
         mute: mic.mute,
         readyState: client.readyState,
         status,
@@ -328,9 +287,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       mic.isMuted,
       mic.mute,
       mic.unmute,
-      messages,
-      lastAssistantMessage,
-      lastUserMessage,
+      messageStore.messages,
+      messageStore.lastAssistantMessage,
+      messageStore.lastUserMessage,
       client.readyState,
       status,
       error,
