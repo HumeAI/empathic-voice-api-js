@@ -5,6 +5,7 @@ export const createSocketUrl = (config: Config): string => {
 
   url.pathname = '/v0/assistant/chat';
 
+  // receive audio responses as json with IDs instead of binary messages
   url.searchParams.set('no_binary', String(true));
 
   if (config.auth.type === 'access_token') {

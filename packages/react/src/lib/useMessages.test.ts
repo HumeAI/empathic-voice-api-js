@@ -1,99 +1,177 @@
-// import { describe, it, expect, beforeEach, vi } from 'vitest';
-// import { renderHook, act } from '@testing-library/react-hooks';
-// import { useMessages } from './useMessages'; // adjust the import path as needed
-// import { RenderResult } from '@testing-library/react';
+import type { RenderHookResult } from '@testing-library/react-hooks';
+import { act, renderHook } from '@testing-library/react-hooks';
+import { beforeEach, describe, expect, it } from 'vitest';
 
-// describe('useMessages hook', () => {
-//   let result;
+import { useMessages } from './useMessages'; // adjust the import path as needed
+import type { TranscriptMessage } from '..';
 
-//   beforeEach(() => {
-//     const { result: hookResult } = renderHook(() => useMessages());
-//     result = hookResult;
-//   });
+describe('useMessages hook', () => {
+  let hook: RenderHookResult<unknown, ReturnType<typeof useMessages>>;
+  let userMessage: TranscriptMessage;
+  let assistantMessage: TranscriptMessage;
 
-//   it('should initialize with correct default states', () => {
-//     expect(result.current.messages).toEqual([]);
-//     expect(result.current.lastAssistantMessage).toBeNull();
-//     expect(result.current.lastUserMessage).toBeNull();
-//   });
+  beforeEach(() => {
+    hook = renderHook(() => useMessages());
+    userMessage = {
+      type: 'user_message',
+      message: {
+        role: 'user',
+        content: 'How is the weather today?',
+      },
+      models: [
+        {
+          model: 'prosody',
+          entries: [
+            {
+              name: 'Amusement',
+              score: 0.95,
+            },
+          ],
+          time: {
+            begin: 1633035600,
+            end: 1633035620,
+          },
+        },
+      ],
+      receivedAt: new Date(),
+    };
+    assistantMessage = {
+      type: 'assistant_message' as const,
+      id: 'message_12345',
+      message: {
+        role: 'assistant' as const,
+        content: 'Hey',
+      },
+      models: [
+        {
+          model: 'prosody',
+          entries: [
+            {
+              name: 'Amusement',
+              score: 0.98,
+            },
+          ],
+          time: {
+            begin: 1633035625,
+            end: 1633035635,
+          },
+        },
+      ],
+      receivedAt: new Date(),
+    };
+  });
 
-//   it('should handle connection message creation', () => {
-//     act(() => {
-//       result.current.createConnectMessage();
-//     });
+  it('should initialize with correct default states', () => {
+    expect(hook.result.current.messages).toEqual([]);
+    expect(hook.result.current.lastAssistantMessage).toBeNull();
+    expect(hook.result.current.lastUserMessage).toBeNull();
+  });
 
-//     expect(result.current.messages).toHaveLength(1);
-//     expect(result.current.messages[0].type).toBe('socket_connected');
-//   });
+  it('should handle connection message creation', () => {
+    act(() => {
+      hook.result.current.createConnectMessage();
+    });
 
-//   it('should handle disconnection message creation', () => {
-//     act(() => {
-//       result.current.createDisconnectMessage();
-//     });
+    expect(hook.result.current.messages).toHaveLength(1);
+    expect(hook.result.current.messages[0]?.type).toBe('socket_connected');
+  });
 
-//     expect(result.current.messages).toHaveLength(1);
-//     expect(result.current.messages[0].type).toBe('socket_disconnected');
-//   });
+  it('should handle disconnection message creation', () => {
+    act(() => {
+      hook.result.current.createDisconnectMessage();
+    });
 
-//   it('should handle transcript messages for assistant and user', () => {
-//     const assistantMessage = {
-//       id: '1',
-//       type: 'assistant_message',
-//       content: 'Hello',
-//     };
-//     const userMessage = { id: '2', type: 'user_message', content: 'Hi there!' };
+    expect(hook.result.current.messages).toHaveLength(1);
+    expect(hook.result.current.messages[0]?.type).toBe('socket_disconnected');
+  });
 
-//     act(() => {
-//       result.current.onTranscriptMessage(assistantMessage);
-//     });
+  it('should add user messages to `messages` immediately', () => {
+    act(() => {
+      hook.result.current.onTranscriptMessage(userMessage);
+    });
 
-//     expect(result.current.lastAssistantMessage).toBeNull(); // Assistant messages do not update lastAssistantMessage
-//     expect(result.current.messages).toContainEqual(assistantMessage);
+    expect(hook.result.current.lastUserMessage).toEqual(userMessage);
+    expect(hook.result.current.messages).toContainEqual(userMessage);
+  });
 
-//     act(() => {
-//       result.current.onTranscriptMessage(userMessage);
-//     });
+  it('should add assistant messages to the assistant message map', () => {
+    act(() => {
+      hook.result.current.onTranscriptMessage(assistantMessage);
+    });
 
-//     expect(result.current.lastUserMessage).toEqual(userMessage);
-//     expect(result.current.messages).toContainEqual(userMessage);
-//   });
+    expect(hook.result.current.lastAssistantMessage).toBeNull();
+    expect(hook.result.current.messages).not.toContainEqual(assistantMessage);
+  });
 
-//   it('should handle playing audio from an assistant message', () => {
-//     const assistantMessage = {
-//       id: '3',
-//       type: 'assistant_message',
-//       content: 'Playing audio',
-//     };
+  it('should expose the assistant message after the associated audio clip is played', () => {
+    // add the message
+    act(() => {
+      hook.result.current.onTranscriptMessage(assistantMessage);
+    });
 
-//     act(() => {
-//       result.current.onTranscriptMessage(assistantMessage); // First, add the message
-//     });
+    // simulate playing audio
+    act(() => {
+      hook.result.current.onPlayAudio(
+        'id' in assistantMessage ? assistantMessage.id : '',
+      );
+    });
 
-//     act(() => {
-//       result.current.onPlayAudio(assistantMessage.id); // Then, simulate playing audio
-//     });
+    expect(hook.result.current.lastAssistantMessage).toEqual(assistantMessage);
+    expect(hook.result.current.messages).toContainEqual(assistantMessage);
+  });
 
-//     expect(result.current.lastAssistantMessage).toEqual(assistantMessage);
-//     // Verify the message is still in the messages array only once
-//     expect(
-//       result.current.messages.filter((msg) => msg.id === assistantMessage.id),
-//     ).toHaveLength(1);
-//   });
+  it('should expose the assistant message after the associated audio clip is played', () => {
+    act(() => {
+      hook.result.current.onTranscriptMessage(assistantMessage); // First, add the message
+    });
 
-//   it('should clear all messages and states on disconnect', () => {
-//     // First, add some messages and states
-//     act(() => {
-//       result.current.createConnectMessage();
-//       result.current.createDisconnectMessage();
-//     });
+    act(() => {
+      hook.result.current.onPlayAudio(
+        'id' in assistantMessage ? assistantMessage.id : '',
+      );
+    });
 
-//     // Then, disconnect
-//     act(() => {
-//       result.current.disconnect();
-//     });
+    expect(hook.result.current.lastAssistantMessage).toEqual(assistantMessage);
+    expect(hook.result.current.messages).toContainEqual(assistantMessage);
+  });
 
-//     expect(result.current.messages).toHaveLength(0);
-//     expect(result.current.lastAssistantMessage).toBeNull();
-//     expect(result.current.lastUserMessage).toBeNull();
-//   });
-// });
+  it('should only add assistant messages once', () => {
+    act(() => {
+      hook.result.current.onTranscriptMessage(assistantMessage); // First, add the message
+    });
+
+    act(() => {
+      hook.result.current.onPlayAudio(
+        'id' in assistantMessage ? assistantMessage.id : '',
+      );
+    });
+
+    expect(hook.result.current.messages).toHaveLength(1);
+
+    // play audio clip with the same ID as before
+    act(() => {
+      hook.result.current.onPlayAudio(
+        'id' in assistantMessage ? assistantMessage.id : '',
+      );
+    });
+
+    expect(hook.result.current.messages).toHaveLength(1);
+  });
+
+  it('should clear all messages and states on disconnect', () => {
+    // First, add some messages and states
+    act(() => {
+      hook.result.current.createConnectMessage();
+      hook.result.current.createDisconnectMessage();
+    });
+
+    // Then, disconnect
+    act(() => {
+      hook.result.current.disconnect();
+    });
+
+    expect(hook.result.current.messages).toHaveLength(0);
+    expect(hook.result.current.lastAssistantMessage).toBeNull();
+    expect(hook.result.current.lastUserMessage).toBeNull();
+  });
+});

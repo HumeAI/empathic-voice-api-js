@@ -48,7 +48,7 @@ export const ConfigSchema = z.object({
     .optional(),
   no_binary: z
     .boolean({
-      description: 'System prompt to use for the Assistant.',
+      description: 'Audio output format for Assistant responses.',
     })
     .optional(),
 });
