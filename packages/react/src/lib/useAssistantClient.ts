@@ -1,4 +1,8 @@
-import type { Config, TranscriptMessage } from '@humeai/assistant';
+import type {
+  AudioOutputMessage,
+  Config,
+  TranscriptMessage,
+} from '@humeai/assistant';
 import { AssistantClient } from '@humeai/assistant';
 import { useCallback, useRef, useState } from 'react';
 
@@ -20,7 +24,7 @@ export type ConnectionMessage =
     };
 
 export const useAssistantClient = (props: {
-  onAudioMessage?: (arrayBuffer: ArrayBufferLike) => void;
+  onAudioMessage?: (message: AudioOutputMessage) => void;
   onTranscriptMessage?: (message: TranscriptMessage) => void;
   onError?: (message: string) => void;
   onOpen?: () => void;
@@ -31,13 +35,6 @@ export const useAssistantClient = (props: {
   const [readyState, setReadyState] = useState<AssistantReadyState>(
     AssistantReadyState.IDLE,
   );
-  const [messages, setMessages] = useState<
-    (TranscriptMessage | ConnectionMessage)[]
-  >([]);
-  const [lastAssistantMessage, setLastAssistantMessage] =
-    useState<TranscriptMessage | null>(null);
-  const [lastUserMessage, setLastUserMessage] =
-    useState<TranscriptMessage | null>(null);
 
   // this pattern might look hacky but it allows us to use the latest props
   // in callbacks set up inside useEffect without re-rendering the useEffect
@@ -68,27 +65,11 @@ export const useAssistantClient = (props: {
         onOpen.current?.();
         setReadyState(AssistantReadyState.OPEN);
         resolve(AssistantReadyState.OPEN);
-        setMessages((prev) =>
-          prev.concat([
-            {
-              type: 'socket_connected',
-              receivedAt: new Date(),
-            },
-          ]),
-        );
       });
 
       client.current.on('message', (message) => {
-        if (message.type === 'audio') {
-          onAudioMessage.current?.(message.data);
-        }
-
-        if (message.type === 'assistant_message') {
-          setLastAssistantMessage(message);
-        }
-
-        if (message.type === 'user_message') {
-          setLastUserMessage(message);
+        if (message.type === 'audio_output') {
+          onAudioMessage.current?.(message);
         }
 
         if (
@@ -96,23 +77,12 @@ export const useAssistantClient = (props: {
           message.type === 'user_message'
         ) {
           onTranscriptMessage.current?.(message);
-          setMessages((prev) => {
-            return prev.concat([message]);
-          });
         }
       });
 
       client.current.on('close', () => {
         onClose.current?.();
         setReadyState(AssistantReadyState.CLOSED);
-        setMessages((prev) =>
-          prev.concat([
-            {
-              type: 'socket_disconnected',
-              receivedAt: new Date(),
-            },
-          ]),
-        );
       });
 
       client.current.on('error', (e) => {
@@ -128,9 +98,6 @@ export const useAssistantClient = (props: {
   }, []);
 
   const disconnect = useCallback(() => {
-    setMessages([]);
-    setLastAssistantMessage(null);
-    setLastUserMessage(null);
     setReadyState(AssistantReadyState.IDLE);
     client.current?.disconnect();
   }, []);
@@ -141,9 +108,6 @@ export const useAssistantClient = (props: {
 
   return {
     readyState,
-    messages,
-    lastAssistantMessage,
-    lastUserMessage,
     sendAudio,
     connect,
     disconnect,

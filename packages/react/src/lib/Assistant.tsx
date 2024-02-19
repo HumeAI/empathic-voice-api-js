@@ -1,4 +1,9 @@
-import { createConfig, TranscriptMessage } from '@humeai/assistant';
+import {
+  AudioMessage,
+  AudioOutputMessage,
+  createConfig,
+  TranscriptMessage,
+} from '@humeai/assistant';
 import React, {
   createContext,
   FC,
@@ -20,6 +25,7 @@ import {
 import { useEncoding } from './useEncoding';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
+import { useMessages } from './useMessages';
 
 type AssistantError =
   | { type: 'socket_error'; message: string }
@@ -95,6 +101,8 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
   const onError = useRef(props.onError ?? noop);
   onError.current = props.onError ?? noop;
 
+  const messageStore = useMessages();
+
   const updateError = useCallback((err: AssistantError | null) => {
     setError(err);
     if (err !== null) {
@@ -117,6 +125,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     onError: (message) => {
       updateError({ type: 'audio_error', message });
     },
+    onPlayAudio: (id: string) => {
+      messageStore.onPlayAudio(id);
+    },
   });
 
   const {
@@ -132,13 +143,25 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
   });
 
   const client = useAssistantClient({
-    onAudioMessage: (arrayBuffer) => {
-      player.addToQueue(arrayBuffer);
+    onAudioMessage: (message: AudioOutputMessage) => {
+      player.addToQueue(message);
     },
-    onTranscriptMessage: onMessage,
+    onTranscriptMessage: useCallback(
+      (message: TranscriptMessage) => {
+        onMessage?.(message);
+        messageStore.onTranscriptMessage(message);
+      },
+      [onMessage],
+    ),
     onError: onClientError,
-    onOpen: props.onOpen,
-    onClose: props.onClose,
+    onOpen: useCallback(() => {
+      messageStore.createConnectMessage();
+      props.onOpen?.();
+    }, [props.onOpen]),
+    onClose: useCallback(() => {
+      messageStore.createDisconnectMessage();
+      props.onClose?.();
+    }, [props.onClose]),
   });
 
   const mic = useMicrophone({
@@ -201,6 +224,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     client.disconnect();
     player.stopAll();
     mic.stop();
+    messageStore.disconnect();
   }, [client, player, mic]);
 
   const disconnect = useCallback(
@@ -241,9 +265,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
         micFft: mic.fft,
         isMuted: mic.isMuted,
         isPlaying: player.isPlaying,
-        messages: client.messages,
-        lastAssistantMessage: client.lastAssistantMessage,
-        lastUserMessage: client.lastUserMessage,
+        messages: messageStore.messages,
+        lastAssistantMessage: messageStore.lastAssistantMessage,
+        lastUserMessage: messageStore.lastUserMessage,
         mute: mic.mute,
         readyState: client.readyState,
         status,
@@ -263,9 +287,9 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       mic.isMuted,
       mic.mute,
       mic.unmute,
-      client.messages,
-      client.lastAssistantMessage,
-      client.lastUserMessage,
+      messageStore.messages,
+      messageStore.lastAssistantMessage,
+      messageStore.lastUserMessage,
       client.readyState,
       status,
       error,

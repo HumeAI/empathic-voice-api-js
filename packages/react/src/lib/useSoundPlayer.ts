@@ -1,14 +1,13 @@
-import { arrayBufferToBlob } from '@humeai/assistant';
+import { type AudioOutputMessage, base64ToBlob } from '@humeai/assistant';
 import type { MeydaFeaturesObject } from 'meyda';
 import Meyda from 'meyda';
 import { useCallback, useRef, useState } from 'react';
 
 import { generateEmptyFft } from './generateEmptyFft';
 
-export const useSoundPlayer = ({
-  onError,
-}: {
+export const useSoundPlayer = (props: {
   onError: (message: string) => void;
+  onPlayAudio: (id: string) => void;
 }) => {
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
@@ -20,8 +19,19 @@ export const useSoundPlayer = ({
     typeof Meyda.createMeydaAnalyzer
   > | null>(null);
 
-  const clipQueue = useRef<Array<string>>([]);
+  const clipQueue = useRef<
+    Array<{
+      id: string;
+      clip: string;
+    }>
+  >([]);
   const isProcessing = useRef(false);
+
+  const onPlayAudio = useRef<typeof props.onPlayAudio>(props.onPlayAudio);
+  onPlayAudio.current = props.onPlayAudio;
+
+  const onError = useRef<typeof props.onError>(props.onError);
+  onError.current = props.onError;
 
   const handleAudioEnded = useCallback(() => {
     isProcessing.current = false;
@@ -35,22 +45,20 @@ export const useSoundPlayer = ({
     const nextClip = clipQueue.current[0];
     if (nextClip && audioElement.current) {
       isProcessing.current = true;
-      audioElement.current.src = nextClip;
+      audioElement.current.src = nextClip.clip;
+      onPlayAudio.current(nextClip.id);
     }
   }, []);
 
-  const handleAudioError = useCallback(
-    (e: unknown) => {
-      isProcessing.current = false;
+  const handleAudioError = useCallback((e: unknown) => {
+    isProcessing.current = false;
 
-      currentAnalyzer.current?.stop();
-      currentAnalyzer.current = null;
+    currentAnalyzer.current?.stop();
+    currentAnalyzer.current = null;
 
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      onError(`Error in audio player: ${message}`);
-    },
-    [onError],
-  );
+    const message = e instanceof Error ? e.message : 'Unknown error';
+    onError.current(`Error in audio player: ${message}`);
+  }, []);
 
   const initPlayer = useCallback(() => {
     audioContext.current = new AudioContext();
@@ -81,38 +89,39 @@ export const useSoundPlayer = ({
     } catch (e: unknown) {
       currentAnalyzer.current = null;
       const message = e instanceof Error ? e.message : 'Unknown error';
-      onError(`Failed to start audio analyzer: ${message}`);
+      onError.current(`Failed to start audio analyzer: ${message}`);
       return;
     }
-  }, [handleAudioEnded, handleAudioError, onError]);
+  }, [handleAudioEnded, handleAudioError]);
 
-  const addToQueue = useCallback(
-    (clip: ArrayBuffer) => {
-      if (!isInitialized.current) {
-        onError('Audio player has not been initialized');
-        return;
+  const addToQueue = useCallback((message: AudioOutputMessage) => {
+    if (!isInitialized.current) {
+      onError.current('Audio player has not been initialized');
+      return;
+    }
+    try {
+      // defining MIME type on the blob is required for the audio
+      // player to work in safari
+      const blob = base64ToBlob(message.data, 'audio/mp3');
+      const url = URL.createObjectURL(blob);
+
+      // add clip to queue
+      clipQueue.current.push({
+        id: message.id,
+        clip: url,
+      });
+
+      // if it's the only clip in the queue, start playing it
+      if (clipQueue.current.length === 1 && audioElement.current) {
+        isProcessing.current = true;
+        onPlayAudio.current(message.id);
+        audioElement.current.src = url;
+        currentAnalyzer.current?.start();
       }
-      try {
-        // defining MIME type on the blob is required for the audio
-        // player to work in safari
-        const blob = arrayBufferToBlob(clip, 'audio/mp3');
-        const url = URL.createObjectURL(blob);
-
-        // add clip to queue
-        clipQueue.current.push(url);
-
-        // if it's the only clip in the queue, start playing it
-        if (clipQueue.current.length === 1 && audioElement.current) {
-          isProcessing.current = true;
-          audioElement.current.src = url;
-          currentAnalyzer.current?.start();
-        }
-      } catch (e) {
-        void true;
-      }
-    },
-    [onError],
-  );
+    } catch (e) {
+      void true;
+    }
+  }, []);
 
   const stopAll = useCallback(() => {
     isInitialized.current = false;
