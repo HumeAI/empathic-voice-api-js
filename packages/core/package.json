@@ -1,5 +1,5 @@
 {
-  "name": "@humeai/assistant",
+  "name": "@humeai/voice",
   "version": "0.0.1",
   "description": "",
   "main": "./dist/index.js",
@@ -7,7 +7,7 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HumeAI/assistant-sdk.git",
+    "url": "https://github.com/HumeAI/voice-sdk.git",
     "directory": "packages/core"
   },
   "files": [

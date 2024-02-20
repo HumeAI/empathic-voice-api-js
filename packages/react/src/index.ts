@@ -1,8 +1,8 @@
-export * from './lib/EmbeddedAssistant';
+export * from './lib/EmbeddedVoice';
 export * from './lib/useSoundPlayer';
 export * from './lib/useMicrophone';
-export * from './lib/Assistant';
-export * from './lib/useAssistantClient';
+export * from './lib/Voice';
+export * from './lib/useVoiceClient';
 
 export {
   type Config,
@@ -20,4 +20,4 @@ export {
   type JSONMessage,
   type AudioMessage,
   type TranscriptMessage,
-} from '@humeai/assistant';
+} from '@humeai/voice';

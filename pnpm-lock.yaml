@@ -23,7 +23,7 @@ importers:
 
   apps/assistant-renderer:
     dependencies:
-      '@humeai/assistant-react':
+      '@humeai/voice-react':
         specifier: workspace:*
         version: link:../../packages/react
       class-variance-authority:
@@ -108,10 +108,10 @@ importers:
 
   examples/next-app:
     dependencies:
-      '@humeai/assistant':
+      '@humeai/voice':
         specifier: workspace:*
         version: link:../../packages/core
-      '@humeai/assistant-react':
+      '@humeai/voice-react':
         specifier: workspace:*
         version: link:../../packages/react
       eslint-plugin-filename-rules:
@@ -202,7 +202,7 @@ importers:
 
   examples/vite-app:
     dependencies:
-      '@humeai/assistant':
+      '@humeai/voice':
         specifier: workspace:*
         version: link:../../packages/core
     devDependencies:
@@ -215,7 +215,7 @@ importers:
 
   examples/vite-app-embed:
     dependencies:
-      '@humeai/assistant-react':
+      '@humeai/voice-react':
         specifier: workspace:*
         version: link:../../packages/react
       react:
@@ -295,7 +295,7 @@ importers:
 
   packages/react:
     dependencies:
-      '@humeai/assistant':
+      '@humeai/voice':
         specifier: workspace:*
         version: link:../core
       '@testing-library/react-hooks':

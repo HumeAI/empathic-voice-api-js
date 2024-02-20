@@ -1,5 +1,5 @@
-import { fetchAccessToken } from '@humeai/assistant';
-import { AssistantProvider } from '@humeai/assistant-react';
+import { fetchAccessToken } from '@humeai/voice';
+import { VoiceProvider } from '@humeai/voice-react';
 import dynamic from 'next/dynamic';
 import type { FC, PropsWithChildren } from 'react';
 
@@ -22,16 +22,16 @@ export default async function Home() {
 
   return (
     <div className={'p-6'}>
-      <h1 className={'font-medium'}>Hume Assistant Example Component</h1>
+      <h1 className={'font-medium'}>Hume Voice Example Component</h1>
 
       <NoSSR>
         {accessToken ? (
-          <AssistantProvider
+          <VoiceProvider
             auth={{ type: 'access_token', value: accessToken }}
             hostname={'api.hume.ai'}
           >
             <ExampleComponent />
-          </AssistantProvider>
+          </VoiceProvider>
         ) : (
           <div>Missing API Key</div>
         )}

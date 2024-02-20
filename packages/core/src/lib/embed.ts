@@ -7,20 +7,20 @@ import {
   WIDGET_IFRAME_IS_READY_ACTION,
 } from './embed-messages';
 
-export type EmbeddedAssistantConfig = {
+export type EmbeddedVoiceConfig = {
   rendererUrl: string;
 } & Config;
 
-export class EmbeddedAssistant {
+export class EmbeddedVoice {
   private iframe: HTMLIFrameElement;
 
   private isMounted: boolean = false;
 
   private managedContainer: HTMLElement | null = null;
 
-  private config: EmbeddedAssistantConfig;
+  private config: EmbeddedVoiceConfig;
 
-  private constructor(config: EmbeddedAssistantConfig) {
+  private constructor(config: EmbeddedVoiceConfig) {
     this.config = config;
     this.iframe = this.createIframe(config);
 
@@ -30,12 +30,12 @@ export class EmbeddedAssistant {
   static create({
     rendererUrl,
     ...config
-  }: Partial<EmbeddedAssistantConfig> &
-    NonNullable<Pick<EmbeddedAssistantConfig, 'auth'>>): EmbeddedAssistant {
+  }: Partial<EmbeddedVoiceConfig> &
+    NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>>): EmbeddedVoice {
     const parsedConfig = createConfig(config);
 
-    return new EmbeddedAssistant({
-      rendererUrl: rendererUrl ?? 'https://assistant-widget.hume.ai',
+    return new EmbeddedVoice({
+      rendererUrl: rendererUrl ?? 'https://voice-widget.hume.ai',
       ...parsedConfig,
     });
   }
@@ -85,14 +85,14 @@ export class EmbeddedAssistant {
       fontSize: '0px',
     });
 
-    div.id = 'hume-embedded-assistant-container';
+    div.id = 'hume-embedded-voice-container';
 
     document.body.appendChild(div);
 
     return div;
   }
 
-  private createIframe({ rendererUrl }: EmbeddedAssistantConfig) {
+  private createIframe({ rendererUrl }: EmbeddedVoiceConfig) {
     const el = document.createElement('iframe');
 
     Object.assign(el.style, {
@@ -104,7 +104,7 @@ export class EmbeddedAssistant {
       opacity: '0',
     });
 
-    el.id = 'hume-embedded-assistant';
+    el.id = 'hume-embedded-voice';
 
     el.src = `${rendererUrl}`;
 

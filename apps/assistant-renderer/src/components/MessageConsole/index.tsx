@@ -1,9 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef } from 'react';
-import type {
-  ConnectionMessage,
-  TranscriptMessage,
-} from '@humeai/assistant-react';
+import type { ConnectionMessage, TranscriptMessage } from '@humeai/voice-react';
 import { match } from 'ts-pattern';
 import { expressionColors } from 'expression-colors';
 
@@ -22,7 +19,7 @@ export const MessageConsole = ({
   const formattedMessages = useMemo(() => {
     return messages.reduce<
       {
-        sender: 'user' | 'assistant';
+        sender: 'user' | 'voice';
         message: TranscriptMessage;
         sortedEmotions: {
           score: string;
@@ -39,7 +36,7 @@ export const MessageConsole = ({
 
       const sender = match(message.type)
         .with('user_message', () => 'user' as const)
-        .with('assistant_message', () => 'assistant' as const)
+        .with('voice_message', () => 'voice' as const)
         .otherwise(() => null);
 
       const prosodyModel = message.models.find(

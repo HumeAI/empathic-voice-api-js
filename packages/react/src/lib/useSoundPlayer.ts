@@ -1,4 +1,4 @@
-import { type AudioOutputMessage, base64ToBlob } from '@humeai/assistant';
+import { type AudioOutputMessage, base64ToBlob } from '@humeai/voice';
 import type { MeydaFeaturesObject } from 'meyda';
 import Meyda from 'meyda';
 import { useCallback, useRef, useState } from 'react';

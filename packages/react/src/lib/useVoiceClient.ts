@@ -2,11 +2,11 @@ import type {
   AudioOutputMessage,
   Config,
   TranscriptMessage,
-} from '@humeai/assistant';
-import { AssistantClient } from '@humeai/assistant';
+} from '@humeai/voice';
+import { VoiceClient } from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
 
-export enum AssistantReadyState {
+export enum VoiceReadyState {
   IDLE = 'idle',
   CONNECTING = 'connecting',
   OPEN = 'open',
@@ -23,17 +23,17 @@ export type ConnectionMessage =
       receivedAt: Date;
     };
 
-export const useAssistantClient = (props: {
+export const useVoiceClient = (props: {
   onAudioMessage?: (message: AudioOutputMessage) => void;
   onTranscriptMessage?: (message: TranscriptMessage) => void;
   onError?: (message: string) => void;
   onOpen?: () => void;
   onClose?: () => void;
 }) => {
-  const client = useRef<AssistantClient | null>(null);
+  const client = useRef<VoiceClient | null>(null);
 
-  const [readyState, setReadyState] = useState<AssistantReadyState>(
-    AssistantReadyState.IDLE,
+  const [readyState, setReadyState] = useState<VoiceReadyState>(
+    VoiceReadyState.IDLE,
   );
 
   // this pattern might look hacky but it allows us to use the latest props
@@ -59,12 +59,12 @@ export const useAssistantClient = (props: {
 
   const connect = useCallback((config: Config) => {
     return new Promise((resolve, reject) => {
-      client.current = AssistantClient.create(config);
+      client.current = VoiceClient.create(config);
 
       client.current.on('open', () => {
         onOpen.current?.();
-        setReadyState(AssistantReadyState.OPEN);
-        resolve(AssistantReadyState.OPEN);
+        setReadyState(VoiceReadyState.OPEN);
+        resolve(VoiceReadyState.OPEN);
       });
 
       client.current.on('message', (message) => {
@@ -73,7 +73,7 @@ export const useAssistantClient = (props: {
         }
 
         if (
-          message.type === 'assistant_message' ||
+          message.type === 'voice_message' ||
           message.type === 'user_message'
         ) {
           onTranscriptMessage.current?.(message);
@@ -82,7 +82,7 @@ export const useAssistantClient = (props: {
 
       client.current.on('close', () => {
         onClose.current?.();
-        setReadyState(AssistantReadyState.CLOSED);
+        setReadyState(VoiceReadyState.CLOSED);
       });
 
       client.current.on('error', (e) => {
@@ -91,14 +91,14 @@ export const useAssistantClient = (props: {
         reject(e);
       });
 
-      setReadyState(AssistantReadyState.CONNECTING);
+      setReadyState(VoiceReadyState.CONNECTING);
 
       client.current.connect();
     });
   }, []);
 
   const disconnect = useCallback(() => {
-    setReadyState(AssistantReadyState.IDLE);
+    setReadyState(VoiceReadyState.IDLE);
     client.current?.disconnect();
   }, []);
 

@@ -7,19 +7,19 @@ import { parseMessageType } from './message';
 
 import type { AudioMessage } from '@/models/audio-message';
 
-export type AssistantEventMap = {
+export type VoiceEventMap = {
   open?: () => void;
   message?: (message: JSONMessage | AudioMessage) => void;
   close?: () => void;
   error?: (error: Error) => void;
 };
 
-export class AssistantClient {
+export class VoiceClient {
   private socket: ReconnectingWebsocket;
 
   private url: string;
 
-  private eventHandlers: AssistantEventMap = {};
+  private eventHandlers: VoiceEventMap = {};
 
   private constructor(config: Config) {
     this.url = createSocketUrl(config);
@@ -31,19 +31,16 @@ export class AssistantClient {
   }
 
   /**
-   * Create a new AssistantClient.
+   * Create a new VoiceClient.
    */
   static create(config: Config) {
-    return new AssistantClient(config);
+    return new VoiceClient(config);
   }
 
   /**
    * Attach events to the client.
    */
-  on<T extends keyof AssistantEventMap>(
-    event: T,
-    callback: AssistantEventMap[T],
-  ) {
+  on<T extends keyof VoiceEventMap>(event: T, callback: VoiceEventMap[T]) {
     this.eventHandlers[event] = callback;
   }
 

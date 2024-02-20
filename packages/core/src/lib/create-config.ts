@@ -42,13 +42,13 @@ export const ConfigSchema = z.object({
     .default(false),
   systemPrompt: z
     .string({
-      description: 'System prompt to use for the Assistant.',
+      description: 'System prompt to use for the Voice.',
     })
     .max(MAX_SYSTEM_PROMPT_LENGTH)
     .optional(),
   no_binary: z
     .boolean({
-      description: 'Audio output format for Assistant responses.',
+      description: 'Audio output format for Voice responses.',
     })
     .optional(),
 });

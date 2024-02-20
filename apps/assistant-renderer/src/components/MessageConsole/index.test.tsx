@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from '@testing-library/react';
 import { MessageConsole } from './index';
-import { TranscriptMessage } from '@humeai/assistant-react';
+import { TranscriptMessage } from '@humeai/voice-react';
 
 describe('MessageConsole', () => {
   const originalScrollIntoView = window.HTMLElement.prototype.scrollIntoView;

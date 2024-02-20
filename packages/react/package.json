@@ -1,5 +1,5 @@
 {
-  "name": "@humeai/assistant-react",
+  "name": "@humeai/voice-react",
   "version": "0.0.1",
   "description": "",
   "main": "./dist/index.js",
@@ -7,7 +7,7 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HumeAI/assistant-sdk.git",
+    "url": "https://github.com/HumeAI/voice-sdk.git",
     "directory": "packages/react"
   },
   "files": [
@@ -25,7 +25,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@humeai/assistant": "workspace:*",
+    "@humeai/voice": "workspace:*",
     "@testing-library/react-hooks": "^8.0.1",
     "detect-browser": "^5.3.0",
     "extendable-media-recorder": "^9.1.7",

@@ -1,16 +1,16 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { AssistantReadyState, useAssistantClient } from './useAssistantClient';
+import { useVoiceClient, VoiceReadyState } from './useVoiceClient';
 
-describe('useAssistantClient', () => {
+describe('useVoiceClient', () => {
   it('creates a client with the given config', () => {
     const hook = renderHook(() =>
-      useAssistantClient({
+      useVoiceClient({
         onError: () => {},
       }),
     );
 
-    expect(hook.result.current.readyState).toBe(AssistantReadyState.IDLE);
+    expect(hook.result.current.readyState).toBe(VoiceReadyState.IDLE);
   });
 });

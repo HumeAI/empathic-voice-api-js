@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { FC } from 'react';
 
 // eslint-disable-next-line react-refresh/only-export-components
-export enum AssistantAnimationState {
+export enum VoiceAnimationState {
   LISTENING = 'listening',
   TALKING = 'talking',
   THINKING = 'thinking',
@@ -15,19 +15,19 @@ type EmotionScore = {
   score: number;
 };
 
-type AssistantAnimationProsody = {
+type VoiceAnimationProsody = {
   emotions: EmotionScore[];
 };
 
 type FFTValues = number[]; // likely length of 24, may not be always.
 
-type AssistantAnimationRendererProps = {
-  state: AssistantAnimationState;
-  prosody: AssistantAnimationProsody;
+type VoiceAnimationRendererProps = {
+  state: VoiceAnimationState;
+  prosody: VoiceAnimationProsody;
   fft: FFTValues;
 };
 
-export const AssistantAnimation: FC<AssistantAnimationRendererProps> = ({
+export const VoiceAnimation: FC<VoiceAnimationRendererProps> = ({
   // state,
   // prosody,
   fft,

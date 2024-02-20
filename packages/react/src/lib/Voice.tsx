@@ -3,7 +3,7 @@ import {
   AudioOutputMessage,
   createConfig,
   TranscriptMessage,
-} from '@humeai/assistant';
+} from '@humeai/voice';
 import React, {
   createContext,
   FC,
@@ -17,22 +17,22 @@ import React, {
 } from 'react';
 
 import { noop } from './noop';
-import {
-  type AssistantReadyState,
-  ConnectionMessage,
-  useAssistantClient,
-} from './useAssistantClient';
 import { useEncoding } from './useEncoding';
+import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
-import { useMessages } from './useMessages';
+import {
+  ConnectionMessage,
+  useVoiceClient,
+  type VoiceReadyState,
+} from './useVoiceClient';
 
-type AssistantError =
+type VoiceError =
   | { type: 'socket_error'; message: string }
   | { type: 'audio_error'; message: string }
   | { type: 'mic_error'; message: string };
 
-type AssistantStatus =
+type VoiceStatus =
   | {
       value: 'disconnected' | 'connecting' | 'connected';
       reason?: never;
@@ -42,57 +42,57 @@ type AssistantStatus =
       reason: string;
     };
 
-export type AssistantContextType = {
+export type VoiceContextType = {
   connect: () => Promise<void>;
   disconnect: () => void;
   fft: number[];
   isMuted: boolean;
   isPlaying: boolean;
   messages: (TranscriptMessage | ConnectionMessage)[];
-  lastAssistantMessage: TranscriptMessage | null;
+  lastVoiceMessage: TranscriptMessage | null;
   lastUserMessage: TranscriptMessage | null;
   mute: () => void;
   unmute: () => void;
-  readyState: AssistantReadyState;
-  status: AssistantStatus;
+  readyState: VoiceReadyState;
+  status: VoiceStatus;
   micFft: number[];
-  error: AssistantError | null;
+  error: VoiceError | null;
   isAudioError: boolean;
   isError: boolean;
   isMicrophoneError: boolean;
   isSocketError: boolean;
 };
 
-const AssistantContext = createContext<AssistantContextType | null>(null);
+const VoiceContext = createContext<VoiceContextType | null>(null);
 
-export type AssistantProviderProps = PropsWithChildren<
+export type VoiceProviderProps = PropsWithChildren<
   Parameters<typeof createConfig>[0]
 > & {
   onMessage?: (message: TranscriptMessage) => void;
-  onError?: (err: AssistantError) => void;
+  onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: () => void;
 };
 
-export const useAssistant = () => {
-  const ctx = useContext(AssistantContext);
+export const useVoice = () => {
+  const ctx = useContext(VoiceContext);
   if (!ctx) {
-    throw new Error('useAssistant must be used within an AssistantProvider');
+    throw new Error('useVoice must be used within an VoiceProvider');
   }
   return ctx;
 };
 
-export const AssistantProvider: FC<AssistantProviderProps> = ({
+export const VoiceProvider: FC<VoiceProviderProps> = ({
   children,
   onMessage,
   ...props
 }) => {
-  const [status, setStatus] = useState<AssistantStatus>({
+  const [status, setStatus] = useState<VoiceStatus>({
     value: 'disconnected',
   });
 
   // error handling
-  const [error, setError] = useState<AssistantError | null>(null);
+  const [error, setError] = useState<VoiceError | null>(null);
   const isError = error !== null;
   const isMicrophoneError = error?.type === 'mic_error';
   const isSocketError = error?.type === 'socket_error';
@@ -103,7 +103,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
 
   const messageStore = useMessages();
 
-  const updateError = useCallback((err: AssistantError | null) => {
+  const updateError = useCallback((err: VoiceError | null) => {
     setError(err);
     if (err !== null) {
       onError.current?.(err);
@@ -111,7 +111,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
   }, []);
 
   const onClientError: NonNullable<
-    Parameters<typeof useAssistantClient>[0]['onError']
+    Parameters<typeof useVoiceClient>[0]['onError']
   > = useCallback(
     (message) => {
       updateError({ type: 'socket_error', message });
@@ -142,7 +142,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     },
   });
 
-  const client = useAssistantClient({
+  const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
       player.addToQueue(message);
     },
@@ -197,12 +197,12 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
         channels: encodingRef.current.channelCount,
       })
       .then(() => null)
-      .catch(() => new Error('Could not connect to the assistant'));
+      .catch(() => new Error('Could not connect to the voice'));
 
     if (err) {
       updateError({
         type: 'socket_error',
-        message: 'We could not connect to the assistant. Please try again.',
+        message: 'We could not connect to the voice. Please try again.',
       });
       return;
     }
@@ -220,7 +220,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     }
   }, [client, config, encodingRef, getStream, mic, player, updateError]);
 
-  const disconnectFromAssistant = useCallback(() => {
+  const disconnectFromVoice = useCallback(() => {
     client.disconnect();
     player.stopAll();
     mic.stop();
@@ -233,7 +233,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
         setStatus({ value: 'error', reason: 'Microphone permission denied' });
       }
 
-      disconnectFromAssistant();
+      disconnectFromVoice();
 
       if (status.value !== 'error' && !disconnectOnError) {
         // if status was 'error', keep the error status so we can show the error message to the end user.
@@ -241,7 +241,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
         setStatus({ value: 'disconnected' });
       }
     },
-    [micPermission, status.value, disconnectFromAssistant],
+    [micPermission, status.value, disconnectFromVoice],
   );
 
   useEffect(() => {
@@ -250,11 +250,11 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       status.value !== 'error' &&
       status.value !== 'disconnected'
     ) {
-      // If the status is ever set to `error`, disconnect the assistant.
+      // If the status is ever set to `error`, disconnect the voice.
       setStatus({ value: 'error', reason: error.message });
-      disconnectFromAssistant();
+      disconnectFromVoice();
     }
-  }, [status.value, disconnect, disconnectFromAssistant, error]);
+  }, [status.value, disconnect, disconnectFromVoice, error]);
 
   const ctx = useMemo(
     () =>
@@ -266,7 +266,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
         isMuted: mic.isMuted,
         isPlaying: player.isPlaying,
         messages: messageStore.messages,
-        lastAssistantMessage: messageStore.lastAssistantMessage,
+        lastVoiceMessage: messageStore.lastVoiceMessage,
         lastUserMessage: messageStore.lastUserMessage,
         mute: mic.mute,
         readyState: client.readyState,
@@ -277,7 +277,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
         isError,
         isMicrophoneError,
         isSocketError,
-      }) satisfies AssistantContextType,
+      }) satisfies VoiceContextType,
     [
       connect,
       disconnect,
@@ -288,7 +288,7 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
       mic.mute,
       mic.unmute,
       messageStore.messages,
-      messageStore.lastAssistantMessage,
+      messageStore.lastVoiceMessage,
       messageStore.lastUserMessage,
       client.readyState,
       status,
@@ -300,9 +300,5 @@ export const AssistantProvider: FC<AssistantProviderProps> = ({
     ],
   );
 
-  return (
-    <AssistantContext.Provider value={ctx}>
-      {children}
-    </AssistantContext.Provider>
-  );
+  return <VoiceContext.Provider value={ctx}>{children}</VoiceContext.Provider>;
 };
