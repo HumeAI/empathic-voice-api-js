@@ -1,7 +1,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { VoiceReadyState, useVoiceClient } from './useVoiceClient';
+import { useVoiceClient, VoiceReadyState } from './useVoiceClient';
 
 describe('useVoiceClient', () => {
   it('creates a client with the given config', () => {
