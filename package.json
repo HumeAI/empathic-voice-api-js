@@ -1,5 +1,5 @@
 {
-  "name": "assistant-sdk",
+  "name": "voice-sdk",
   "private": true,
   "scripts": {
     "build": "turbo build",
@@ -7,7 +7,7 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "iframe:dev": "turbo run dev --filter=@humeai/assistent --filter=@humeai/assistent-react --filter=assistant-renderer --filter=example-vite-app-embed"
+    "iframe:dev": "turbo run dev --filter=@humeai/assistent --filter=@humeai/assistent-react --filter=voice-renderer --filter=example-vite-app-embed"
   },
   "devDependencies": {
     "@humeai/eslint-config": "workspace:*",

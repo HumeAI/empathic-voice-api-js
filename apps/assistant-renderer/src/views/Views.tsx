@@ -2,11 +2,11 @@ import { FC } from 'react';
 import { ConversationFrame } from '@/components/ConversationFrame';
 import { LayoutState, useLayoutStore } from '@/store/layout';
 import { OpenButton } from '@/components/OpenButton';
-import { useAssistant } from '@humeai/assistant-react';
+import { useVoice } from '@humeai/voice-react';
 import {
-  AssistantAnimation,
-  AssistantAnimationState,
-} from '@/components/AssistantAnimation';
+  VoiceAnimation,
+  VoiceAnimationState,
+} from '@/components/VoiceAnimation';
 import { MessageConsole } from '@/components/MessageConsole';
 
 export type ViewsProps = Record<never, never>;
@@ -16,7 +16,7 @@ export const Views: FC<ViewsProps> = () => {
   const open = useLayoutStore((store) => store.open);
   const close = useLayoutStore((store) => store.close);
 
-  const { connect, disconnect, fft, status, messages } = useAssistant();
+  const { connect, disconnect, fft, status, messages } = useVoice();
 
   if (layoutState === LayoutState.CLOSED) {
     return (
@@ -44,8 +44,8 @@ export const Views: FC<ViewsProps> = () => {
         <div className="text-center">Error: {status.reason}</div>
       ) : (
         <>
-          <AssistantAnimation
-            state={AssistantAnimationState.IDLE}
+          <VoiceAnimation
+            state={VoiceAnimationState.IDLE}
             prosody={{
               emotions: [],
             }}

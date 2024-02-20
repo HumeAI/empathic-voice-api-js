@@ -1,7 +1,7 @@
 module.exports = {
   hooks: {
     readPackage(pkg, context) {
-      const needsBundle = ['@humeai/assistant', '@humeai/assistant-react'];
+      const needsBundle = ['@humeai/voice', '@humeai/voice-react'];
 
       if (needsBundle.includes(pkg.name)) {
         // run pnpm build in that folder

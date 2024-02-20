@@ -27,18 +27,18 @@ export const UserTranscriptMessageSchema = z.object({
   models: TranscriptModelsSchema,
 });
 
-export const AssistantTranscriptMessageSchema = z.object({
-  type: z.literal('assistant_message'),
+export const VoiceTranscriptMessageSchema = z.object({
+  type: z.literal('voice_message'),
   id: z.string(),
   message: z.object({
-    role: z.literal('assistant'),
+    role: z.literal('voice'),
     content: z.string(),
   }),
   models: TranscriptModelsSchema,
 });
 
 export const TranscriptMessageSchema = z
-  .union([UserTranscriptMessageSchema, AssistantTranscriptMessageSchema])
+  .union([UserTranscriptMessageSchema, VoiceTranscriptMessageSchema])
   .transform((obj) => {
     return Object.assign(obj, {
       receivedAt: new Date(),

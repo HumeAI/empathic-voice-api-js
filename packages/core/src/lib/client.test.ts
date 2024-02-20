@@ -1,12 +1,12 @@
 import { match } from 'ts-pattern';
 import { describe, expect, it } from 'vitest';
 
-import { AssistantClient } from './client';
+import { VoiceClient } from './client';
 import { defaultConfig } from './create-config';
 
 describe('client', () => {
   it('to start closed', () => {
-    const client = AssistantClient.create({
+    const client = VoiceClient.create({
       auth: {
         type: 'apiKey',
         value: 'test',
@@ -22,14 +22,14 @@ describe('client', () => {
         .with('audio_output', () => {
           console.log('audio json message');
         })
-        .with('assistant_message', () => {
-          console.log('assistant message');
+        .with('voice_message', () => {
+          console.log('voice message');
         })
         .with('user_message', () => {
           console.log('user message');
         })
-        .with('assistant_end', () => {
-          console.log('assistant end');
+        .with('voice_end', () => {
+          console.log('voice end');
         })
         .exhaustive();
     });

@@ -5,7 +5,7 @@ import {
   EXPAND_WIDGET_ACTION,
   MINIMIZE_WIDGET_ACTION,
   RESIZE_FRAME_ACTION,
-} from '@humeai/assistant-react';
+} from '@humeai/voice-react';
 
 export enum LayoutState {
   CLOSED = 'closed',

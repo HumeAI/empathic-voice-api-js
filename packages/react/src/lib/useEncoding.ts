@@ -4,7 +4,7 @@ import {
   type EncodingValues,
   getAudioStream,
   getStreamSettings,
-} from '@humeai/assistant';
+} from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';

@@ -1,16 +1,16 @@
-import type { TranscriptMessage } from '@humeai/assistant';
+import type { TranscriptMessage } from '@humeai/voice';
 import { useCallback, useState } from 'react';
 
 import type { ConnectionMessage } from '..';
 
 export const useMessages = () => {
-  const [assistantMessageMap, setAssistantMessageMap] = useState<
+  const [voiceMessageMap, setVoiceMessageMap] = useState<
     Record<string, TranscriptMessage>
   >({});
   const [messages, setMessages] = useState<
     (TranscriptMessage | ConnectionMessage)[]
   >([]);
-  const [lastAssistantMessage, setLastAssistantMessage] =
+  const [lastVoiceMessage, setLastVoiceMessage] =
     useState<TranscriptMessage | null>(null);
   const [lastUserMessage, setLastUserMessage] =
     useState<TranscriptMessage | null>(null);
@@ -38,8 +38,8 @@ export const useMessages = () => {
   }, []);
 
   const onTranscriptMessage = useCallback((message: TranscriptMessage) => {
-    if (message.type === 'assistant_message') {
-      setAssistantMessageMap((prev) => ({
+    if (message.type === 'voice_message') {
+      setVoiceMessageMap((prev) => ({
         ...prev,
         [message.id]: message,
       }));
@@ -51,25 +51,25 @@ export const useMessages = () => {
 
   const onPlayAudio = useCallback(
     (id: string) => {
-      const matchingTranscript = assistantMessageMap[id];
+      const matchingTranscript = voiceMessageMap[id];
       if (matchingTranscript) {
-        setLastAssistantMessage(matchingTranscript);
+        setLastVoiceMessage(matchingTranscript);
         setMessages((prev) => prev.concat([matchingTranscript]));
         // remove the message from the map to ensure we don't
         // accidentally push it to the messages array more than once
-        setAssistantMessageMap((prev) => {
+        setVoiceMessageMap((prev) => {
           const newMap = { ...prev };
           delete newMap[id];
           return newMap;
         });
       }
     },
-    [assistantMessageMap],
+    [voiceMessageMap],
   );
 
   const disconnect = useCallback(() => {
     setMessages([]);
-    setLastAssistantMessage(null);
+    setLastVoiceMessage(null);
     setLastUserMessage(null);
   }, []);
 
@@ -80,7 +80,7 @@ export const useMessages = () => {
     onPlayAudio,
     disconnect,
     messages,
-    lastAssistantMessage,
+    lastVoiceMessage,
     lastUserMessage,
   };
 };

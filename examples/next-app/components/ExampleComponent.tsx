@@ -1,6 +1,6 @@
 'use client';
 
-import { useAssistant } from '@humeai/assistant-react';
+import { useVoice } from '@humeai/voice-react';
 import { useMemo } from 'react';
 import { match } from 'ts-pattern';
 
@@ -39,7 +39,7 @@ export const ExampleComponent = () => {
     unmute,
     messages,
     micFft,
-  } = useAssistant();
+  } = useVoice();
 
   const normalizedFft = useMemo(() => {
     return normalizeFft(audioFft);
@@ -49,10 +49,10 @@ export const ExampleComponent = () => {
     return normalizeFft(micFft);
   }, [micFft]);
 
-  const assistantMessages = useMemo(() => {
+  const voiceMessages = useMemo(() => {
     return messages
       .map((message) => {
-        if (message.type === 'assistant_message') {
+        if (message.type === 'voice_message') {
           return {
             message: message.message,
             top3: getTop3Expressions(message.models[0].entries),
@@ -63,7 +63,7 @@ export const ExampleComponent = () => {
       .filter(Boolean);
   }, [messages]);
 
-  const assistantFftAnimation = (fft: number[]) => (
+  const voiceFftAnimation = (fft: number[]) => (
     <div className="grid h-32 grid-cols-1 grid-rows-2 p-4">
       <div className="flex items-end gap-1">
         {fft.map((val, i) => {
@@ -128,20 +128,20 @@ export const ExampleComponent = () => {
                   )}
                 </div>
 
-                {assistantFftAnimation(normalizedFft)}
-                {assistantFftAnimation(normalizedMicFft)}
+                {voiceFftAnimation(normalizedFft)}
+                {voiceFftAnimation(normalizedMicFft)}
 
                 <div>Playing: {isPlaying ? 'true' : 'false'}</div>
                 <div>Ready State: {readyState}</div>
 
                 <div>
                   <div className={'font-medium'}>
-                    Last transcript message received from assistant:
+                    Last transcript message received from voice:
                   </div>
-                  {assistantMessages.length > 0 ? (
+                  {voiceMessages.length > 0 ? (
                     <div>
                       {JSON.stringify(
-                        assistantMessages[assistantMessages.length - 1],
+                        voiceMessages[voiceMessages.length - 1],
                         null,
                         2,
                       )}
@@ -159,7 +159,7 @@ export const ExampleComponent = () => {
                   void connect();
                 }}
               >
-                Connect to assistant
+                Connect to voice
               </button>
             ))
             .with('connecting', () => (
@@ -178,7 +178,7 @@ export const ExampleComponent = () => {
                     void connect();
                   }}
                 >
-                  Connect to assistant
+                  Connect to voice
                 </button>
 
                 <div>

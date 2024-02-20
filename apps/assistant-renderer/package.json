@@ -1,5 +1,5 @@
 {
-  "name": "assistant-renderer",
+  "name": "voice-renderer",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,7 +11,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@humeai/assistant-react": "workspace:*",
+    "@humeai/voice-react": "workspace:*",
     "class-variance-authority": "^0.7.0",
     "expression-colors": "github:HumeAI/expression-colors",
     "framer-motion": "^10.18.0",

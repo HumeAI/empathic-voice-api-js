@@ -1,4 +1,4 @@
-import { DEFAULT_ENCODING_VALUES } from '@humeai/assistant';
+import { DEFAULT_ENCODING_VALUES } from '@humeai/voice';
 import { renderHook } from '@testing-library/react-hooks';
 import { describe, expect, it } from 'vitest';
 

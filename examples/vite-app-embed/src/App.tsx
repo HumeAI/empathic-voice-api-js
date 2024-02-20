@@ -1,4 +1,4 @@
-import { EmbeddedAssistant } from '@humeai/assistant-react';
+import { EmbeddedVoice } from '@humeai/voice-react';
 
 import './App.css';
 
@@ -7,15 +7,15 @@ function App() {
 
   return (
     <>
-      <div>Demo of embedding assistant as an iframe</div>
-      <EmbeddedAssistant
+      <div>Demo of embedding voice as an iframe</div>
+      <EmbeddedVoice
         auth={{
           type: 'apiKey',
           value: apiKey,
         }}
         rendererUrl={
           import.meta.env.PROD
-            ? 'https://assistant-widget.hume.ai/'
+            ? 'https://voice-widget.hume.ai/'
             : 'http://localhost:3000'
         }
       />

@@ -1,16 +1,16 @@
 import z from 'zod';
 
-import { AssistantEndMessageSchema } from '@/models/assistant-end-message';
 import type { AudioMessage } from '@/models/audio-message';
 import { parseAudioMessage } from '@/models/audio-message';
 import { AudioOutputMessageSchema } from '@/models/audio-output-message';
 import { TranscriptMessageSchema } from '@/models/transcript-message';
+import { VoiceEndMessageSchema } from '@/models/voice-end-message';
 import { unwrapJson } from '@/utils/unwrapJson';
 
 export const JSONMessageSchema = z.union([
   AudioOutputMessageSchema,
   TranscriptMessageSchema,
-  AssistantEndMessageSchema,
+  VoiceEndMessageSchema,
 ]);
 
 export type JSONMessage = z.infer<typeof JSONMessageSchema>;

@@ -45,13 +45,13 @@ describe('parseMessageData', () => {
     expect(output.success).toBe(true);
   });
 
-  it('should return a success message if the message is an assistant transcript message', async () => {
+  it('should return a success message if the message is an voice transcript message', async () => {
     const output = await parseMessageData(
       JSON.stringify({
-        type: 'assistant_message',
+        type: 'voice_message',
         id: 'fd9c405504344599be06f0e6bf5b941e',
         message: {
-          role: 'assistant',
+          role: 'voice',
           content: 'Hey there!',
         },
         models: [
@@ -82,9 +82,9 @@ describe('parseMessageData', () => {
     expect(output.success).toBe(true);
   });
 
-  it('should return a success message if the message is an assistant end message', async () => {
+  it('should return a success message if the message is an voice end message', async () => {
     const output = await parseMessageData(
-      JSON.stringify({ type: 'assistant_end' }),
+      JSON.stringify({ type: 'voice_end' }),
     );
     expect(output.success).toBe(true);
   });
