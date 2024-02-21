@@ -1,5 +1,10 @@
 import z from 'zod';
 
+import {
+  SocketFailedToParseMessageError,
+  SocketUnknownMessageError,
+} from './errors';
+
 import type { AudioMessage } from '@/models/audio-message';
 import { parseAudioMessage } from '@/models/audio-message';
 import { AudioOutputMessageSchema } from '@/models/audio-output-message';
@@ -38,7 +43,9 @@ export const parseMessageData = async (
     } else {
       return {
         success: false,
-        error: new Error('Failed to parse blob as audio message.'),
+        error: new SocketFailedToParseMessageError(
+          `Received blob was unable to be converted to ArrayBuffer.`,
+        ),
       };
     }
   }
@@ -46,7 +53,9 @@ export const parseMessageData = async (
   if (typeof data !== 'string') {
     return {
       success: false,
-      error: new Error('Failed to parse message from socket'),
+      error: new SocketFailedToParseMessageError(
+        `Expected a string but received ${typeof data}.`,
+      ),
     };
   }
 
@@ -55,7 +64,9 @@ export const parseMessageData = async (
   if (obj === null) {
     return {
       success: false,
-      error: new Error('Failed to parse message from socket'),
+      error: new SocketUnknownMessageError(
+        `Received JSON was not a known message type.`,
+      ),
     };
   }
 
