@@ -2,7 +2,7 @@ import z from 'zod';
 
 export const VoiceEndMessageSchema = z
   .object({
-    type: z.literal('voice_end'),
+    type: z.literal('assistant_end'),
   })
   .transform((obj) => {
     return Object.assign(obj, {

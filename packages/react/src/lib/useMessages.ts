@@ -38,7 +38,7 @@ export const useMessages = () => {
   }, []);
 
   const onTranscriptMessage = useCallback((message: TranscriptMessage) => {
-    if (message.type === 'voice_message') {
+    if (message.type === 'assistant_message') {
       setVoiceMessageMap((prev) => ({
         ...prev,
         [message.id]: message,

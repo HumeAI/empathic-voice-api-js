@@ -36,10 +36,10 @@ describe('useMessages hook', () => {
       receivedAt: new Date(),
     };
     voiceMessage = {
-      type: 'voice_message' as const,
+      type: 'assistant_message' as const,
       id: 'message_12345',
       message: {
-        role: 'voice' as const,
+        role: 'assistant' as const,
         content: 'Hey',
       },
       models: [

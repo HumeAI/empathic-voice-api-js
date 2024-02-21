@@ -17,7 +17,7 @@ const appendMessage = (message: JSONMessage | AudioMessage) => {
   const timestamp = new Date().toLocaleTimeString();
 
   const messageContainer = document.createElement('div');
-  if (message.type === 'voice_message' || message.type === 'user_message') {
+  if (message.type === 'assistant_message' || message.type === 'user_message') {
     messageContainer.innerHTML = `[${timestamp}] ${message.message.role}: ${message.message.content}`;
   } else {
     messageContainer.innerHTML = `[${timestamp}] <Audio Blob>`;

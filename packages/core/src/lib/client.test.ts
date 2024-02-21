@@ -22,13 +22,13 @@ describe('client', () => {
         .with('audio_output', () => {
           console.log('audio json message');
         })
-        .with('voice_message', () => {
+        .with('assistant_message', () => {
           console.log('voice message');
         })
         .with('user_message', () => {
           console.log('user message');
         })
-        .with('voice_end', () => {
+        .with('assistant_end', () => {
           console.log('voice end');
         })
         .exhaustive();
