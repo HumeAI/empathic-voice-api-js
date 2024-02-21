@@ -26,7 +26,7 @@ export type ConnectionMessage =
 export const useVoiceClient = (props: {
   onAudioMessage?: (message: AudioOutputMessage) => void;
   onTranscriptMessage?: (message: TranscriptMessage) => void;
-  onError?: (message: string) => void;
+  onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
   onClose?: () => void;
 }) => {
@@ -87,7 +87,7 @@ export const useVoiceClient = (props: {
 
       client.current.on('error', (e) => {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        onError.current?.(message);
+        onError.current?.(message, e instanceof Error ? e : undefined);
         reject(e);
       });
 

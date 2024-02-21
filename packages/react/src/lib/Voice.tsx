@@ -28,9 +28,9 @@ import {
 } from './useVoiceClient';
 
 type VoiceError =
-  | { type: 'socket_error'; message: string }
-  | { type: 'audio_error'; message: string }
-  | { type: 'mic_error'; message: string };
+  | { type: 'socket_error'; message: string; error?: Error }
+  | { type: 'audio_error'; message: string; error?: Error }
+  | { type: 'mic_error'; message: string; error?: Error };
 
 type VoiceStatus =
   | {
@@ -113,8 +113,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const onClientError: NonNullable<
     Parameters<typeof useVoiceClient>[0]['onError']
   > = useCallback(
-    (message) => {
-      updateError({ type: 'socket_error', message });
+    (message, err) => {
+      updateError({ type: 'socket_error', message, error: err });
     },
     [updateError],
   );
