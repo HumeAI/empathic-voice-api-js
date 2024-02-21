@@ -3,6 +3,7 @@ export * from './lib/client';
 export * from './lib/create-config';
 export * from './lib/create-url';
 export * from './lib/embed';
+export * from './lib/errors';
 export * from './lib/message';
 export * from './lib/tts';
 export * from './lib/microphone';
