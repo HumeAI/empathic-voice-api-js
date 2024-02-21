@@ -52,7 +52,7 @@ export const ExampleComponent = () => {
   const voiceMessages = useMemo(() => {
     return messages
       .map((message) => {
-        if (message.type === 'voice_message') {
+        if (message.type === 'assistant_message') {
           return {
             message: message.message,
             top3: getTop3Expressions(message.models[0].entries),

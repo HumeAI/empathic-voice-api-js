@@ -73,7 +73,7 @@ export const useVoiceClient = (props: {
         }
 
         if (
-          message.type === 'voice_message' ||
+          message.type === 'assistant_message' ||
           message.type === 'user_message'
         ) {
           onTranscriptMessage.current?.(message);

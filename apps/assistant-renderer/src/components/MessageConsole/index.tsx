@@ -19,7 +19,7 @@ export const MessageConsole = ({
   const formattedMessages = useMemo(() => {
     return messages.reduce<
       {
-        sender: 'user' | 'voice';
+        sender: 'user' | 'assistant';
         message: TranscriptMessage;
         sortedEmotions: {
           score: string;
@@ -36,7 +36,7 @@ export const MessageConsole = ({
 
       const sender = match(message.type)
         .with('user_message', () => 'user' as const)
-        .with('voice_message', () => 'voice' as const)
+        .with('assistant_message', () => 'assistant' as const)
         .otherwise(() => null);
 
       const prosodyModel = message.models.find(

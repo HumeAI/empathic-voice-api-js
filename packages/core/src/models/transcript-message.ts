@@ -28,10 +28,10 @@ export const UserTranscriptMessageSchema = z.object({
 });
 
 export const VoiceTranscriptMessageSchema = z.object({
-  type: z.literal('voice_message'),
+  type: z.literal('assistant_message'),
   id: z.string(),
   message: z.object({
-    role: z.literal('voice'),
+    role: z.literal('assistant'),
     content: z.string(),
   }),
   models: TranscriptModelsSchema,
