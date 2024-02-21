@@ -96,6 +96,8 @@ export const useMicrophone = (props: MicrophoneProps) => {
       recorder.current?.removeEventListener('dataavailable', dataHandler);
       recorder.current = null;
       streamRef.current?.getTracks().forEach((track) => track.stop());
+
+      setIsMuted(false);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       onError(`Error stopping microphone: ${message}`);
