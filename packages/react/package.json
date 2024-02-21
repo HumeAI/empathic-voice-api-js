@@ -19,7 +19,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint ./src",
-    "pack": "npm pack --pack-destination ../../release/"
+    "pack": "npm pack"
   },
   "keywords": [],
   "author": "",
