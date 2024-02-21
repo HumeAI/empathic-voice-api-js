@@ -7,7 +7,9 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "iframe:dev": "turbo run dev --filter=@humeai/voice --filter=@humeai/voice-react --filter=assistant-renderer --filter=example-vite-app-embed"
+    "iframe:dev": "turbo run dev --filter=@humeai/voice --filter=@humeai/voice-react --filter=assistant-renderer --filter=example-vite-app-embed",
+    "release:version": "changeset version",
+    "release:publish": "turbo run build --filter=@humeai/voice && changeset publish"
   },
   "devDependencies": {
     "@humeai/eslint-config": "workspace:*",
@@ -18,5 +20,8 @@
   "packageManager": "pnpm@8.9.0",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "@changesets/cli": "^2.27.1"
   }
 }

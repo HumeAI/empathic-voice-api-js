@@ -19,7 +19,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint ./src",
-    "pack": "npm pack --pack-destination ../../release/"
+    "local-pack": "npm pack --pack-destination ../../release/"
   },
   "keywords": [],
   "author": "",
@@ -56,5 +56,8 @@
   },
   "browserslist": [
     "last 2 Chrome versions, last 2 iOS major versions, Firefox ESR, not dead"
-  ]
+  ],
+  "publishConfig": {
+    "@hume-bot:registry": "https://npm.pkg.github.com"
+  }
 }
