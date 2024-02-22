@@ -153,6 +153,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       },
       [onMessage],
     ),
+    onUserInterruption: useCallback(() => {
+      // clear message queue
+      // stop all audio
+    }, []),
     onError: onClientError,
     onOpen: useCallback(() => {
       messageStore.createConnectMessage();
