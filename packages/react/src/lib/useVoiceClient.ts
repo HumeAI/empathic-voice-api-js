@@ -2,6 +2,7 @@ import type {
   AudioOutputMessage,
   Config,
   TranscriptMessage,
+  UserInterruptionMessage,
 } from '@humeai/voice';
 import { VoiceClient } from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
@@ -26,6 +27,7 @@ export type ConnectionMessage =
 export const useVoiceClient = (props: {
   onAudioMessage?: (message: AudioOutputMessage) => void;
   onTranscriptMessage?: (message: TranscriptMessage) => void;
+  onUserInterruption?: (message: UserInterruptionMessage) => void;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
   onClose?: () => void;
@@ -47,6 +49,11 @@ export const useVoiceClient = (props: {
     props.onTranscriptMessage,
   );
   onTranscriptMessage.current = props.onTranscriptMessage;
+
+  const onUserInterruption = useRef<typeof props.onUserInterruption>(
+    props.onUserInterruption,
+  );
+  onUserInterruption.current = props.onUserInterruption;
 
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
@@ -77,6 +84,10 @@ export const useVoiceClient = (props: {
           message.type === 'user_message'
         ) {
           onTranscriptMessage.current?.(message);
+        }
+
+        if (message.type === 'user_interruption') {
+          onUserInterruption.current?.(message);
         }
       });
 

@@ -4,6 +4,7 @@ import {
   SocketFailedToParseMessageError,
   SocketUnknownMessageError,
 } from './errors';
+import { UserInterruptionMessageSchema } from '..';
 
 import type { AudioMessage } from '@/models/audio-message';
 import { parseAudioMessage } from '@/models/audio-message';
@@ -16,6 +17,7 @@ export const JSONMessageSchema = z.union([
   AudioOutputMessageSchema,
   TranscriptMessageSchema,
   VoiceEndMessageSchema,
+  UserInterruptionMessageSchema,
 ]);
 
 export type JSONMessage = z.infer<typeof JSONMessageSchema>;
