@@ -31,6 +31,9 @@ describe('client', () => {
         .with('assistant_end', () => {
           console.log('voice end');
         })
+        .with('user_interruption', () => {
+          console.log('user interruption');
+        })
         .exhaustive();
     });
 

@@ -1,26 +1,12 @@
-import z from 'zod';
-
 import {
   SocketFailedToParseMessageError,
   SocketUnknownMessageError,
 } from './errors';
-import { UserInterruptionMessageSchema } from '..';
 
 import type { AudioMessage } from '@/models/audio-message';
 import { parseAudioMessage } from '@/models/audio-message';
-import { AudioOutputMessageSchema } from '@/models/audio-output-message';
-import { TranscriptMessageSchema } from '@/models/transcript-message';
-import { VoiceEndMessageSchema } from '@/models/voice-end-message';
+import { type JSONMessage, JSONMessageSchema } from '@/models/json-message';
 import { unwrapJson } from '@/utils/unwrapJson';
-
-export const JSONMessageSchema = z.union([
-  AudioOutputMessageSchema,
-  TranscriptMessageSchema,
-  VoiceEndMessageSchema,
-  UserInterruptionMessageSchema,
-]);
-
-export type JSONMessage = z.infer<typeof JSONMessageSchema>;
 
 export const parseMessageData = async (
   data: unknown,

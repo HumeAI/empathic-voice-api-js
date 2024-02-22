@@ -34,7 +34,7 @@ import { z } from 'zod';
 
 import type { Config } from './create-config';
 import { ConfigSchema } from './create-config';
-import { type JSONMessage, JSONMessageSchema } from './message';
+import { type JSONMessage, JSONMessageSchema } from '../models/json-message';
 
 // ---------------------------------------------------------------------------
 // Client to frame actions
