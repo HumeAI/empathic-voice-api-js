@@ -1,6 +1,11 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useMemo, useRef } from 'react';
-import type { ConnectionMessage, TranscriptMessage } from '@humeai/voice-react';
+import type {
+  AgentTranscriptMessage,
+  ConnectionMessage,
+  UserInterruptionMessage,
+  UserTranscriptMessage,
+} from '@humeai/voice-react';
 import { match } from 'ts-pattern';
 import { expressionColors } from 'expression-colors';
 
@@ -9,7 +14,12 @@ type Emotion = keyof typeof expressionColors;
 export const MessageConsole = ({
   messages,
 }: {
-  messages: (TranscriptMessage | ConnectionMessage)[];
+  messages: (
+    | UserTranscriptMessage
+    | AgentTranscriptMessage
+    | ConnectionMessage
+    | UserInterruptionMessage
+  )[];
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -20,7 +30,7 @@ export const MessageConsole = ({
     return messages.reduce<
       {
         sender: 'user' | 'assistant';
-        message: TranscriptMessage;
+        message: UserTranscriptMessage | AgentTranscriptMessage;
         sortedEmotions: {
           score: string;
           name: string;
@@ -29,7 +39,8 @@ export const MessageConsole = ({
     >((state, message) => {
       if (
         message.type === 'socket_connected' ||
-        message.type === 'socket_disconnected'
+        message.type === 'socket_disconnected' ||
+        message.type === 'user_interruption'
       ) {
         return state;
       }

@@ -3,6 +3,7 @@ export * from './lib/useSoundPlayer';
 export * from './lib/useMicrophone';
 export * from './lib/Voice';
 export * from './lib/useVoiceClient';
+export * from './lib/connection-message';
 
 export {
   type Config,
