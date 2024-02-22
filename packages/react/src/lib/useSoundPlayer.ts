@@ -150,11 +150,25 @@ export const useSoundPlayer = (props: {
     setFft(generateEmptyFft());
   }, [handleAudioEnded, handleAudioError]);
 
+  const clearQueue = useCallback(() => {
+    isProcessing.current = false;
+
+    if (currentAnalyzer.current) {
+      currentAnalyzer.current.stop();
+    }
+
+    clipQueue.current = [];
+    isProcessing.current = false;
+
+    setFft(generateEmptyFft());
+  }, []);
+
   return {
     addToQueue,
     fft,
     initPlayer,
     isPlaying: isProcessing.current,
     stopAll,
+    clearQueue,
   };
 };
