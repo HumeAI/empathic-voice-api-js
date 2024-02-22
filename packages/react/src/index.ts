@@ -3,6 +3,7 @@ export * from './lib/useSoundPlayer';
 export * from './lib/useMicrophone';
 export * from './lib/Voice';
 export * from './lib/useVoiceClient';
+export * from './lib/connection-message';
 
 export {
   type Config,
@@ -17,7 +18,12 @@ export {
   WIDGET_IFRAME_IS_READY_ACTION,
   TRANSCRIPT_MESSAGE_ACTION,
   RESIZE_FRAME_ACTION,
-  type JSONMessage,
+  type AgentEndMessage,
+  type AgentTranscriptMessage,
   type AudioMessage,
-  type TranscriptMessage,
+  type AudioOutputMessage,
+  type JSONMessage,
+  type TimeSlice,
+  type UserInterruptionMessage,
+  type UserTranscriptMessage,
 } from '@humeai/voice';

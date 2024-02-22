@@ -1,19 +1,31 @@
-import type { TranscriptMessage } from '@humeai/voice';
+import type { UserInterruptionMessage } from '@humeai/voice';
+import {
+  type AgentTranscriptMessage,
+  type JSONMessage,
+  type UserTranscriptMessage,
+} from '@humeai/voice';
 import { useCallback, useState } from 'react';
 
-import type { ConnectionMessage } from '..';
+import type { ConnectionMessage } from './connection-message';
 
 export const useMessages = () => {
   const [voiceMessageMap, setVoiceMessageMap] = useState<
-    Record<string, TranscriptMessage>
+    Record<string, AgentTranscriptMessage>
   >({});
+
   const [messages, setMessages] = useState<
-    (TranscriptMessage | ConnectionMessage)[]
+    Array<
+      | AgentTranscriptMessage
+      | UserTranscriptMessage
+      | ConnectionMessage
+      | UserInterruptionMessage
+    >
   >([]);
+
   const [lastVoiceMessage, setLastVoiceMessage] =
-    useState<TranscriptMessage | null>(null);
+    useState<AgentTranscriptMessage | null>(null);
   const [lastUserMessage, setLastUserMessage] =
-    useState<TranscriptMessage | null>(null);
+    useState<UserTranscriptMessage | null>(null);
 
   const createConnectMessage = useCallback(() => {
     setMessages((prev) =>
@@ -37,15 +49,23 @@ export const useMessages = () => {
     );
   }, []);
 
-  const onTranscriptMessage = useCallback((message: TranscriptMessage) => {
-    if (message.type === 'assistant_message') {
-      setVoiceMessageMap((prev) => ({
-        ...prev,
-        [message.id]: message,
-      }));
-    } else if (message.type === 'user_message') {
-      setLastUserMessage(message);
-      setMessages((prev) => prev.concat([message]));
+  const onMessage = useCallback((message: JSONMessage) => {
+    switch (message.type) {
+      case 'assistant_message':
+        setVoiceMessageMap((prev) => ({
+          ...prev,
+          [message.id]: message,
+        }));
+        break;
+      case 'user_message':
+        setLastUserMessage(message);
+        setMessages((prev) => prev.concat([message]));
+        break;
+      case 'user_interruption':
+        setMessages((prev) => prev.concat([message]));
+        break;
+      default:
+        break;
     }
   }, []);
 
@@ -76,7 +96,7 @@ export const useMessages = () => {
   return {
     createConnectMessage,
     createDisconnectMessage,
-    onTranscriptMessage,
+    onMessage,
     onPlayAudio,
     disconnect,
     messages,

@@ -2,10 +2,10 @@ import ReconnectingWebsocket from 'reconnecting-websocket';
 
 import type { Config } from './create-config';
 import { createSocketUrl } from './create-url';
-import type { JSONMessage } from './message';
 import { parseMessageType } from './message';
 
 import type { AudioMessage } from '@/models/audio-message';
+import type { JSONMessage } from '@/models/json-message';
 
 export type VoiceEventMap = {
   open?: () => void;

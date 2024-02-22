@@ -1,14 +1,17 @@
+import type {
+  AgentTranscriptMessage,
+  UserTranscriptMessage,
+} from '@humeai/voice';
 import type { RenderHookResult } from '@testing-library/react-hooks';
 import { act, renderHook } from '@testing-library/react-hooks';
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { useMessages } from './useMessages'; // adjust the import path as needed
-import type { TranscriptMessage } from '..';
 
 describe('useMessages hook', () => {
   let hook: RenderHookResult<unknown, ReturnType<typeof useMessages>>;
-  let userMessage: TranscriptMessage;
-  let voiceMessage: TranscriptMessage;
+  let userMessage: UserTranscriptMessage;
+  let voiceMessage: AgentTranscriptMessage;
 
   beforeEach(() => {
     hook = renderHook(() => useMessages());
@@ -87,7 +90,7 @@ describe('useMessages hook', () => {
 
   it('should add user messages to `messages` immediately', () => {
     act(() => {
-      hook.result.current.onTranscriptMessage(userMessage);
+      hook.result.current.onMessage(userMessage);
     });
 
     expect(hook.result.current.lastUserMessage).toEqual(userMessage);
@@ -96,7 +99,7 @@ describe('useMessages hook', () => {
 
   it('should add voice messages to the voice message map', () => {
     act(() => {
-      hook.result.current.onTranscriptMessage(voiceMessage);
+      hook.result.current.onMessage(voiceMessage);
     });
 
     expect(hook.result.current.lastVoiceMessage).toBeNull();
@@ -106,7 +109,7 @@ describe('useMessages hook', () => {
   it('should expose the voice message after the associated audio clip is played', () => {
     // add the message
     act(() => {
-      hook.result.current.onTranscriptMessage(voiceMessage);
+      hook.result.current.onMessage(voiceMessage);
     });
 
     // simulate playing audio
@@ -122,7 +125,7 @@ describe('useMessages hook', () => {
 
   it('should expose the voice message after the associated audio clip is played', () => {
     act(() => {
-      hook.result.current.onTranscriptMessage(voiceMessage); // First, add the message
+      hook.result.current.onMessage(voiceMessage); // First, add the message
     });
 
     act(() => {
@@ -137,7 +140,7 @@ describe('useMessages hook', () => {
 
   it('should only add voice messages once', () => {
     act(() => {
-      hook.result.current.onTranscriptMessage(voiceMessage); // First, add the message
+      hook.result.current.onMessage(voiceMessage); // First, add the message
     });
 
     act(() => {

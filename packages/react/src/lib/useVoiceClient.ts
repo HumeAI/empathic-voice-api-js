@@ -1,8 +1,8 @@
 import type {
+  AgentTranscriptMessage,
   AudioOutputMessage,
   Config,
-  TranscriptMessage,
-  UserInterruptionMessage,
+  UserTranscriptMessage,
 } from '@humeai/voice';
 import { VoiceClient } from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
@@ -14,20 +14,9 @@ export enum VoiceReadyState {
   CLOSED = 'closed',
 }
 
-export type ConnectionMessage =
-  | {
-      type: 'socket_connected';
-      receivedAt: Date;
-    }
-  | {
-      type: 'socket_disconnected';
-      receivedAt: Date;
-    };
-
 export const useVoiceClient = (props: {
   onAudioMessage?: (message: AudioOutputMessage) => void;
-  onTranscriptMessage?: (message: TranscriptMessage) => void;
-  onUserInterruption?: (message: UserInterruptionMessage) => void;
+  onMessage?: (message: UserTranscriptMessage | AgentTranscriptMessage) => void;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
   onClose?: () => void;
@@ -45,15 +34,8 @@ export const useVoiceClient = (props: {
   );
   onAudioMessage.current = props.onAudioMessage;
 
-  const onTranscriptMessage = useRef<typeof props.onTranscriptMessage>(
-    props.onTranscriptMessage,
-  );
-  onTranscriptMessage.current = props.onTranscriptMessage;
-
-  const onUserInterruption = useRef<typeof props.onUserInterruption>(
-    props.onUserInterruption,
-  );
-  onUserInterruption.current = props.onUserInterruption;
+  const onMessage = useRef<typeof props.onMessage>(props.onMessage);
+  onMessage.current = props.onMessage;
 
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
@@ -83,11 +65,7 @@ export const useVoiceClient = (props: {
           message.type === 'assistant_message' ||
           message.type === 'user_message'
         ) {
-          onTranscriptMessage.current?.(message);
-        }
-
-        if (message.type === 'user_interruption') {
-          onUserInterruption.current?.(message);
+          onMessage.current?.(message);
         }
       });
 

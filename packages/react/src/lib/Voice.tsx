@@ -1,8 +1,9 @@
 import {
-  AudioMessage,
+  AgentTranscriptMessage,
   AudioOutputMessage,
   createConfig,
-  TranscriptMessage,
+  UserInterruptionMessage,
+  UserTranscriptMessage,
 } from '@humeai/voice';
 import React, {
   createContext,
@@ -16,16 +17,13 @@ import React, {
   useState,
 } from 'react';
 
+import { ConnectionMessage } from './connection-message';
 import { noop } from './noop';
 import { useEncoding } from './useEncoding';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
-import {
-  ConnectionMessage,
-  useVoiceClient,
-  type VoiceReadyState,
-} from './useVoiceClient';
+import { useVoiceClient, type VoiceReadyState } from './useVoiceClient';
 
 type VoiceError =
   | { type: 'socket_error'; message: string; error?: Error }
@@ -48,9 +46,14 @@ export type VoiceContextType = {
   fft: number[];
   isMuted: boolean;
   isPlaying: boolean;
-  messages: (TranscriptMessage | ConnectionMessage)[];
-  lastVoiceMessage: TranscriptMessage | null;
-  lastUserMessage: TranscriptMessage | null;
+  messages: (
+    | UserTranscriptMessage
+    | AgentTranscriptMessage
+    | ConnectionMessage
+    | UserInterruptionMessage
+  )[];
+  lastVoiceMessage: AgentTranscriptMessage | null;
+  lastUserMessage: UserTranscriptMessage | null;
   mute: () => void;
   unmute: () => void;
   readyState: VoiceReadyState;
@@ -68,7 +71,7 @@ const VoiceContext = createContext<VoiceContextType | null>(null);
 export type VoiceProviderProps = PropsWithChildren<
   Parameters<typeof createConfig>[0]
 > & {
-  onMessage?: (message: TranscriptMessage) => void;
+  onMessage?: (message: UserTranscriptMessage | AgentTranscriptMessage) => void;
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: () => void;
@@ -146,17 +149,28 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     onAudioMessage: (message: AudioOutputMessage) => {
       player.addToQueue(message);
     },
-    onTranscriptMessage: useCallback(
-      (message: TranscriptMessage) => {
-        onMessage?.(message);
-        messageStore.onTranscriptMessage(message);
+    onMessage: useCallback(
+      (
+        message:
+          | UserTranscriptMessage
+          | AgentTranscriptMessage
+          | UserInterruptionMessage,
+      ) => {
+        if (
+          message.type === 'assistant_message' ||
+          message.type === 'user_message'
+        ) {
+          onMessage?.(message);
+          messageStore.onMessage(message);
+          return;
+        }
+
+        if (message.type === 'user_interruption') {
+          player.clearQueue();
+        }
       },
-      [onMessage],
+      [onMessage, player],
     ),
-    onUserInterruption: useCallback(() => {
-      // clear message queue
-      // stop all audio
-    }, []),
     onError: onClientError,
     onOpen: useCallback(() => {
       messageStore.createConnectMessage();
