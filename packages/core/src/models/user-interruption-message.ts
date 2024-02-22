@@ -7,7 +7,7 @@ export const UserInterruptionMessageSchema = z
     type: z.literal('user_interruption'),
     message: z.object({
       role: z.literal('user'),
-      message: z.string(),
+      content: z.string(),
     }),
     time: TimeSliceSchema,
   })
