@@ -82,7 +82,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       mimeType,
     });
     recorder.current.addEventListener('dataavailable', dataHandler);
-    recorder.current.start(250);
+    recorder.current.start(100);
   }, [dataHandler, streamRef]);
 
   const stop = useCallback(() => {
