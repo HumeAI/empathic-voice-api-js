@@ -114,7 +114,7 @@ export const useSoundPlayer = (props: {
       // if it's the only clip in the queue, start playing it
       if (clipQueue.current.length === 1 && audioElement.current) {
         isProcessing.current = true;
-        audioElement.current?.play();
+        void audioElement.current?.play();
         onPlayAudio.current(message.id);
         audioElement.current.src = url;
         currentAnalyzer.current?.start();
@@ -159,7 +159,11 @@ export const useSoundPlayer = (props: {
     }
 
     if (audioElement.current) {
-      audioElement.current.pause();
+      try {
+        void audioElement.current.pause();
+      } catch {
+        void true;
+      }
     }
 
     clipQueue.current = [];
