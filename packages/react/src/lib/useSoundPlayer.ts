@@ -157,6 +157,14 @@ export const useSoundPlayer = (props: {
       currentAnalyzer.current.stop();
     }
 
+    if (audioElement.current) {
+      try {
+        void audioElement.current.pause();
+      } catch {
+        void true;
+      }
+    }
+
     clipQueue.current = [];
     isProcessing.current = false;
 

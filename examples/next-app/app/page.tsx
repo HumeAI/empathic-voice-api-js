@@ -28,7 +28,7 @@ export default async function Home() {
         {accessToken ? (
           <VoiceProvider
             auth={{ type: 'access_token', value: accessToken }}
-            hostname={'api.hume.ai'}
+            hostname={process.env.HUME_VOICE_HOSTNAME || 'api.hume.ai'}
           >
             <ExampleComponent />
           </VoiceProvider>
