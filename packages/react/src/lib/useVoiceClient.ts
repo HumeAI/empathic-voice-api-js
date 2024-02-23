@@ -2,6 +2,7 @@ import type {
   AgentTranscriptMessage,
   AudioOutputMessage,
   Config,
+  UserInterruptionMessage,
   UserTranscriptMessage,
 } from '@humeai/voice';
 import { VoiceClient } from '@humeai/voice';
@@ -16,7 +17,12 @@ export enum VoiceReadyState {
 
 export const useVoiceClient = (props: {
   onAudioMessage?: (message: AudioOutputMessage) => void;
-  onMessage?: (message: UserTranscriptMessage | AgentTranscriptMessage) => void;
+  onMessage?: (
+    message:
+      | UserTranscriptMessage
+      | AgentTranscriptMessage
+      | UserInterruptionMessage,
+  ) => void;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
   onClose?: () => void;
@@ -63,7 +69,8 @@ export const useVoiceClient = (props: {
 
         if (
           message.type === 'assistant_message' ||
-          message.type === 'user_message'
+          message.type === 'user_message' ||
+          message.type === 'user_interruption'
         ) {
           onMessage.current?.(message);
         }
