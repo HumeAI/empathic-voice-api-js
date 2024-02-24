@@ -4,7 +4,7 @@ import {
   parseClientToFrameAction,
   UPDATE_CONFIG_ACTION,
 } from './embed-messages';
-import { TTSService } from '..';
+import { TTSService } from '../../../core/src';
 
 describe('parseEmbedMessage', () => {
   it('should parse embed message', async () => {

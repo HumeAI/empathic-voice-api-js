@@ -12,8 +12,9 @@
   },
   "dependencies": {
     "@humeai/voice-react": "workspace:*",
+    "@humeai/voice-embed-react": "workspace:*",
     "class-variance-authority": "^0.7.0",
-    "expression-colors": "github:HumeAI/expression-colors",
+    "expression-colors": "github:HumeAI/colors",
     "framer-motion": "^10.18.0",
     "lucide-react": "^0.312.0",
     "react": "^18.2.0",

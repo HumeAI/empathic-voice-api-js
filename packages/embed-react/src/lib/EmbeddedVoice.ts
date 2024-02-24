@@ -1,4 +1,4 @@
-import { EmbeddedVoice as EA } from '@humeai/voice';
+import { EmbeddedVoice as EA } from '@humeai/voice-embed';
 import { useEffect, useRef } from 'react';
 
 export const EmbeddedVoice = (config: Parameters<typeof EA.create>[0]) => {

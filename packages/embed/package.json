@@ -1,0 +1,44 @@
+{
+  "name": "@humeai/voice-embed",
+  "version": "0.0.1",
+  "description": "",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HumeAI/voice-sdk.git",
+    "directory": "packages/core"
+  },
+  "files": [
+    "package.json",
+    "dist"
+  ],
+  "scripts": {
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "build": "pnpm lint && tsup",
+    "dev": "tsup --watch",
+    "lint": "eslint ./src/",
+    "pack": "npm pack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@humeai/eslint-config": "workspace:*",
+    "@humeai/typescript-config": "workspace:*",
+    "@types/node": "^20.11.19",
+    "jsdom": "^24.0.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "vitest": "^1.3.0"
+  },
+  "dependencies": {
+    "@humeai/voice": "workspace:*",
+    "zod": "^3.22.4"
+  },
+  "browserslist": [
+    "last 2 Chrome versions, last 2 iOS major versions, Firefox ESR, not dead"
+  ]
+}

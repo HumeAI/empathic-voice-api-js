@@ -1,4 +1,4 @@
-import { parseClientToFrameAction, Config } from '@humeai/voice-react';
+import { parseClientToFrameAction, Config } from '@humeai/voice-embed-react';
 import { FC, useEffect, useRef } from 'react';
 
 export type MessageListenerProps = {
