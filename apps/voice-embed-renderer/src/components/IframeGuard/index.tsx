@@ -1,7 +1,7 @@
 import { FC, PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { useLayoutStore } from '../../store/layout';
 import { parentDispatch } from '../../utils/parentDispatch';
-import { WIDGET_IFRAME_IS_READY_ACTION } from '@humeai/voice-react';
+import { WIDGET_IFRAME_IS_READY_ACTION } from '@humeai/voice-embed-react';
 
 export type IframeGuardProps = PropsWithChildren<{
   fallback: () => JSX.Element | null;

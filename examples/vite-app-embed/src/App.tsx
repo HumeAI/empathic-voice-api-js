@@ -1,4 +1,4 @@
-import { EmbeddedVoice } from '@humeai/voice-react';
+import { EmbeddedVoice } from '@humeai/voice-embed-react';
 
 import './App.css';
 

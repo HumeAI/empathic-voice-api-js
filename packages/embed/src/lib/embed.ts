@@ -1,5 +1,6 @@
-import type { Config } from './create-config';
-import { createConfig } from './create-config';
+import type { Config } from '@humeai/voice';
+import { createConfig } from '@humeai/voice';
+
 import type { ClientToFrameAction } from './embed-messages';
 import {
   FrameToClientActionSchema,

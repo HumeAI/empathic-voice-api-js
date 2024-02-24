@@ -1,5 +1,5 @@
 {
-  "name": "@humeai/voice-react",
+  "name": "@humeai/voice-embed-react",
   "version": "0.0.1",
   "description": "",
   "main": "./dist/index.js",
@@ -15,7 +15,6 @@
     "dist"
   ],
   "scripts": {
-    "test": "vitest",
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint ./src",
@@ -25,14 +24,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@humeai/voice": "workspace:*",
-    "detect-browser": "^5.3.0",
-    "extendable-media-recorder": "^9.1.9",
-    "extendable-media-recorder-wav-encoder": "^7.0.104",
-    "meyda": "^5.6.2",
+    "@humeai/voice-embed": "workspace:*",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "zod": "^3.22.4"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@humeai/eslint-config": "workspace:*",
@@ -40,7 +34,6 @@
     "@testing-library/react": "^14.2.1",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/eslint": "^8.56.2",
-    "@types/meyda": "^4.3.8",
     "@types/node": "^20.11.19",
     "@types/react": "^18.2.56",
     "@types/react-dom": "^18.2.19",

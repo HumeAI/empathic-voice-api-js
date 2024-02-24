@@ -5,7 +5,7 @@ import {
   EXPAND_WIDGET_ACTION,
   MINIMIZE_WIDGET_ACTION,
   RESIZE_FRAME_ACTION,
-} from '@humeai/voice-react';
+} from '@humeai/voice-embed-react';
 
 export enum LayoutState {
   CLOSED = 'closed',

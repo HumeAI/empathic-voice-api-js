@@ -7,7 +7,7 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "iframe:dev": "turbo run dev --filter=@humeai/voice --filter=@humeai/voice-react --filter=assistant-renderer --filter=example-vite-app-embed"
+    "iframe:dev": "turbo run dev --filter=@humeai/voice --filter=@humeai/voice-react --filter=voice-embed-renderer --filter=example-vite-app-embed"
   },
   "devDependencies": {
     "@humeai/eslint-config": "workspace:*",

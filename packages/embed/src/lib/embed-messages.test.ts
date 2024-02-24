@@ -1,10 +1,10 @@
+import { TTSService } from '@humeai/voice';
 import { describe, expect, it } from 'vitest';
 
 import {
   parseClientToFrameAction,
   UPDATE_CONFIG_ACTION,
 } from './embed-messages';
-import { TTSService } from '..';
 
 describe('parseEmbedMessage', () => {
   it('should parse embed message', async () => {
