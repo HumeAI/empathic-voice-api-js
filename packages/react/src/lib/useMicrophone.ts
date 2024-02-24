@@ -43,7 +43,9 @@ export const useMicrophone = (props: MicrophoneProps) => {
       .then((buffer) => {
         sendAudio.current?.(buffer);
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.log(err);
+      });
   }, []);
 
   const start = useCallback(async () => {
@@ -78,7 +80,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       await register(port);
     }
 
-    recorder.current = new ExtendableMediaRecorder(stream, {
+    recorder.current = new ExtendableMediaRecorder(input.mediaStream, {
       mimeType,
     });
     recorder.current.addEventListener('dataavailable', dataHandler);
