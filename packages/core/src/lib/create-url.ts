@@ -8,8 +8,8 @@ export const createSocketUrl = (config: Config): string => {
   // receive audio responses as json with IDs instead of binary messages
   url.searchParams.set('no_binary', String(true));
 
-  if (config.auth.type === 'access_token') {
-    url.searchParams.set('access_token', config.auth.value);
+  if (config.auth.type === 'accessToken') {
+    url.searchParams.set('accessToken', config.auth.value);
   } else if (config.auth.type === 'apiKey') {
     url.searchParams.set('apiKey', config.auth.value);
   }

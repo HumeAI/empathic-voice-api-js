@@ -9,22 +9,21 @@ import { AnimatePresence } from 'framer-motion';
 import { VoiceProvider } from '@humeai/voice-react';
 
 function App() {
-  const setApiKey = useConfigStore((store) => store.setApiKey);
-  const apiKey = useConfigStore((store) => store.apiKey);
+  const setAuthStrategy = useConfigStore((store) => store.setAuthStrategy);
+  const authStrategy = useConfigStore((store) => store.authStrategy);
 
   return (
     <>
       <IframeGuard fallback={IframeFallback}>
         <MessageListener
           onUpdateConfig={(config) => {
-            const apiKey = config.auth.value;
-            setApiKey(apiKey);
+            setAuthStrategy(config.auth);
           }}
         />
-        {apiKey ? (
+        {authStrategy ? (
           <Frame>
             <AnimatePresence mode={'wait'}>
-              <VoiceProvider auth={{ type: 'apiKey', value: apiKey }}>
+              <VoiceProvider auth={authStrategy}>
                 <Views />
               </VoiceProvider>
             </AnimatePresence>

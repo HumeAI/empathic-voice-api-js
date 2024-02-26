@@ -27,7 +27,7 @@ export default async function Home() {
       <NoSSR>
         {accessToken ? (
           <VoiceProvider
-            auth={{ type: 'access_token', value: accessToken }}
+            auth={{ type: 'accessToken', value: accessToken }}
             hostname={process.env.HUME_VOICE_HOSTNAME || 'api.hume.ai'}
           >
             <ExampleComponent />

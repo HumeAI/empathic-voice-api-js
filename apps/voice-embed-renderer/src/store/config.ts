@@ -1,13 +1,22 @@
 import { create } from 'zustand';
 
+type AuthStrategy =
+  | {
+      type: 'apiKey';
+      value: string;
+    }
+  | {
+      type: 'accessToken';
+      value: string;
+    };
 interface ConfigStore {
-  apiKey: string | null;
-  setApiKey: (apiKey: string) => void;
-  clearApiKey: () => void;
+  authStrategy: AuthStrategy | null;
+  setAuthStrategy: (authStrategy: AuthStrategy) => void;
+  clearAuthStrategy: () => void;
 }
 
 export const useConfigStore = create<ConfigStore>()((set) => ({
-  apiKey: null,
-  setApiKey: (apiKey) => set({ apiKey }),
-  clearApiKey: () => set({ apiKey: null }),
+  authStrategy: null,
+  setAuthStrategy: (authStrategy) => set({ authStrategy }),
+  clearAuthStrategy: () => set({ authStrategy: null }),
 }));

@@ -13,7 +13,7 @@ describe('create-url', () => {
     } as const,
     {
       auth: {
-        type: 'access_token',
+        type: 'accessToken',
         value: 'hume-access-token-1234',
       },
     } as const,
