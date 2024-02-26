@@ -7,6 +7,8 @@ export const createSocketUrl = (config: Config): string => {
 
   // receive audio responses as json with IDs instead of binary messages
   url.searchParams.set('no_binary', String(true));
+  // temporarily set encoding to linear16 until mic changes are merged
+  url.searchParams.set('encoding', 'linear16');
 
   if (config.auth.type === 'access_token') {
     url.searchParams.set('access_token', config.auth.value);
