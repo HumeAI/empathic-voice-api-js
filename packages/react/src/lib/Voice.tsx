@@ -133,17 +133,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
   });
 
-  const {
-    encodingRef,
-    streamRef,
-    getStream,
-    permission: micPermission,
-  } = useEncoding({
-    encodingConstraints: {
-      sampleRate: config.sampleRate,
-      channelCount: config.channels,
-    },
-  });
+  const { streamRef, getStream, permission: micPermission } = useEncoding();
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
@@ -211,8 +201,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     const err = await client
       .connect({
         ...config,
-        sampleRate: encodingRef.current.sampleRate,
-        channels: encodingRef.current.channelCount,
       })
       .then(() => null)
       .catch(() => new Error('Could not connect to the voice'));
@@ -236,7 +224,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     ) {
       setStatus({ value: 'connected' });
     }
-  }, [client, config, encodingRef, getStream, mic, player, updateError]);
+  }, [client, config, getStream, mic, player, updateError]);
 
   const disconnectFromVoice = useCallback(() => {
     client.disconnect();

@@ -1,11 +1,6 @@
 // cspell:ignore dataavailable
-
-import type { IBlobEvent, IMediaRecorder } from 'extendable-media-recorder';
-import {
-  MediaRecorder as ExtendableMediaRecorder,
-  register,
-} from 'extendable-media-recorder';
-import { connect } from 'extendable-media-recorder-wav-encoder';
+import type { MimeType } from '@humeai/voice';
+import { getSupportedMimeType } from '@humeai/voice';
 import Meyda from 'meyda';
 import type { MeydaFeaturesObject } from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -26,16 +21,14 @@ export const useMicrophone = (props: MicrophoneProps) => {
   const [isMuted, setIsMuted] = useState(false);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
   const currentAnalyzer = useRef<Meyda.MeydaAnalyzer | null>(null);
+  const mimeTypeRef = useRef<MimeType | null>(null);
 
-  const mimeType = 'audio/wav';
-  const recorder = useRef<IMediaRecorder | null>(null);
-
-  const encoderPortRef = useRef<MessagePort | null>(null);
+  const recorder = useRef<MediaRecorder | null>(null);
 
   const sendAudio = useRef(onAudioCaptured);
   sendAudio.current = onAudioCaptured;
 
-  const dataHandler = useCallback((event: IBlobEvent) => {
+  const dataHandler = useCallback((event: BlobEvent) => {
     const blob = event.data;
 
     blob
@@ -43,10 +36,12 @@ export const useMicrophone = (props: MicrophoneProps) => {
       .then((buffer) => {
         sendAudio.current?.(buffer);
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.log(err);
+      });
   }, []);
 
-  const start = useCallback(async () => {
+  const start = useCallback(() => {
     const stream = streamRef.current;
     if (!stream) {
       throw new Error('No stream connected');
@@ -71,19 +66,17 @@ export const useMicrophone = (props: MicrophoneProps) => {
       const message = e instanceof Error ? e.message : 'Unknown error';
       console.error(`Failed to start mic analyzer: ${message}`);
     }
-
-    if (!encoderPortRef.current) {
-      const port = await connect();
-      encoderPortRef.current = port;
-      await register(port);
+    const mimeType = mimeTypeRef.current;
+    if (!mimeType) {
+      throw new Error('No MimeType specified');
     }
 
-    recorder.current = new ExtendableMediaRecorder(stream, {
+    recorder.current = new MediaRecorder(stream, {
       mimeType,
     });
     recorder.current.addEventListener('dataavailable', dataHandler);
     recorder.current.start(100);
-  }, [dataHandler, streamRef]);
+  }, [dataHandler, streamRef, mimeTypeRef]);
 
   const stop = useCallback(() => {
     try {
@@ -147,6 +140,15 @@ export const useMicrophone = (props: MicrophoneProps) => {
       }
     };
   }, [dataHandler, streamRef]);
+
+  useEffect(() => {
+    const mimeTypeResult = getSupportedMimeType();
+    if (mimeTypeResult.success) {
+      mimeTypeRef.current = mimeTypeResult.mimeType;
+    } else {
+      onError(mimeTypeResult.error.message);
+    }
+  }, [onError]);
 
   return {
     start,

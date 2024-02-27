@@ -1,43 +1,31 @@
 // cspell:ignore dataavailable
-import {
-  DEFAULT_ENCODING_VALUES,
-  type EncodingValues,
-  getAudioStream,
-  getStreamSettings,
-} from '@humeai/voice';
+import { checkForAudioTracks, getAudioStream } from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';
 
-type EncodingProps = {
-  encodingConstraints: Partial<EncodingValues>;
-};
-
-const useEncoding = (props: EncodingProps) => {
-  const { encodingConstraints } = props;
+const useEncoding = () => {
   const [permission, setPermission] = useState<PermissionStatus>('prompt');
 
-  const encodingRef = useRef<EncodingValues>(DEFAULT_ENCODING_VALUES);
   const streamRef = useRef<MediaStream | null>(null);
 
   const getStream = useCallback(async () => {
     try {
-      const stream = await getAudioStream(encodingConstraints);
+      const stream = await getAudioStream();
 
       setPermission('granted');
       streamRef.current = stream;
 
-      encodingRef.current = getStreamSettings(stream, encodingConstraints);
+      checkForAudioTracks(stream);
 
       return 'granted' as const;
     } catch (e) {
       setPermission('denied');
       return 'denied' as const;
     }
-  }, [encodingConstraints]);
+  }, []);
 
   return {
-    encodingRef,
     streamRef,
     getStream,
     permission,
