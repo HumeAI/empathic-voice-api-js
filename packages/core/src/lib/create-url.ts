@@ -34,5 +34,9 @@ export const createSocketUrl = (config: Config): string => {
     url.searchParams.set('system_prompt', config.systemPrompt);
   }
 
+  if (config.speedRatio) {
+    url.searchParams.set('speed_ratio', config.speedRatio.toString());
+  }
+
   return url.href;
 };

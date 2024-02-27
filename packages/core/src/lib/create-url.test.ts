@@ -23,7 +23,7 @@ describe('create-url', () => {
     expect(createSocketUrl(config)).toBe(
       `wss://api.hume.ai/v0/assistant/chat?no_binary=true&${config.auth.type}=${
         config.auth.value
-      }&tts=${config.tts.toString()}`,
+      }&tts=${config.tts.toString()}&speed_ratio=1`,
     );
   });
 });

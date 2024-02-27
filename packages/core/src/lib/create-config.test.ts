@@ -19,6 +19,7 @@ describe('create-config', () => {
       hostname: 'api.hume.ai',
       debug: false,
       reconnectAttempts: 30,
+      speedRatio: 1.0,
     });
   });
 
