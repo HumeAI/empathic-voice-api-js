@@ -1,5 +1,6 @@
 // cspell:ignore dataavailable
-import { MimeType, getSupportedMimeType } from '@humeai/voice';
+import type { MimeType } from '@humeai/voice';
+import { getSupportedMimeType } from '@humeai/voice';
 import Meyda from 'meyda';
 import type { MeydaFeaturesObject } from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -40,7 +41,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       });
   }, []);
 
-  const start = useCallback(async () => {
+  const start = useCallback(() => {
     const stream = streamRef.current;
     if (!stream) {
       throw new Error('No stream connected');
@@ -142,9 +143,11 @@ export const useMicrophone = (props: MicrophoneProps) => {
 
   useEffect(() => {
     const mimeTypeResult = getSupportedMimeType();
-    mimeTypeResult.success
-      ? (mimeTypeRef.current = mimeTypeResult.mimeType)
-      : onError(mimeTypeResult.error.message);
+    if (mimeTypeResult.success) {
+      mimeTypeRef.current = mimeTypeResult.mimeType;
+    } else {
+      onError(mimeTypeResult.error.message);
+    }
   }, [onError]);
 
   return {
