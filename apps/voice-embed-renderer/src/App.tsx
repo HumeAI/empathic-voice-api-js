@@ -6,12 +6,17 @@ import { MessageListener } from '@/components/MessageListener';
 import { useConfigStore } from '@/store/config';
 import { Frame } from './components/Frame';
 import { AnimatePresence } from 'framer-motion';
-import { VoiceProvider } from '@humeai/voice-react';
+import { type JSONMessage, VoiceProvider } from '@humeai/voice-react';
+import { parentDispatch } from '@/utils/parentDispatch';
+import { TRANSCRIPT_MESSAGE_ACTION } from '@humeai/voice-embed-react';
 
 function App() {
   const setConfig = useConfigStore((store) => store.setConfig);
   const config = useConfigStore((store) => store.config);
 
+  const dispatchMessage = (message: JSONMessage) => {
+    parentDispatch(TRANSCRIPT_MESSAGE_ACTION(message));
+  };
   return (
     <>
       <IframeGuard fallback={IframeFallback}>
@@ -23,7 +28,7 @@ function App() {
         {config ? (
           <Frame>
             <AnimatePresence mode={'wait'}>
-              <VoiceProvider {...config}>
+              <VoiceProvider {...config} onMessage={dispatchMessage}>
                 <Views />
               </VoiceProvider>
             </AnimatePresence>
