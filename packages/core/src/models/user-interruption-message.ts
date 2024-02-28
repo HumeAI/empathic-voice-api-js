@@ -5,10 +5,6 @@ import { TimeSliceSchema } from './time-slice';
 export const UserInterruptionMessageSchema = z
   .object({
     type: z.literal('user_interruption'),
-    message: z.object({
-      role: z.literal('user'),
-      content: z.string(),
-    }),
     time: z.union([TimeSliceSchema, z.number(), z.null()]).catch(null),
   })
   .transform((obj) => {
