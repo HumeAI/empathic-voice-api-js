@@ -9,7 +9,7 @@ export const UserInterruptionMessageSchema = z
       role: z.literal('user'),
       content: z.string(),
     }),
-    time: TimeSliceSchema,
+    time: z.union([TimeSliceSchema, z.number(), z.null()]).catch(null),
   })
   .transform((obj) => {
     return Object.assign(obj, {
