@@ -1,4 +1,8 @@
-import type { Config, JSONMessage } from '@humeai/voice';
+import type {
+  AgentTranscriptMessage,
+  Config,
+  UserTranscriptMessage,
+} from '@humeai/voice';
 import { createConfig } from '@humeai/voice';
 
 import type { ClientToFrameAction } from './embed-messages';
@@ -12,7 +16,9 @@ export type EmbeddedVoiceConfig = {
   rendererUrl: string;
 } & Config;
 
-export type TranscriptMessageHandler = (message: JSONMessage) => void;
+export type TranscriptMessageHandler = (
+  message: UserTranscriptMessage | AgentTranscriptMessage,
+) => void;
 
 export class EmbeddedVoice {
   private iframe: HTMLIFrameElement;

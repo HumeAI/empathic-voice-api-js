@@ -24,7 +24,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@humeai/voice-embed": "workspace:*",
+    "@humeai/voice-embed": "file:./pkgs/humeai-voice-embed-0.0.1.tgz",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

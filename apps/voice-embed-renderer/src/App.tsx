@@ -17,6 +17,7 @@ function App() {
   const dispatchMessage = (message: JSONMessage) => {
     parentDispatch(TRANSCRIPT_MESSAGE_ACTION(message));
   };
+
   return (
     <>
       <IframeGuard fallback={IframeFallback}>

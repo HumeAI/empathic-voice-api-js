@@ -11,4 +11,9 @@ export {
   RESIZE_FRAME_ACTION,
 } from './lib/embed-messages';
 
-export type { Config, JSONMessage } from '@humeai/voice';
+export type {
+  Config,
+  UserTranscriptMessage,
+  AgentTranscriptMessage,
+  JSONMessage,
+} from '@humeai/voice';
