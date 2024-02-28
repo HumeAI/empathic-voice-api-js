@@ -13,6 +13,9 @@ function App() {
           type: 'apiKey',
           value: apiKey,
         }}
+        systemPrompt={
+          'You are an angry cat, always replying to the user with a bad attitude.'
+        }
         rendererUrl={
           import.meta.env.PROD
             ? 'https://voice-widget.hume.ai/'

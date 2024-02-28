@@ -1,22 +1,15 @@
+import { Config } from '@humeai/voice-embed-react';
 import { create } from 'zustand';
 
-type AuthStrategy =
-  | {
-      type: 'apiKey';
-      value: string;
-    }
-  | {
-      type: 'accessToken';
-      value: string;
-    };
+type config = Config;
 interface ConfigStore {
-  authStrategy: AuthStrategy | null;
-  setAuthStrategy: (authStrategy: AuthStrategy) => void;
-  clearAuthStrategy: () => void;
+  config: config | null;
+  setConfig: (config: config) => void;
+  clearConfig: () => void;
 }
 
 export const useConfigStore = create<ConfigStore>()((set) => ({
-  authStrategy: null,
-  setAuthStrategy: (authStrategy) => set({ authStrategy }),
-  clearAuthStrategy: () => set({ authStrategy: null }),
+  config: null,
+  setConfig: (config) => set({ config }),
+  clearConfig: () => set({ config: null }),
 }));
