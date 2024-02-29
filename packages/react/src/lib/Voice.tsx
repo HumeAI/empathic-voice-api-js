@@ -148,13 +148,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           | AgentTranscriptMessage
           | UserInterruptionMessage,
       ) => {
-        if (
-          message.type === 'assistant_message' ||
-          message.type === 'user_message'
-        ) {
-          messageStore.onMessage(message);
-          return;
-        }
+        // store message
+        messageStore.onMessage(message);
 
         if (message.type === 'user_interruption') {
           player.clearQueue();
