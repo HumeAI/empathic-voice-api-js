@@ -8,7 +8,13 @@ import { useCallback, useState } from 'react';
 
 import type { ConnectionMessage } from './connection-message';
 
-export const useMessages = () => {
+export const useMessages = ({
+  sendMessageToParent,
+}: {
+  sendMessageToParent?: (
+    message: UserTranscriptMessage | AgentTranscriptMessage,
+  ) => void;
+}) => {
   const [voiceMessageMap, setVoiceMessageMap] = useState<
     Record<string, AgentTranscriptMessage>
   >({});
@@ -73,6 +79,7 @@ export const useMessages = () => {
     (id: string) => {
       const matchingTranscript = voiceMessageMap[id];
       if (matchingTranscript) {
+        sendMessageToParent?.(matchingTranscript);
         setLastVoiceMessage(matchingTranscript);
         setMessages((prev) => prev.concat([matchingTranscript]));
         // remove the message from the map to ensure we don't

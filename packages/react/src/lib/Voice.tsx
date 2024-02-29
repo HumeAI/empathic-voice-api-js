@@ -104,7 +104,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const onError = useRef(props.onError ?? noop);
   onError.current = props.onError ?? noop;
 
-  const messageStore = useMessages();
+  const messageStore = useMessages({
+    sendMessageToParent: onMessage,
+  });
 
   const updateError = useCallback((err: VoiceError | null) => {
     setError(err);
@@ -150,7 +152,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           message.type === 'assistant_message' ||
           message.type === 'user_message'
         ) {
-          onMessage?.(message);
           messageStore.onMessage(message);
           return;
         }

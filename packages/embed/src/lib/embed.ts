@@ -1,4 +1,8 @@
-import type { Config } from '@humeai/voice';
+import type {
+  AgentTranscriptMessage,
+  Config,
+  UserTranscriptMessage,
+} from '@humeai/voice';
 import { createConfig } from '@humeai/voice';
 
 import type { ClientToFrameAction } from './embed-messages';
@@ -12,6 +16,10 @@ export type EmbeddedVoiceConfig = {
   rendererUrl: string;
 } & Config;
 
+export type TranscriptMessageHandler = (
+  message: UserTranscriptMessage | AgentTranscriptMessage,
+) => void;
+
 export class EmbeddedVoice {
   private iframe: HTMLIFrameElement;
 
@@ -21,22 +29,31 @@ export class EmbeddedVoice {
 
   private config: EmbeddedVoiceConfig;
 
-  private constructor(config: EmbeddedVoiceConfig) {
+  private onMessage: TranscriptMessageHandler;
+
+  private constructor({
+    onMessage = () => {},
+    ...config
+  }: { onMessage?: TranscriptMessageHandler } & EmbeddedVoiceConfig) {
     this.config = config;
     this.iframe = this.createIframe(config);
+    this.onMessage = onMessage;
 
     this.messageHandler = this.messageHandler.bind(this);
   }
 
   static create({
     rendererUrl,
+    onMessage,
     ...config
-  }: Partial<EmbeddedVoiceConfig> &
-    NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>>): EmbeddedVoice {
+  }: Partial<EmbeddedVoiceConfig> & {
+    onMessage?: TranscriptMessageHandler;
+  } & NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>>): EmbeddedVoice {
     const parsedConfig = createConfig(config);
 
     return new EmbeddedVoice({
       rendererUrl: rendererUrl ?? 'https://voice-widget.hume.ai',
+      onMessage,
       ...parsedConfig,
     });
   }
@@ -146,6 +163,10 @@ export class EmbeddedVoice {
       }
       case 'resize_frame': {
         this.resizeIframe(action.data.payload);
+        break;
+      }
+      case 'transcript_message': {
+        this.onMessage(action.data.payload);
         break;
       }
     }

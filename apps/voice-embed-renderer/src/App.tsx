@@ -7,10 +7,22 @@ import { useConfigStore } from '@/store/config';
 import { Frame } from './components/Frame';
 import { AnimatePresence } from 'framer-motion';
 import { VoiceProvider } from '@humeai/voice-react';
+import { parentDispatch } from '@/utils/parentDispatch';
+import {
+  type AgentTranscriptMessage,
+  TRANSCRIPT_MESSAGE_ACTION,
+  type UserTranscriptMessage,
+} from '@humeai/voice-embed-react';
 
 function App() {
   const setConfig = useConfigStore((store) => store.setConfig);
   const config = useConfigStore((store) => store.config);
+
+  const dispatchMessage = (
+    message: UserTranscriptMessage | AgentTranscriptMessage,
+  ) => {
+    parentDispatch(TRANSCRIPT_MESSAGE_ACTION(message));
+  };
 
   return (
     <>
@@ -23,7 +35,7 @@ function App() {
         {config ? (
           <Frame>
             <AnimatePresence mode={'wait'}>
-              <VoiceProvider {...config}>
+              <VoiceProvider {...config} onMessage={dispatchMessage}>
                 <Views />
               </VoiceProvider>
             </AnimatePresence>

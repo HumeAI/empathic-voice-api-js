@@ -21,6 +21,9 @@ function App() {
             ? 'https://voice-widget.hume.ai/'
             : 'http://localhost:3000'
         }
+        onMessage={(msg) => {
+          console.log('we got a message', msg);
+        }}
       />
     </>
   );
