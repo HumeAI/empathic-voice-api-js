@@ -21,6 +21,7 @@ function App() {
             ? 'https://voice-widget.hume.ai/'
             : 'http://localhost:3000'
         }
+        hostname={'test-api.hume.ai'}
         onMessage={(msg) => {
           console.log('we got a message', msg);
         }}
