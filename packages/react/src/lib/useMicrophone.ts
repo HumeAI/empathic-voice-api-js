@@ -34,17 +34,8 @@ export const useMicrophone = (props: MicrophoneProps) => {
     blob
       .arrayBuffer()
       .then((buffer) => {
-        console.info(btoa(String.fromCharCode(...new Uint8Array(buffer))));
-      })
-      .catch((err) => console.info(err));
-
-    blob
-      .arrayBuffer()
-      .then((buffer) => {
         if (buffer.byteLength > 0) {
           sendAudio.current?.(buffer);
-        } else {
-          console.info('BUFFER NOT SENT');
         }
       })
       .catch((err) => {
