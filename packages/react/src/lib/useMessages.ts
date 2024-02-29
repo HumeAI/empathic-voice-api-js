@@ -91,7 +91,7 @@ export const useMessages = ({
         });
       }
     },
-    [voiceMessageMap],
+    [voiceMessageMap, sendMessageToParent],
   );
 
   const disconnect = useCallback(() => {

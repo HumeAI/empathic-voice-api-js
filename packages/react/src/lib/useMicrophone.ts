@@ -110,7 +110,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       track.enabled = false;
     });
     setIsMuted(true);
-  }, []);
+  }, [streamRef]);
 
   const unmute = useCallback(() => {
     if (currentAnalyzer.current) {
@@ -121,7 +121,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
     });
 
     setIsMuted(false);
-  }, []);
+  }, [streamRef]);
 
   useEffect(() => {
     return () => {
