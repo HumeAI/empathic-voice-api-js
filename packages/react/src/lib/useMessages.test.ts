@@ -4,17 +4,20 @@ import type {
 } from '@humeai/voice';
 import type { RenderHookResult } from '@testing-library/react-hooks';
 import { act, renderHook } from '@testing-library/react-hooks';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMessages } from './useMessages'; // adjust the import path as needed
 
 describe('useMessages hook', () => {
   let hook: RenderHookResult<unknown, ReturnType<typeof useMessages>>;
   let userMessage: UserTranscriptMessage;
-  let voiceMessage: AgentTranscriptMessage;
+  let agentMessage: AgentTranscriptMessage;
+
+  const sendMessageToParent = vi.fn();
 
   beforeEach(() => {
-    hook = renderHook(() => useMessages());
+    vi.clearAllMocks();
+    hook = renderHook(() => useMessages({ sendMessageToParent }));
     userMessage = {
       type: 'user_message',
       message: {
@@ -38,7 +41,7 @@ describe('useMessages hook', () => {
       ],
       receivedAt: new Date(),
     };
-    voiceMessage = {
+    agentMessage = {
       type: 'assistant_message' as const,
       id: 'message_12345',
       message: {
@@ -99,53 +102,53 @@ describe('useMessages hook', () => {
 
   it('should add voice messages to the voice message map', () => {
     act(() => {
-      hook.result.current.onMessage(voiceMessage);
+      hook.result.current.onMessage(agentMessage);
     });
 
     expect(hook.result.current.lastVoiceMessage).toBeNull();
-    expect(hook.result.current.messages).not.toContainEqual(voiceMessage);
+    expect(hook.result.current.messages).not.toContainEqual(agentMessage);
   });
 
   it('should expose the voice message after the associated audio clip is played', () => {
     // add the message
     act(() => {
-      hook.result.current.onMessage(voiceMessage);
+      hook.result.current.onMessage(agentMessage);
     });
 
     // simulate playing audio
     act(() => {
       hook.result.current.onPlayAudio(
-        'id' in voiceMessage ? voiceMessage.id : '',
+        'id' in agentMessage ? agentMessage.id : '',
       );
     });
 
-    expect(hook.result.current.lastVoiceMessage).toEqual(voiceMessage);
-    expect(hook.result.current.messages).toContainEqual(voiceMessage);
+    expect(hook.result.current.lastVoiceMessage).toEqual(agentMessage);
+    expect(hook.result.current.messages).toContainEqual(agentMessage);
   });
 
   it('should expose the voice message after the associated audio clip is played', () => {
     act(() => {
-      hook.result.current.onMessage(voiceMessage); // First, add the message
+      hook.result.current.onMessage(agentMessage); // First, add the message
     });
 
     act(() => {
       hook.result.current.onPlayAudio(
-        'id' in voiceMessage ? voiceMessage.id : '',
+        'id' in agentMessage ? agentMessage.id : '',
       );
     });
 
-    expect(hook.result.current.lastVoiceMessage).toEqual(voiceMessage);
-    expect(hook.result.current.messages).toContainEqual(voiceMessage);
+    expect(hook.result.current.lastVoiceMessage).toEqual(agentMessage);
+    expect(hook.result.current.messages).toContainEqual(agentMessage);
   });
 
   it('should only add voice messages once', () => {
     act(() => {
-      hook.result.current.onMessage(voiceMessage); // First, add the message
+      hook.result.current.onMessage(agentMessage); // First, add the message
     });
 
     act(() => {
       hook.result.current.onPlayAudio(
-        'id' in voiceMessage ? voiceMessage.id : '',
+        'id' in agentMessage ? agentMessage.id : '',
       );
     });
 
@@ -154,11 +157,25 @@ describe('useMessages hook', () => {
     // play audio clip with the same ID as before
     act(() => {
       hook.result.current.onPlayAudio(
-        'id' in voiceMessage ? voiceMessage.id : '',
+        'id' in agentMessage ? agentMessage.id : '',
       );
     });
 
     expect(hook.result.current.messages).toHaveLength(1);
+  });
+
+  it('should call the sendMessageToParent callback when the associated audio clip plays', () => {
+    act(() => {
+      hook.result.current.onMessage(agentMessage);
+    });
+
+    act(() => {
+      hook.result.current.onPlayAudio(
+        'id' in agentMessage ? agentMessage.id : '',
+      );
+    });
+
+    expect(sendMessageToParent).toHaveBeenCalledWith(agentMessage);
   });
 
   it('should clear all messages and states on disconnect', () => {
