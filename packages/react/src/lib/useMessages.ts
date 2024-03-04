@@ -1,4 +1,4 @@
-import type { UserInterruptionMessage } from '@humeai/voice';
+import type { JSONErrorMessage, UserInterruptionMessage } from '@humeai/voice';
 import {
   type AgentTranscriptMessage,
   type JSONMessage,
@@ -25,6 +25,7 @@ export const useMessages = ({
       | UserTranscriptMessage
       | ConnectionMessage
       | UserInterruptionMessage
+      | JSONErrorMessage
     >
   >([]);
 
@@ -68,6 +69,9 @@ export const useMessages = ({
         setMessages((prev) => prev.concat([message]));
         break;
       case 'user_interruption':
+        setMessages((prev) => prev.concat([message]));
+        break;
+      case 'error':
         setMessages((prev) => prev.concat([message]));
         break;
       default:
