@@ -1,21 +1,15 @@
 import { useEffect, useMemo, useRef } from 'react';
 import type {
   AgentTranscriptMessage,
-  ConnectionMessage,
-  UserInterruptionMessage,
   UserTranscriptMessage,
+  useVoice,
 } from '@humeai/voice-react';
 import { match } from 'ts-pattern';
 
 export const MessageConsole = ({
   messages,
 }: {
-  messages: (
-    | UserTranscriptMessage
-    | AgentTranscriptMessage
-    | ConnectionMessage
-    | UserInterruptionMessage
-  )[];
+  messages: ReturnType<typeof useVoice>['messages'];
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -32,7 +26,8 @@ export const MessageConsole = ({
       if (
         message.type === 'socket_connected' ||
         message.type === 'socket_disconnected' ||
-        message.type === 'user_interruption'
+        message.type === 'user_interruption' ||
+        message.type === 'error'
       ) {
         return state;
       }

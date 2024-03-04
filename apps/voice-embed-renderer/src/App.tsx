@@ -8,20 +8,22 @@ import { Frame } from './components/Frame';
 import { AnimatePresence } from 'framer-motion';
 import { VoiceProvider } from '@humeai/voice-react';
 import { parentDispatch } from '@/utils/parentDispatch';
-import {
-  type AgentTranscriptMessage,
-  TRANSCRIPT_MESSAGE_ACTION,
-  type UserTranscriptMessage,
-} from '@humeai/voice-embed-react';
+import { TRANSCRIPT_MESSAGE_ACTION } from '@humeai/voice-embed-react';
+import { ComponentProps } from 'react';
 
 function App() {
   const setConfig = useConfigStore((store) => store.setConfig);
   const config = useConfigStore((store) => store.config);
 
-  const dispatchMessage = (
-    message: UserTranscriptMessage | AgentTranscriptMessage,
+  const dispatchMessage: ComponentProps<typeof VoiceProvider>['onMessage'] = (
+    message,
   ) => {
-    parentDispatch(TRANSCRIPT_MESSAGE_ACTION(message));
+    if (
+      message.type === 'user_message' ||
+      message.type === 'assistant_message'
+    ) {
+      parentDispatch(TRANSCRIPT_MESSAGE_ACTION(message));
+    }
   };
 
   return (
