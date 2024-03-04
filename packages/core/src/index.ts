@@ -12,6 +12,7 @@ export * from './models/agent-end-message';
 export * from './models/agent-message';
 export * from './models/audio-message';
 export * from './models/audio-output-message';
+export * from './models/error-message';
 export * from './models/json-message';
 export * from './models/time-slice';
 export * from './models/user-interruption-message';

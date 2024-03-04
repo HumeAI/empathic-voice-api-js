@@ -2,6 +2,8 @@ import {
   AgentTranscriptMessage,
   AudioOutputMessage,
   createConfig,
+  JSONErrorMessage,
+  JSONMessage,
   UserInterruptionMessage,
   UserTranscriptMessage,
 } from '@humeai/voice';
@@ -51,6 +53,7 @@ export type VoiceContextType = {
     | AgentTranscriptMessage
     | ConnectionMessage
     | UserInterruptionMessage
+    | JSONErrorMessage
   )[];
   lastVoiceMessage: AgentTranscriptMessage | null;
   lastUserMessage: UserTranscriptMessage | null;
@@ -71,7 +74,7 @@ const VoiceContext = createContext<VoiceContextType | null>(null);
 export type VoiceProviderProps = PropsWithChildren<
   Parameters<typeof createConfig>[0]
 > & {
-  onMessage?: (message: UserTranscriptMessage | AgentTranscriptMessage) => void;
+  onMessage?: (message: JSONMessage) => void;
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: () => void;
@@ -87,7 +90,6 @@ export const useVoice = () => {
 
 export const VoiceProvider: FC<VoiceProviderProps> = ({
   children,
-  onMessage,
   ...props
 }) => {
   const [status, setStatus] = useState<VoiceStatus>({
@@ -105,7 +107,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   onError.current = props.onError ?? noop;
 
   const messageStore = useMessages({
-    sendMessageToParent: onMessage,
+    sendMessageToParent: props.onMessage,
   });
 
   const updateError = useCallback((err: VoiceError | null) => {
@@ -146,7 +148,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         message:
           | UserTranscriptMessage
           | AgentTranscriptMessage
-          | UserInterruptionMessage,
+          | UserInterruptionMessage
+          | JSONErrorMessage,
       ) => {
         // store message
         messageStore.onMessage(message);
@@ -155,7 +158,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           player.clearQueue();
         }
       },
-      [onMessage, player],
+      [player],
     ),
     onError: onClientError,
     onOpen: useCallback(() => {
