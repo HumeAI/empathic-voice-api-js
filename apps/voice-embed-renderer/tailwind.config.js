@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       boxShadow: {
-        custom: 'inset rgba(var(--hume-tan-700)) 0px 0px 32px -12px',
+        custom: 'inset rgba(var(--hume-tan-600)) 0px 0px 32px -12px',
       },
       colors: {
         initial: 'initial',
