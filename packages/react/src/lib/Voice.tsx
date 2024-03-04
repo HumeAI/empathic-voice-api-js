@@ -187,11 +187,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     const permission = await getStream();
 
     if (permission === 'denied') {
-      updateError({
+      const error: VoiceError = {
         type: 'mic_error',
         message: 'Microphone permission denied',
-      });
-      return;
+      };
+      updateError(error);
+      return Promise.reject(error);
     }
 
     const err = await client
@@ -202,11 +203,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       .catch(() => new Error('Could not connect to the voice'));
 
     if (err) {
-      updateError({
+      const error: VoiceError = {
         type: 'socket_error',
         message: 'We could not connect to the voice. Please try again.',
-      });
-      return;
+      };
+      updateError(error);
+      return Promise.reject(error);
     }
 
     const [micPromise, playerPromise] = await Promise.allSettled([
