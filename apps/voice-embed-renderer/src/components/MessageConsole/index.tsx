@@ -59,7 +59,7 @@ export const MessageConsole = ({
   );
 
   return (
-    <div className="h-56 w-full overflow-auto rounded-md px-6">
+    <div className="z-10 h-56 w-full overflow-auto rounded-md px-6">
       <div className="pb-3 text-sm italic text-gray-500">Connecting...</div>
       {connectionMessage ? (
         <div className="pb-3 text-sm italic text-gray-500">
