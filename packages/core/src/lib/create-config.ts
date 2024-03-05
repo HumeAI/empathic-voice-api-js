@@ -32,8 +32,7 @@ export const ConfigSchema = z.object({
     .number({
       description: 'Speed ratio of the TTS service.',
     })
-    .optional()
-    .default(1.0),
+    .optional(),
   reconnectAttempts: z
     .number({
       description: 'Number of times to attempt to reconnect to the API.',
@@ -66,7 +65,6 @@ export const defaultConfig: Omit<Config, 'auth'> = {
   reconnectAttempts: 30,
   debug: false,
   tts: TTSService.DEFAULT,
-  speedRatio: 1.0,
 };
 
 export const createConfig = (
