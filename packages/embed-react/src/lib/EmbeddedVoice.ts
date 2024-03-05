@@ -1,16 +1,17 @@
 import {
   type CloseHandler,
-  type Config,
   EmbeddedVoice as EA,
+  type EmbeddedVoiceConfig,
   type TranscriptMessageHandler,
 } from '@humeai/voice-embed';
 import { useEffect, useRef } from 'react';
 
-type EmbeddedVoiceProps = Config & {
-  onMessage?: TranscriptMessageHandler;
-  onClose?: CloseHandler;
-  isEmbedOpen: boolean;
-};
+type EmbeddedVoiceProps = Partial<EmbeddedVoiceConfig> &
+  NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>> & {
+    onMessage?: TranscriptMessageHandler;
+    onClose?: CloseHandler;
+    isEmbedOpen: boolean;
+  };
 export const EmbeddedVoice = (props: EmbeddedVoiceProps) => {
   const { onMessage, isEmbedOpen, onClose, ...config } = props;
   const embeddedVoice = useRef<EA | null>(null);
@@ -20,7 +21,10 @@ export const EmbeddedVoice = (props: EmbeddedVoiceProps) => {
   const onCloseHandler = useRef<CloseHandler | undefined>();
   onCloseHandler.current = onClose;
 
-  const stableConfig = useRef<Config | undefined>();
+  const stableConfig = useRef<
+    Partial<EmbeddedVoiceConfig> &
+      NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>>
+  >();
   stableConfig.current = config;
 
   useEffect(() => {
