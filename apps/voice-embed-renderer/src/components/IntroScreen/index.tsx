@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 export const IntroScreen = ({ onConnect }: { onConnect: () => void }) => {
   return (
     <motion.div
-      className="flex flex-col gap-8 px-4 items-center"
+      className="flex flex-col items-center gap-8 px-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, translateY: -4 }}
       transition={{ duration: 2 }}
     >
-      <h2 className="text-3xl text-center">
+      <h2 className="text-center text-3xl">
         Meet EVI, our <CircledText>empathic</CircledText> AI voice
       </h2>
       <div className="w-fit">
@@ -40,7 +40,7 @@ export const IntroScreen = ({ onConnect }: { onConnect: () => void }) => {
         >
           <button
             className={
-              'px-4 flex h-[36px] items-center justify-center rounded-full border border-gray-700 bg-gray-800 text-base font-medium text-white hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:text-white focus:outline-none'
+              'flex h-[36px] items-center justify-center rounded-full border border-gray-700 bg-gray-800 px-4 text-base font-medium text-white hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:text-white focus:outline-none'
             }
             onClick={() => {
               onConnect();
