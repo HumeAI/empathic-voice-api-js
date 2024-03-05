@@ -7,6 +7,7 @@ import { createConfig } from '@humeai/voice';
 
 import type { ClientToFrameAction } from './embed-messages';
 import {
+  EXPAND_FROM_CLIENT_ACTION,
   FrameToClientActionSchema,
   UPDATE_CONFIG_ACTION,
   WIDGET_IFRAME_IS_READY_ACTION,
@@ -20,6 +21,8 @@ export type TranscriptMessageHandler = (
   message: UserTranscriptMessage | AgentTranscriptMessage,
 ) => void;
 
+export type CloseHandler = () => void;
+
 export class EmbeddedVoice {
   private iframe: HTMLIFrameElement;
 
@@ -31,29 +34,38 @@ export class EmbeddedVoice {
 
   private onMessage: TranscriptMessageHandler;
 
+  private onClose: CloseHandler;
+
   private constructor({
     onMessage = () => {},
+    onClose = () => {},
     ...config
-  }: { onMessage?: TranscriptMessageHandler } & EmbeddedVoiceConfig) {
+  }: {
+    onMessage?: TranscriptMessageHandler;
+    onClose?: CloseHandler;
+  } & EmbeddedVoiceConfig) {
     this.config = config;
     this.iframe = this.createIframe(config);
     this.onMessage = onMessage;
-
+    this.onClose = onClose;
     this.messageHandler = this.messageHandler.bind(this);
   }
 
   static create({
     rendererUrl,
     onMessage,
+    onClose,
     ...config
   }: Partial<EmbeddedVoiceConfig> & {
     onMessage?: TranscriptMessageHandler;
+    onClose?: CloseHandler;
   } & NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>>): EmbeddedVoice {
     const parsedConfig = createConfig(config);
 
     return new EmbeddedVoice({
       rendererUrl: rendererUrl ?? 'https://voice-widget.hume.ai',
       onMessage,
+      onClose,
       ...parsedConfig,
     });
   }
@@ -64,6 +76,8 @@ export class EmbeddedVoice {
     };
 
     const el = container ?? this.createContainer();
+
+    this.managedContainer = el;
 
     try {
       window.addEventListener('message', messageHandler);
@@ -101,6 +115,7 @@ export class EmbeddedVoice {
       padding: '24px',
       zIndex: '999999',
       fontSize: '0px',
+      pointerEvents: 'none',
     });
 
     div.id = 'hume-embedded-voice-container';
@@ -169,7 +184,16 @@ export class EmbeddedVoice {
         this.onMessage(action.data.payload);
         break;
       }
+      case 'collapse_widget': {
+        this.onClose();
+        break;
+      }
     }
+  }
+
+  openEmbed() {
+    const action = EXPAND_FROM_CLIENT_ACTION();
+    this.sendMessageToFrame(action);
   }
 
   private sendConfigObject() {
@@ -189,10 +213,16 @@ export class EmbeddedVoice {
 
   private showIframe() {
     this.iframe.style.opacity = '1';
+    if (this.managedContainer) {
+      this.managedContainer.style.pointerEvents = 'all';
+    }
   }
 
   private hideIframe() {
     this.iframe.style.opacity = '0';
+    if (this.managedContainer) {
+      this.managedContainer.style.pointerEvents = 'none';
+    }
   }
 
   private resizeIframe({ width, height }: { width: number; height: number }) {

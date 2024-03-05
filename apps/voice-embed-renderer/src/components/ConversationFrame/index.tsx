@@ -43,7 +43,7 @@ export const ConversationFrame: FC<ConversationFrameProps> = ({
       </motion.div>
       <motion.div
         className={
-          'flex h-[50px] shrink-0 grow-0 items-center justify-end px-2'
+          'flex h-[50px] shrink-0 grow-0 items-center justify-end gap-2 px-2'
         }
       >
         <CloseButton onPress={() => onClose()} />

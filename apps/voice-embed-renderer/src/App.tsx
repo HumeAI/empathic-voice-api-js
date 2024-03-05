@@ -1,19 +1,22 @@
-import './App.css';
-import { IframeGuard } from '@/components/IframeGuard';
 import { IframeFallback } from '@/components/IframeFallback';
-import { Views } from '@/views/Views';
+import { IframeGuard } from '@/components/IframeGuard';
 import { MessageListener } from '@/components/MessageListener';
 import { useConfigStore } from '@/store/config';
-import { Frame } from './components/Frame';
-import { AnimatePresence } from 'framer-motion';
-import { VoiceProvider } from '@humeai/voice-react';
+import { useLayoutStore } from '@/store/layout';
 import { parentDispatch } from '@/utils/parentDispatch';
+import { Views } from '@/views/Views';
 import { TRANSCRIPT_MESSAGE_ACTION } from '@humeai/voice-embed-react';
+import { VoiceProvider } from '@humeai/voice-react';
+import { AnimatePresence } from 'framer-motion';
 import { ComponentProps } from 'react';
+import './App.css';
+import { Frame } from './components/Frame';
 
 function App() {
   const setConfig = useConfigStore((store) => store.setConfig);
   const config = useConfigStore((store) => store.config);
+
+  const open = useLayoutStore((store) => store.open);
 
   const dispatchMessage: ComponentProps<typeof VoiceProvider>['onMessage'] = (
     message,
@@ -32,6 +35,9 @@ function App() {
         <MessageListener
           onUpdateConfig={(config) => {
             setConfig(config);
+          }}
+          onOpen={() => {
+            open();
           }}
         />
         {config ? (

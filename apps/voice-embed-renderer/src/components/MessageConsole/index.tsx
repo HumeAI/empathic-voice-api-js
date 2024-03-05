@@ -52,6 +52,9 @@ export const MessageConsole = ({
 
   return (
     <div className="h-64 w-full overflow-auto rounded-md px-6">
+      {formattedMessages.length === 0 && (
+        <div className="pb-3 text-sm italic text-gray-500">Start talking!</div>
+      )}
       {formattedMessages.map(({ message, sender }, index) => {
         return (
           <div
