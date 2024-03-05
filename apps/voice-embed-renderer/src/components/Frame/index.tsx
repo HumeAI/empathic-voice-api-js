@@ -15,6 +15,7 @@ const frameStyles = cva(
     'transition-colors',
     'shadow-custom',
     'outline outline-2 -outline-offset-2 outline-tan-200/60',
+    'bg-gradient-to-t from-orange-200/80 from-5%',
   ],
   {
     variants: {
@@ -50,7 +51,7 @@ export const Frame: FC<FrameProps> = ({ children }) => {
     <motion.div
       className={frameStyles({ state })}
       animate={frameDimensions(state)}
-      transition={{duration: 0.2, ease: [0.2, 0, 0, 1]}}
+      transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
       data-testid={'frame-component'}
     >
       {children}
