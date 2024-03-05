@@ -98,7 +98,7 @@ export const useMessages = ({
     [voiceMessageMap, sendMessageToParent],
   );
 
-  const disconnect = useCallback(() => {
+  const clearMessages = useCallback(() => {
     setMessages([]);
     setLastVoiceMessage(null);
     setLastUserMessage(null);
@@ -109,7 +109,7 @@ export const useMessages = ({
     createDisconnectMessage,
     onMessage,
     onPlayAudio,
-    disconnect,
+    clearMessages,
     messages,
     lastVoiceMessage,
     lastUserMessage,
