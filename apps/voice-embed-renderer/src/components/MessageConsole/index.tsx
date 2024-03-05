@@ -50,11 +50,22 @@ export const MessageConsole = ({
     }, []);
   }, [messages]);
 
+  const connectionMessage = useMemo(
+    () =>
+      messages.length > 0
+        ? messages.find((m) => m.type === 'socket_connected')
+        : null,
+    [messages],
+  );
+
   return (
-    <div className="h-64 w-full overflow-auto rounded-md px-6">
-      {formattedMessages.length === 0 && (
-        <div className="pb-3 text-sm italic text-gray-500">Start talking!</div>
-      )}
+    <div className="h-56 w-full overflow-auto rounded-md px-6">
+      <div className="pb-3 text-sm italic text-gray-500">Connecting...</div>
+      {connectionMessage ? (
+        <div className="pb-3 text-sm italic text-gray-500">
+          You are connected. Start talking!
+        </div>
+      ) : null}
       {formattedMessages.map(({ message, sender }, index) => {
         return (
           <div

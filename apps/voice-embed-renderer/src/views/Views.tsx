@@ -8,6 +8,7 @@ import {
   VoiceAnimationState,
 } from '@/components/VoiceAnimation';
 import { MessageConsole } from '@/components/MessageConsole';
+import { IntroScreen } from '@/components/IntroScreen';
 
 export type ViewsProps = Record<never, never>;
 
@@ -43,24 +44,11 @@ export const Views: FC<ViewsProps> = () => {
       ) : (
         <>
           {status.value === 'disconnected' ? (
-            <div className="flex flex-col gap-4 px-4">
-              <h2 className="text-3xl font-medium">Hello, there!</h2>
-              <p className="">
-                I'm <span className="font-medium">EVI</span>, the Hume Empathic
-                Voice Interface. I'm here to answer any questions you have about
-                the Hume website, or just to chat.
-              </p>
-              <button
-                className={
-                  'flex h-[36px] items-center justify-center rounded-full border border-gray-700 bg-gray-800 text-base font-medium text-white hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:text-white focus:outline-none'
-                }
-                onClick={() => {
-                  void connect();
-                }}
-              >
-                Start Conversation
-              </button>
-            </div>
+            <IntroScreen
+              onConnect={() => {
+                void connect();
+              }}
+            />
           ) : (
             <>
               <VoiceAnimation
