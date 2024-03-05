@@ -57,6 +57,7 @@ export type VoiceContextType = {
   )[];
   lastVoiceMessage: AgentTranscriptMessage | null;
   lastUserMessage: UserTranscriptMessage | null;
+  clearMessages: () => void;
   mute: () => void;
   unmute: () => void;
   readyState: VoiceReadyState;
@@ -78,6 +79,11 @@ export type VoiceProviderProps = PropsWithChildren<
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: () => void;
+  /**
+   * @default true
+   * @description Clear messages when the voice is disconnected.
+   */
+  clearMessagesOnDisconnect?: boolean;
 };
 
 export const useVoice = () => {
@@ -90,6 +96,7 @@ export const useVoice = () => {
 
 export const VoiceProvider: FC<VoiceProviderProps> = ({
   children,
+  clearMessagesOnDisconnect = true,
   ...props
 }) => {
   const [status, setStatus] = useState<VoiceStatus>({
@@ -231,7 +238,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     client.disconnect();
     player.stopAll();
     mic.stop();
-    messageStore.disconnect();
+    if (clearMessagesOnDisconnect) {
+      messageStore.clearMessages();
+    }
   }, [client, player, mic]);
 
   const disconnect = useCallback(
@@ -275,6 +284,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         messages: messageStore.messages,
         lastVoiceMessage: messageStore.lastVoiceMessage,
         lastUserMessage: messageStore.lastUserMessage,
+        clearMessages: messageStore.clearMessages,
         mute: mic.mute,
         readyState: client.readyState,
         status,
@@ -297,6 +307,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       messageStore.messages,
       messageStore.lastVoiceMessage,
       messageStore.lastUserMessage,
+      messageStore.clearMessages,
       client.readyState,
       status,
       error,
