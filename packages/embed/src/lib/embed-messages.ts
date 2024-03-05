@@ -53,6 +53,9 @@ export const ClientToFrameActionSchema = z.union([
   z.object({
     type: z.literal('cancel'),
   }),
+  z.object({
+    type: z.literal('expand_widget_from_client'),
+  }),
 ]);
 
 export type ClientToFrameAction = z.infer<typeof ClientToFrameActionSchema>;
@@ -61,6 +64,11 @@ export const UPDATE_CONFIG_ACTION = (config: Config) =>
   ({
     type: 'update_config',
     payload: config,
+  }) satisfies ClientToFrameAction;
+
+export const EXPAND_FROM_CLIENT_ACTION = () =>
+  ({
+    type: 'expand_widget_from_client',
   }) satisfies ClientToFrameAction;
 
 export const parseClientToFrameAction = (

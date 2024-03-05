@@ -1,13 +1,15 @@
 import { EmbeddedVoice } from '@humeai/voice-embed-react';
 
 import './App.css';
+import { useState } from 'react';
 
 function App() {
   const apiKey = String(import.meta.env['VITE_PUBLIC_HUME_API_KEY'] ?? '');
-
+  const [isEmbedOpen, setIsEmbedOpen] = useState(false);
   return (
     <>
       <div>Demo of embedding voice as an iframe</div>
+      <button onClick={() => setIsEmbedOpen(true)}>Open widget</button>
       <EmbeddedVoice
         auth={{
           type: 'apiKey',
@@ -24,6 +26,10 @@ function App() {
         onMessage={(msg) => {
           console.log('we got a message', msg);
         }}
+        onClose={() => {
+          setIsEmbedOpen(false);
+        }}
+        isEmbedOpen={isEmbedOpen}
       />
     </>
   );

@@ -4,6 +4,7 @@ import { FC, useEffect, useRef } from 'react';
 export type MessageListenerProps = {
   onUpdateConfig?: (config: Config) => void;
   onCancel?: () => void;
+  onOpen?: () => void;
 };
 
 export const MessageListener: FC<MessageListenerProps> = (props) => {
@@ -12,6 +13,9 @@ export const MessageListener: FC<MessageListenerProps> = (props) => {
 
   const onCancel = useRef(props.onCancel);
   onCancel.current = props.onCancel;
+
+  const onOpen = useRef(props.onOpen);
+  onOpen.current = props.onOpen;
 
   useEffect(() => {
     const listener = async (event: MessageEvent<unknown>) => {
@@ -30,6 +34,10 @@ export const MessageListener: FC<MessageListenerProps> = (props) => {
         }
         case 'cancel': {
           onCancel.current?.();
+          break;
+        }
+        case 'expand_widget_from_client': {
+          onOpen.current?.();
           break;
         }
         default:
