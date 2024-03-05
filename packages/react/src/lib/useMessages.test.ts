@@ -187,7 +187,7 @@ describe('useMessages hook', () => {
 
     // Then, disconnect
     act(() => {
-      hook.result.current.disconnect();
+      hook.result.current.clearMessages();
     });
 
     expect(hook.result.current.messages).toHaveLength(0);
