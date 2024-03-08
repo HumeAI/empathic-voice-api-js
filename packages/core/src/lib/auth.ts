@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const AuthStrategy = z.union([
+export const AuthStrategySchema = z.union([
   z.object({
     type: z.literal('apiKey'),
     value: z.string({
@@ -14,3 +14,5 @@ export const AuthStrategy = z.union([
     }),
   }),
 ]);
+
+export type AuthStrategy = z.infer<typeof AuthStrategySchema>;

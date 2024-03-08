@@ -32,6 +32,13 @@ export function base64ToBlob(base64: string, contentType: string) {
   return new Blob([byteArray], { type: contentType });
 }
 
+/**
+ * @name getSupportedMimeType
+ * @description
+ * Returns the supported mime type for the current browser.
+ * @returns
+ * - `success: true` and `mimeType: MimeType` if the browser supports any of the compatible mime types.
+ */
 export function getSupportedMimeType():
   | { success: true; mimeType: MimeType }
   | { success: false; error: Error } {

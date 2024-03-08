@@ -1,3 +1,10 @@
+/**
+ * @name getAudioStream
+ * @description
+ * Get a MediaStream with audio tracks.
+ * @returns
+ * A new MediaStream with audio tracks.
+ */
 export const getAudioStream = async (): Promise<MediaStream> => {
   return navigator.mediaDevices.getUserMedia({
     audio: {
@@ -9,6 +16,13 @@ export const getAudioStream = async (): Promise<MediaStream> => {
   });
 };
 
+/**
+ * @name checkForAudioTracks
+ * @description
+ * Check if a MediaStream has audio tracks.
+ * @param stream
+ * The MediaStream to check
+ */
 export const checkForAudioTracks = (stream: MediaStream) => {
   const tracks = stream.getAudioTracks();
 

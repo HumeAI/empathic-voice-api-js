@@ -34,6 +34,9 @@ describe('client', () => {
         .with('user_interruption', () => {
           console.log('user interruption');
         })
+        .with('error', () => {
+          console.log('error');
+        })
         .exhaustive();
     });
 
