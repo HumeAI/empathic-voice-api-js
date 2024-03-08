@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion';
 import { CloseButton } from '../CloseButton';
 import { FC, PropsWithChildren } from 'react';
+import { MuteButton } from '@/components/MuteButton';
+import { useVoice } from '@humeai/voice-react';
 
 export type ConversationFrameProps = PropsWithChildren<{
   onClose: () => void;
@@ -10,6 +12,7 @@ export const ConversationFrame: FC<ConversationFrameProps> = ({
   onClose,
   children,
 }) => {
+  const { isMuted, mute, unmute, status } = useVoice();
   return (
     <motion.div
       initial={{
@@ -41,12 +44,26 @@ export const ConversationFrame: FC<ConversationFrameProps> = ({
       >
         {children}
       </motion.div>
+
       <motion.div
-        className={
-          'flex h-[50px] shrink-0 grow-0 items-center justify-end gap-2 px-2'
-        }
+        className={'flex h-[50px] shrink-0 grow-0 items-center gap-2 px-2'}
       >
-        <CloseButton onPress={() => onClose()} />
+        {status.value === 'connected' && (
+          <MuteButton
+            onPress={() => {
+              if (isMuted) {
+                unmute();
+              } else {
+                mute();
+              }
+            }}
+            isMuted={isMuted}
+          />
+        )}
+
+        <div className="ml-auto">
+          <CloseButton onPress={() => onClose()} />
+        </div>
       </motion.div>
     </motion.div>
   );
