@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { Fragment, useEffect, useMemo, useRef } from 'react';
 import type {
   AgentTranscriptMessage,
   UserTranscriptMessage,
@@ -78,89 +78,89 @@ export const MessageConsole = ({
   );
 
   return (
-    <div className="z-10 h-80 w-full overflow-auto rounded-md px-6">
+    <div className="z-10 mb-2 h-80 w-full overflow-auto rounded-md px-6">
       <div className="pb-2 text-xs italic text-gray-500">Connecting...</div>
       {connectionMessage ? (
         <div className="pb-4 text-xs italic text-gray-500">
           You are connected. Start talking!
         </div>
       ) : null}
-      {formattedMessages.map(({ message, sender, sortedEmotions }, index) => {
-        return (
-          <div
-            key={index}
-            className="flex w-full flex-row flex-wrap items-start pb-4"
-          >
-            <div className={'basis-1/2'}>
-              <div
-                className={
-                  'pb-0.5 font-mono text-[10px] uppercase text-gray-500'
-                }
-              >
-                {sender}
+      <div className="grid w-full grid-cols-2 gap-x-2 gap-y-4">
+        {formattedMessages.map(({ message, sender, sortedEmotions }, index) => {
+          return (
+            <Fragment key={index}>
+              <div>
+                <div
+                  className={
+                    'pb-0.5 font-mono text-[10px] uppercase text-gray-500'
+                  }
+                >
+                  {sender}
+                </div>
+                <div className={'pr-4 text-sm font-medium'}>
+                  {message.message.content}
+                </div>
               </div>
-              <div className={'pr-4 text-sm font-medium'}>
-                {message.message.content}
-              </div>
-            </div>
 
-            <div className="flex basis-1/2 flex-col gap-1 pl-1">
-              <div
-                className={
-                  'pb-0.5 font-mono text-[10px] uppercase text-gray-500'
-                }
-              >
-                Tone of voice
-              </div>
-              {sortedEmotions.map((e) => {
-                const barColor =
-                  expressionColors[e.name as Emotion]?.hex ?? 'black';
-                return (
-                  <div key={index + e.name + e.score} className={'text-xs'}>
-                    <div className={'flex items-center pb-0.5'}>
-                      <span className={'grow truncate tracking-tight'}>
-                        {e.name}
-                      </span>
-                      <span className={'grow-0 tabular-nums'}>{e.score}</span>
-                    </div>
-                    <div className={'relative h-[4px] w-full rounded-full'}>
-                      <div
-                        className={
-                          'absolute left-0 top-0 h-full w-[var(--w)] rounded-full'
-                        }
-                        style={{
-                          background: 'black',
-                          width: '100%',
-                          opacity: 0.1,
-                        }}
-                      />
-                      <AnimatePresence>
-                        <motion.div
+              <div className="flex flex-col gap-1 pl-1">
+                <div
+                  className={
+                    'pb-0.5 font-mono text-[10px] uppercase text-gray-500'
+                  }
+                >
+                  Tone of voice
+                </div>
+                {sortedEmotions.map((e) => {
+                  const barColor =
+                    expressionColors[e.name as Emotion]?.hex ?? 'black';
+                  return (
+                    <div key={index + e.name + e.score} className={'text-xs'}>
+                      <div className={'flex items-center pb-0.5'}>
+                        <span className={'grow truncate tracking-tight'}>
+                          {e.name}
+                        </span>
+                        <span className={'grow-0 tabular-nums'}>{e.score}</span>
+                      </div>
+                      <div className={'relative h-[4px] w-full rounded-full'}>
+                        <div
                           className={
                             'absolute left-0 top-0 h-full w-[var(--w)] rounded-full'
                           }
-                          initial={{
-                            width: 0,
-                          }}
-                          animate={{
-                            width: `${100 * Number(e.score)}%`,
-                            transition: {
-                              delay: 0.5,
-                            },
-                          }}
                           style={{
-                            background: barColor,
+                            background: 'black',
+                            width: '100%',
+                            opacity: 0.1,
                           }}
                         />
-                      </AnimatePresence>
+                        <AnimatePresence>
+                          <motion.div
+                            className={
+                              'absolute left-0 top-0 h-full w-[var(--w)] rounded-full'
+                            }
+                            initial={{
+                              width: 0,
+                            }}
+                            animate={{
+                              width: `${100 * Number(e.score)}%`,
+                              transition: {
+                                delay: 0.5,
+                              },
+                            }}
+                            style={{
+                              background: barColor,
+                            }}
+                          />
+                        </AnimatePresence>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
+                  );
+                })}
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
+
       <div ref={messagesEndRef} />
     </div>
   );

@@ -1,20 +1,19 @@
-import { Canvas } from "@react-three/fiber";
-import { useEffect } from "react";
-import { useSpring } from "@react-spring/three";
-import { AnimatePresence, motion } from "framer-motion";
-import { WebGLBurst } from "./WebGLBurst";
-import { WebGLEmotionBursts } from "./WebGLEmotionBursts";
-import { cn } from "@/utils";
-import { VoiceAnimationState } from "../VoiceAnimation";
+import { Canvas } from '@react-three/fiber';
+import { useEffect } from 'react';
+import { useSpring } from '@react-spring/three';
+import { AnimatePresence, motion } from 'framer-motion';
+import { WebGLBurst } from './WebGLBurst';
+import { WebGLEmotionBursts } from './WebGLEmotionBursts';
+import { cn } from '@/utils';
+import { VoiceAnimationState } from '../VoiceAnimation';
 
 export const Backdrop = ({
   prosody,
-  activeView
+  activeView,
 }: {
   prosody: { name: string; score: number }[];
   activeView: VoiceAnimationState;
 }) => {
-  
   const top3Prosody = Array.from(prosody)
     .sort((a, b) => {
       return b.score - a.score;
@@ -30,13 +29,13 @@ export const Backdrop = ({
 
   useEffect(() => {
     switch (activeView) {
-      case "idle":
-        void transition.start({ y: -0.1, radius: 1.0, opacity: 0});
+      case 'idle':
+        void transition.start({ y: -0.1, radius: 1.0, opacity: 0 });
         break;
-      case "talking":
+      case 'talking':
         void transition.start({ y: 1.0, radius: 0.5, opacity: 0.8 });
         break;
-      case "error":
+      case 'error':
         void transition.start({ y: 0.5, radius: 1.0, opacity: 1.0 });
         break;
     }
@@ -62,11 +61,11 @@ export const Backdrop = ({
         },
       }}
       className={cn(
-        "-z-1",
-        "opacity-100",
-        "fixed inset-0",
-        "overflow-auto",
-        "pointer-events-none"
+        '-z-10',
+        'opacity-100',
+        'fixed inset-0',
+        'overflow-auto',
+        'pointer-events-none',
       )}
     >
       <Canvas>

@@ -9,19 +9,21 @@ export type FrameProps = PropsWithChildren;
 const frameStyles = cva(
   [
     'rounded-[25px]',
-    'backdrop-blur',
+    'backdrop-blur-sm',
     'absolute bottom-0 right-0',
     'text-black',
     'transition-colors',
     'shadow-custom',
     'outline outline-2 -outline-offset-2 outline-tan-200/60',
-    'bg-gradient-to-t from-orange-200/80 from-5%',
+    'bg-gradient-to-t from-orange-200/70 from-5%',
   ],
   {
     variants: {
       state: {
-        [LayoutState.OPEN]: ['bg-tan-200/90'],
-        [LayoutState.CLOSED]: ['bg-tan-200/70 hover:bg-tan-200'],
+        [LayoutState.OPEN]: ['bg-tan-200/70'],
+        [LayoutState.CLOSED]: [
+          'bg-tan-200/90 bg-gradient-to-t from-orange-300/90 from-5% hover:bg-tan-200',
+        ],
         [LayoutState.MINIMIZED]: ['bg-tan-200'],
       },
     },
