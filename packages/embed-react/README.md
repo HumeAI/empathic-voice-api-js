@@ -8,7 +8,7 @@
 
 ## Overview
 
-This package provides a React widget component that encapsulates Hume's Empathic Voice Interface, making it easy to integrate this interface into your web application. The component is designed to be embedded into your web page through an iframe. It abstracts away the complexities of managing websocket connections, capturing user audio via the client's microphone, and handling the playback of the interface's audio responses. Use this widget to give your website a voice! 
+This package provides a React widget component that encapsulates Hume's Empathic Voice Interface, making it easy to integrate this interface into your web application. The component is designed to be embedded into your web page through an iframe. It abstracts away the complexities of managing websocket connections, capturing user audio via the client's microphone, and handling the playback of the interface's audio responses. Use this widget to give your website a voice!
 
 ## Prerequisites
 
@@ -86,7 +86,6 @@ The table below outlines the props accepted by the EmbeddedVoice component:
 | reconnectAttempts | no       | Number of times to attempt to reconnect to the API. If not provided this value will default to `30`.                                                                                                                                                                                                                                |
 | debug             | no       | Enable debug mode. If not provided this value will default to `false`.                                                                                                                                                                                                                                                              |
 | systemPrompt      | no       | System prompt to use for the Voice. The provided system prompt has a character limit of `1900` characters.                                                                                                                                                                                                                          |
-| no_binary         | no       | Audio output format for Voice responses. If not provided this value will default to `false`.                                                                                                                                                                                                                                        |
 | onMessage         | no       | Callback function to invoke upon receiving a message through the web socket.                                                                                                                                                                                                                                                        |
 | onClose           | no       | Callback function to invoke upon the web socket connection being closed.                                                                                                                                                                                                                                                            |
 
