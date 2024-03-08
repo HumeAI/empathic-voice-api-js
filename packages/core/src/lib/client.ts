@@ -168,6 +168,25 @@ export class VoiceClient {
   }
 
   /**
+   * @name sendSystemPrompt
+   * @description
+   * Send a custom system prompt to the websocket.
+   */
+  sendSystemPrompt(text: string) {
+    if (!this.socket) {
+      throw new Error('Socket is not connected.');
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('Socket is not open.');
+    }
+
+    const json = JSON.stringify({ type: 'configuration', system_prompt: text });
+
+    this.socket.send(json);
+  }
+
+  /**
    * @name readyState
    * @description
    * The current ready state of the socket.
