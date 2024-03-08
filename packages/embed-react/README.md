@@ -50,7 +50,6 @@ import { EmbeddedVoice } from '@humeai/voice-embed-react';
 
 function App() {
   const apiKey = process.env.HUME_API_KEY || '';
-  const rendererUrl = 'http://localhost:3000';
   const [isEmbedOpen, setIsEmbedOpen] = useState(false);
 
   return (
@@ -58,7 +57,7 @@ function App() {
       <button onClick={() => setIsEmbedOpen(true)}>Open Widget</button>
       <EmbeddedVoice
         auth={{ type: 'apiKey', value: apiKey }}
-        rendererUrl={rendererUrl}
+        systemPrompt={'Your system prompt goes here.'}
         onMessage={(msg) => console.log('Message received: ', msg)}
         onClose={() => setIsEmbedOpen(false)}
         isEmbedOpen={isEmbedOpen}
@@ -68,26 +67,28 @@ function App() {
 }
 ```
 
+**Note:** For integration within server components, instantiate `EmbeddedVoice` within a client component. For more information checkout the [Next.js documentation on client components](https://nextjs.org/docs/app/building-your-application/rendering/client-components).
+
 ### Component Props
 
 The table below outlines the props accepted by the EmbeddedVoice component:
 
-| prop              | required | description                                                                                                                                                                                                                                                                |
-| ----------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| auth              | yes      | Authentcation strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`. |
-| hostname          | yes      | Hostname of the Hume API. If not provided, this value will be defaulted to `"api.hume.ai`                                                                                                                                                                                  |
-|                   |
-| isEmbedOpen       | yes      | Controls the widget's visibility state. Set to `true` to open the widget, and `false` to close it.                                                                                                                                                                         |
-| channels          | no       | Number of channels in the input audio.                                                                                                                                                                                                                                     |
-| sampleRate        | no       | Sample rate of the input audio.                                                                                                                                                                                                                                            |
-| tts               | no       | Text-To-Speech service. If not provided this value will be defaulted to `hume_ai`, specifying Hume's text-to-speech service. Other options include: `eleven_labs` and `play_ht`.                                                                                           |
-| speedRatio        | no       | Speed ratio of the TTS service.                                                                                                                                                                                                                                            |
-| reconnectAttempts | no       | Number of times to attempt to reconnect to the API. If not provided this value will be defaulted to `30`.                                                                                                                                                                  |
-| debug             | no       | Enable debug mode. If not provided this value will be defaulted to `false`.                                                                                                                                                                                                |
-| systemPrompt      | no       | System prompt to use for the Voice. The provided system prompt has a character limit of `1900` characters.                                                                                                                                                                 |
-| no_binary         | no       | Audio output format for Voice responses. This If not provided this value will default to `false`.                                                                                                                                                                          |
-| onMessage         | no       | Callback function to invoke upon receiving a message through the web socket.                                                                                                                                                                                               |
-| onClose           | no       | Callback function to invoke upon the web socket connection being closed.                                                                                                                                                                                                   |
+| prop              | required | description                                                                                                                                                                                                                                                                                                                         |
+| ----------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| auth              | yes      | Authentcation strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`.                                                          |
+| isEmbedOpen       | yes      | Determines the initial visibility of the widget. Assign `true` to render the widget as open on initial load, and `false` to start with the widget closed. While the widget's UI provides a trigger to toggle its visibility, this prop also enables external control over the widget's visibility state through a parent component. |
+| rendererUrl       | no       | URL of the webpage to inject the `EmbeddedVoice` widget into.                                                                                                                                                                                                                                                                       |
+| hostname          | no       | Hostname of the Hume API. If not provided this value will be defaulted to `"api.hume.ai"`.                                                                                                                                                                                                                                          |
+| channels          | no       | Number of channels in the input audio.                                                                                                                                                                                                                                                                                              |
+| sampleRate        | no       | Sample rate of the input audio.                                                                                                                                                                                                                                                                                                     |
+| tts               | no       | Text-To-Speech service. If not provided this value will be defaulted to `"hume_ai"`, specifying Hume's text-to-speech service. Other options include: `"eleven_labs"` and `"play_ht"`.                                                                                                                                              |
+| speedRatio        | no       | Speed ratio of the TTS service.                                                                                                                                                                                                                                                                                                     |
+| reconnectAttempts | no       | Number of times to attempt to reconnect to the API. If not provided this value will be defaulted to `30`.                                                                                                                                                                                                                           |
+| debug             | no       | Enable debug mode. If not provided this value will be defaulted to `false`.                                                                                                                                                                                                                                                         |
+| systemPrompt      | no       | System prompt to use for the Voice. The provided system prompt has a character limit of `1900` characters.                                                                                                                                                                                                                          |
+| no_binary         | no       | Audio output format for Voice responses. This If not provided this value will default to `false`.                                                                                                                                                                                                                                   |
+| onMessage         | no       | Callback function to invoke upon receiving a message through the web socket.                                                                                                                                                                                                                                                        |
+| onClose           | no       | Callback function to invoke upon the web socket connection being closed.                                                                                                                                                                                                                                                            |
 
 ## Support
 
