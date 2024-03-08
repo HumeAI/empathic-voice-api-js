@@ -8,7 +8,7 @@
 
 ## Overview
 
-This package provides a React widget component that encapsulates Hume's Empathic Voice Interface, making it easy to integrate this interface into your web application. The component is designed to be embedded into your web page through an iframe. It abstracts away the complexities of managing websocket connections, capturing user audio via the client's microphone, and handling the playback of the interface's audio responses.
+This package provides a React widget component that encapsulates Hume's Empathic Voice Interface, making it easy to integrate this interface into your web application. The component is designed to be embedded into your web page through an iFrame. It abstracts away the complexities of managing websocket connections, capturing user audio via the client's microphone, and handling the playback of the interface's audio responses. Use this widget to give your website a voice! 
 
 ## Prerequisites
 
