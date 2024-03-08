@@ -1,5 +1,17 @@
 import type { Config } from './create-config';
 
+/**
+ * @name createSocketUrl
+ * @description
+ * Create a new socket URL for the VoiceClient.
+ * @param config - The configuration for the client.
+ * @returns
+ * A new socket URL.
+ * @example
+ * ```ts
+ * const url = createSocketUrl(config);
+ * ```
+ */
 export const createSocketUrl = (config: Config): string => {
   const url = new URL(`wss://${config.hostname}`);
 

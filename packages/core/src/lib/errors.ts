@@ -5,6 +5,20 @@ export class SocketUnknownMessageError extends Error {
   }
 }
 
+/**
+ * @name isSocketUnknownMessageError
+ * @description
+ * Check if an error is a SocketUnknownMessageError.
+ * @param err - The error to check.
+ * @returns
+ * `true` if the error is a SocketUnknownMessageError.
+ * @example
+ * ```ts
+ * if (isSocketUnknownMessageError(err)) {
+ * console.error('Unknown message type');
+ * }
+ * ```
+ */
 export const isSocketUnknownMessageError = (
   err: unknown,
 ): err is SocketUnknownMessageError => {
@@ -20,6 +34,20 @@ export class SocketFailedToParseMessageError extends Error {
   }
 }
 
+/**
+ * @name isSocketFailedToParseMessageError
+ * @description
+ * Check if an error is a SocketFailedToParseMessageError.
+ * @param err - The error to check.
+ * @returns
+ * `true` if the error is a SocketFailedToParseMessageError.
+ * @example
+ * ```ts
+ * if (isSocketFailedToParseMessageError(err)) {
+ * console.error('Failed to parse message from socket');
+ * }
+ * ```
+ */
 export const isSocketFailedToParseMessageError = (
   err: unknown,
 ): err is SocketFailedToParseMessageError => {

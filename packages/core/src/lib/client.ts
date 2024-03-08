@@ -7,6 +7,17 @@ import { parseMessageType } from './message';
 import type { AudioMessage } from '@/models/audio-message';
 import type { JSONMessage } from '@/models/json-message';
 
+/**
+ * @name VoiceEventMap
+ * @description
+ * The event map for the VoiceClient.
+ * @type
+ * An object with the following properties:
+ * - `open` - The event to run when the socket is opened.
+ * - `message` - The event to run when a message is received.
+ * - `close` - The event to run when the socket is closed.
+ * - `error` - The event to run when an error occurs.
+ */
 export type VoiceEventMap = {
   open?: () => void;
   message?: (message: JSONMessage | AudioMessage) => void;
@@ -31,14 +42,36 @@ export class VoiceClient {
   }
 
   /**
+   * @name create
+   * @description
    * Create a new VoiceClient.
+   * @param config - The configuration for the client.
+   * @returns
+   * A new VoiceClient instance.
+   * @example
+   * ```ts
+   * const client = VoiceClient.create(config);
+   * ```
    */
   static create(config: Config) {
     return new VoiceClient(config);
   }
 
   /**
+   * @name on
+   * @description
    * Attach events to the client.
+   * @param event - The event to attach to.
+   * @param callback - The callback to run when the event is triggered.
+   * @returns
+   * The VoiceClient instance.
+   * @example
+   * ```ts
+   * const client = VoiceClient.create(config);
+   * client.on('open', () => {
+   *  console.log('Socket opened');
+   * });
+   * ```
    */
   on<T extends keyof VoiceEventMap>(event: T, callback: VoiceEventMap[T]) {
     this.eventHandlers[event] = callback;
@@ -67,6 +100,8 @@ export class VoiceClient {
   };
 
   /**
+   * @name connect
+   * @description
    * Connect to the websocket.
    */
   connect() {
@@ -81,6 +116,8 @@ export class VoiceClient {
   }
 
   /**
+   * @name disconnect
+   * @description
    * Disconnect from the websocket.
    */
   disconnect() {
@@ -95,6 +132,8 @@ export class VoiceClient {
   }
 
   /**
+   * @name sendAudio
+   * @description
    * Send audio data to the websocket.
    */
   sendAudio(audioBuffer: ArrayBufferLike) {
@@ -110,6 +149,8 @@ export class VoiceClient {
   }
 
   /**
+   * @name sendText
+   * @description
    * Send text data to the websocket.
    */
   sendText(text: string) {
@@ -127,6 +168,8 @@ export class VoiceClient {
   }
 
   /**
+   * @name readyState
+   * @description
    * The current ready state of the socket.
    */
   get readyState() {

@@ -12,6 +12,7 @@ type EmbeddedVoiceProps = Partial<EmbeddedVoiceConfig> &
     onClose?: CloseHandler;
     isEmbedOpen: boolean;
   };
+
 export const EmbeddedVoice = (props: EmbeddedVoiceProps) => {
   const { onMessage, isEmbedOpen, onClose, ...config } = props;
   const embeddedVoice = useRef<EA | null>(null);

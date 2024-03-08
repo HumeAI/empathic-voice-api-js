@@ -1,14 +1,24 @@
 import { z } from 'zod';
 
 import { Channels } from './audio';
-import { AuthStrategy } from './auth';
+import { AuthStrategySchema } from './auth';
 import { TTSService } from './tts';
 
-// https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers
+/**
+ * @name MAX_SYSTEM_PROMPT_LENGTH
+ * @description
+ * The maximum length of the system prompt.
+ * @type
+ * A number.
+ * @default
+ * 1900
+ * @see
+ * - [Stack Overflow](https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers)
+ */
 export const MAX_SYSTEM_PROMPT_LENGTH = 1900;
 
 export const ConfigSchema = z.object({
-  auth: AuthStrategy,
+  auth: AuthStrategySchema,
   hostname: z.string({
     description: 'Hostname of the Hume API.',
   }),
@@ -60,6 +70,13 @@ export const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 
+/**
+ * @name defaultConfig
+ * @description
+ * The default configuration for the VoiceClient.
+ * @type
+ * A configuration object.
+ */
 export const defaultConfig: Omit<Config, 'auth'> = {
   hostname: 'api.hume.ai',
   reconnectAttempts: 30,
@@ -67,6 +84,23 @@ export const defaultConfig: Omit<Config, 'auth'> = {
   tts: TTSService.DEFAULT,
 };
 
+/**
+ * @name createConfig
+ * @description
+ * Create a new configuration for the VoiceClient.
+ * @param config - The configuration for the client.
+ * @returns
+ * A new configuration instance.
+ * @example
+ * ```ts
+ * const config = createConfig({
+ *  auth: {
+ *   type: 'apiKey',
+ *  value: 'test',
+ * },
+ * });
+ * ```
+ */
 export const createConfig = (
   config: Pick<Config, 'auth'> & Partial<Omit<Config, 'auth'>>,
 ): Config => {

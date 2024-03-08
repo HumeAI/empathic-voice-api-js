@@ -1,3 +1,20 @@
+/**
+ * @name fetchAccessToken
+ * @description
+ * Fetch an access token from the Hume API.
+ * @param args - The arguments for the request.
+ * @returns
+ * A new access token.
+ * @example
+ * ```ts
+ * const accessToken = await fetchAccessToken({
+ * apiKey: '
+ * test',
+ * clientSecret
+ * : 'test',
+ * });
+ * ```
+ */
 export const fetchAccessToken = async (args: {
   apiKey: string;
   clientSecret: string;
