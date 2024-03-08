@@ -23,7 +23,7 @@ type FFTValues = number[]; // likely length of 24, may not be always.
 
 type VoiceAnimationRendererProps = {
   state: VoiceAnimationState;
-  prosody: VoiceAnimationProsody;
+  prosody?: VoiceAnimationProsody;
   fft: FFTValues;
 };
 

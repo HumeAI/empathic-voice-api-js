@@ -48,18 +48,17 @@ export const Views: FC<ViewsProps> = () => {
           {status.value === 'disconnected' ? (
             <IntroScreen
               onConnect={() => {
-                void connect();
+                void connect()
+                  .then(() => {})
+                  .catch((e) => {
+                    console.error(e);
+                  });
               }}
             />
           ) : (
             <>
-              <VoiceAnimation
-                state={VoiceAnimationState.IDLE}
-                prosody={{
-                  emotions: [],
-                }}
-                fft={fft}
-              />
+              <VoiceAnimation state={VoiceAnimationState.IDLE} fft={fft} />
+
               <MessageConsole messages={messages} />
               <Backdrop
                 prosody={lastVoiceMessage?.models[0].entries ?? []}

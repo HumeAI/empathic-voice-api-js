@@ -32,7 +32,7 @@ const frameDimensions = (state: LayoutState) =>
   match(state)
     .with(LayoutState.OPEN, () => ({
       width: '350px',
-      height: '300px',
+      height: '400px',
     }))
     .with(LayoutState.CLOSED, () => ({
       width: '50px',
