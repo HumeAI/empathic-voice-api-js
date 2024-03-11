@@ -8,8 +8,9 @@ import {
   VoiceAnimationState,
 } from '@/components/VoiceAnimation';
 import { IntroScreen } from '@/components/IntroScreen';
-import { Backdrop } from '@/components/WebGLBackdrop';
+import { Visualizer } from '@/components/Visualizer';
 import { LastVoiceMessage } from '@/components/LastVoiceMessage';
+import { Backdrop } from '@/components/WebGLBackdrop';
 
 export type ViewsProps = Record<never, never>;
 
@@ -65,12 +66,10 @@ export const Views: FC<ViewsProps> = () => {
             />
           ) : (
             <>
-              <VoiceAnimation state={VoiceAnimationState.IDLE} fft={fft} />
-              <LastVoiceMessage lastVoiceMessage={lastVoiceMessage} />
-              <Backdrop
-                prosody={lastVoiceMessage?.models[0].entries ?? []}
-                activeView={VoiceAnimationState.IDLE}
-              />
+              {/* <VoiceAnimation state={VoiceAnimationState.IDLE} fft={fft} /> */}
+              {/* <LastVoiceMessage lastVoiceMessage={lastVoiceMessage} /> */}
+              <Visualizer lastVoiceMessage={lastVoiceMessage} />
+              {/* <Backdrop prosody={lastVoiceMessage?.models[0].entries ?? []} activeView={'talking'}/> */}
             </>
           )}
         </>
