@@ -38,10 +38,6 @@ export const createSocketUrl = (config: Config): string => {
     url.searchParams.set('sample_rate', config.sampleRate.toString());
   }
 
-  if (config.tts) {
-    url.searchParams.set('tts', config.tts.toString());
-  }
-
   if (config.systemPrompt) {
     url.searchParams.set('system_prompt', config.systemPrompt);
   }
