@@ -15,16 +15,17 @@ const frameStyles = cva(
     'transition-colors',
     'shadow-custom',
     'outline outline-2 -outline-offset-2 outline-tan-200/60',
-    'bg-gradient-to-t from-orange-200/70 from-5%',
+    // 'bg-gradient-to-t from-orange-200/70 from-5%',
   ],
   {
     variants: {
       state: {
-        [LayoutState.OPEN]: ['bg-tan-200/70'],
+        [LayoutState.OPEN]: ['bg-white/70'],
         [LayoutState.CLOSED]: [
-          'bg-tan-200/90 bg-gradient-to-t from-orange-300/90 from-5% hover:bg-tan-200',
+          'bg-white/90',
+          'bg-gradient-to-t from-orange-300/90 from-5% hover:bg-white',
         ],
-        [LayoutState.MINIMIZED]: ['bg-tan-200'],
+        [LayoutState.MINIMIZED]: ['bg-white'],
       },
     },
   },
@@ -34,7 +35,7 @@ const frameDimensions = (state: LayoutState) =>
   match(state)
     .with(LayoutState.OPEN, () => ({
       width: '350px',
-      height: '400px',
+      height: '300px',
     }))
     .with(LayoutState.CLOSED, () => ({
       width: '50px',

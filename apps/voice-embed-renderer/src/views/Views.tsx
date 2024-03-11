@@ -7,9 +7,9 @@ import {
   VoiceAnimation,
   VoiceAnimationState,
 } from '@/components/VoiceAnimation';
-import { MessageConsole } from '@/components/MessageConsole';
 import { IntroScreen } from '@/components/IntroScreen';
 import { Backdrop } from '@/components/WebGLBackdrop';
+import { LastVoiceMessage } from '@/components/LastVoiceMessage';
 
 export type ViewsProps = Record<never, never>;
 
@@ -18,8 +18,16 @@ export const Views: FC<ViewsProps> = () => {
   const open = useLayoutStore((store) => store.open);
   const close = useLayoutStore((store) => store.close);
 
-  const { connect, disconnect, fft, status, messages, lastVoiceMessage } =
-    useVoice();
+  const {
+    connect,
+    disconnect,
+    fft,
+    status,
+    lastVoiceMessage,
+    messages,
+    isPlaying,
+    micFft,
+  } = useVoice();
 
   if (layoutState === LayoutState.CLOSED) {
     return (
@@ -58,7 +66,7 @@ export const Views: FC<ViewsProps> = () => {
           ) : (
             <>
               <VoiceAnimation state={VoiceAnimationState.IDLE} fft={fft} />
-              <MessageConsole messages={messages} />
+              <LastVoiceMessage lastVoiceMessage={lastVoiceMessage} />
               <Backdrop
                 prosody={lastVoiceMessage?.models[0].entries ?? []}
                 activeView={VoiceAnimationState.IDLE}
