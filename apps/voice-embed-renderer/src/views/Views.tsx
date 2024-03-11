@@ -62,7 +62,7 @@ export const Views: FC<ViewsProps> = () => {
             <>
               {/* <VoiceAnimation state={VoiceAnimationState.IDLE} fft={fft} /> */}
               {/* <LastVoiceMessage lastVoiceMessage={lastVoiceMessage} /> */}
-              <Visualizer lastVoiceMessage={lastVoiceMessage} />
+              <Visualizer lastVoiceMessage={lastVoiceMessage} fft={fft} micFft={micFft} isSpeaking={isPlaying}/>
               {/* <Backdrop prosody={lastVoiceMessage?.models[0].entries ?? []} activeView={'talking'}/> */}
             </>
           )}

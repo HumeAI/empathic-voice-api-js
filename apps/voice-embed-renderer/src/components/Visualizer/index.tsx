@@ -1,6 +1,6 @@
-import { Canvas } from "@react-three/fiber"
+import { Canvas, GroupProps } from "@react-three/fiber"
 import { memo, useRef } from "react"
-import { MeshBasicMaterial, Group, CircleGeometry } from 'three'
+import { MeshBasicMaterial, CircleGeometry } from 'three'
 import { useVoice } from "@humeai/voice-react";
 import { FC } from 'react';
 import { expressionColors } from "expression-colors";
@@ -8,8 +8,7 @@ import { isExpressionColor } from "@/utils/isExpressionColor";
 import { motion } from "framer-motion-3d"
 import { Circle } from "lucide-react";
 
-
-const Dot = memo(({ radius, color }: {radius: number; color: string }) => {
+const Dot = memo(({ radius, color, isAnimated }: {radius: number; color: string, isAnimated: boolean }) => {
 
     return (
         <motion.mesh
@@ -17,45 +16,56 @@ const Dot = memo(({ radius, color }: {radius: number; color: string }) => {
             material={new MeshBasicMaterial({ color })}
             initial={{ scale: 0}}
             animate={{ scale: radius}}
-            transition={{ duration: 0.5, ease: 'easeIn'}}
+            exit={{ scale: 0}}
+            transition={isAnimated ? {duration: 0.3} : {}}
         />
     );
 });
 
 type DotRingProps = {
     prosody: { name: string; score: number }[];
+    micFft: FFTValues,
+    fft: FFTValues,
+    isSpeaking: boolean;
 };
 
-const DotRing: FC<DotRingProps> = ({ prosody }) => {
+const DotRing: FC<DotRingProps> = ({ prosody, micFft, fft, isSpeaking}) => {
     const numDots = prosody.length;
     const radius = 3.5;
-    const ringRef = useRef<Group>(null);
-    
+    const ringRef = useRef<GroupProps>(null);
+
+    const fftAverage = fft.reduce((acc, val) => acc + val, 0) / fft.length;
+
     return (
-        <group ref={ringRef} position={[0, 0, 0]}>
-            {prosody.map((emotion, i) => {
-                const angle = (i / numDots) * Math.PI * 2;
-                const fill = isExpressionColor(emotion.name)
-          ? expressionColors[emotion.name].hex
-          : '#fff';
-                return (
-                    <group position={[radius * Math.cos(angle), radius * Math.sin(angle), 0]}>
-                        <Dot
-                            key={i}
-                            radius={emotion.score > 0.1 ? emotion.score : 0.05}
-                            color={fill}
-                        />
-                    </group>
-                );
-            })}
-        </group>
+        <motion.group ref={ringRef} position={[0, 0, 0]} animate={{scale: 1}} exit={{scale: 0}}>
+                    {prosody.map((emotion, i) => {
+                        const angle = (i / numDots) * Math.PI * 2;
+                        const fill = isExpressionColor(emotion.name)
+                            ? expressionColors[emotion.name].hex
+                            : '#fff';
+                        return (
+                            <group position={[radius * Math.cos(angle), radius * Math.sin(angle), 0]}>
+                                <Dot
+                                    key={i}
+                                    radius={isSpeaking ? (emotion.score > 0.1 ? emotion.score + fftAverage/5.5 : 0.05) : micFft[i % 24]/4.5}
+                                    color={isSpeaking ? fill : '#efefef'}
+                                    isAnimated={isSpeaking}
+                                />
+                            </group>
+                        );
+                    })}
+        </motion.group>
     );
         };
 
 
+type FFTValues = number[];
 
 type VisualizerProps = {
     lastVoiceMessage: ReturnType<typeof useVoice>['lastVoiceMessage'];
+    fft: FFTValues;
+    micFft: FFTValues;
+    isSpeaking: boolean;
 };
 
 type ExpressionLabelProps = {
@@ -79,6 +89,9 @@ const ExpressionLabel: FC<ExpressionLabelProps> = ({ emotion }) => {
 
 export const Visualizer:FC<VisualizerProps> = ({
     lastVoiceMessage,
+    micFft,
+    fft,
+    isSpeaking,
 }) => {
         const prosody = lastVoiceMessage?.models[0].entries ?? [];
 
@@ -91,16 +104,22 @@ export const Visualizer:FC<VisualizerProps> = ({
 
         return (
             <div className="pointer-events-none absolute inset-0 aspect-square">
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                <div className="flex flex-col gap-2">
+            <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 text-center">
+                {isSpeaking ? (
+                    <div className="flex flex-col gap-2">
                     {sortedEmotions.map((emotion) => (
                     <ExpressionLabel emotion={emotion}/>
                     ))}
                 </div>
+                ) : (
+                    <div className="font-mono text-xs uppercase">
+                        <span>Listening</span>
+                    </div>
+                )}
             </div>
 
             <Canvas className="pointer-events-none absolute inset-0 p-8">
-                <DotRing prosody={prosody}/>
+                <DotRing prosody={prosody} micFft={micFft} fft={fft} isSpeaking={isSpeaking}/>
             </Canvas>
             </div>
         )
