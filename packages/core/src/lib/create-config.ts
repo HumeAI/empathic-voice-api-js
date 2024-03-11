@@ -11,11 +11,9 @@ import { TTSService } from './tts';
  * @type
  * A number.
  * @default
- * 1900
- * @see
- * - [Stack Overflow](https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers)
+ * 100000
  */
-export const MAX_SYSTEM_PROMPT_LENGTH = 1900;
+export const MAX_SYSTEM_PROMPT_LENGTH = 100000;
 
 // ConfigSchema intentionally does not expose the API option `no_binary` to the end user
 // because the JS SDK must have no_binary set to `true` in order to match transcript to audio

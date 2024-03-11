@@ -209,7 +209,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       .connect({
         ...config,
       })
-      .then(() => null)
+      .then(() => {
+        if (props.systemPrompt) {
+          client.sendSystemPrompt(props.systemPrompt);
+        }
+      })
       .catch(() => new Error('Could not connect to the voice'));
 
     if (err) {
