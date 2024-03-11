@@ -17,6 +17,8 @@ import { TTSService } from './tts';
  */
 export const MAX_SYSTEM_PROMPT_LENGTH = 1900;
 
+// ConfigSchema intentionally does not expose the API option `no_binary` to the end user
+// because the JS SDK must have no_binary set to `true` in order to match transcript to audio
 export const ConfigSchema = z.object({
   auth: AuthStrategySchema,
   hostname: z.string({
@@ -60,11 +62,6 @@ export const ConfigSchema = z.object({
       description: 'System prompt to use for the Voice.',
     })
     .max(MAX_SYSTEM_PROMPT_LENGTH)
-    .optional(),
-  no_binary: z
-    .boolean({
-      description: 'Audio output format for Voice responses.',
-    })
     .optional(),
 });
 
