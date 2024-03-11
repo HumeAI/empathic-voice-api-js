@@ -29,7 +29,7 @@ export const useLayoutStore = create<LayoutStore>()((set) => {
       parentDispatch(
         RESIZE_FRAME_ACTION({
           width: 350,
-          height: 300,
+          height: 400,
         }),
       );
       parentDispatch(EXPAND_WIDGET_ACTION);
