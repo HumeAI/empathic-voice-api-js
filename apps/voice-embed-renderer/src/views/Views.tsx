@@ -3,14 +3,8 @@ import { ConversationFrame } from '@/components/ConversationFrame';
 import { LayoutState, useLayoutStore } from '@/store/layout';
 import { OpenButton } from '@/components/OpenButton';
 import { useVoice } from '@humeai/voice-react';
-import {
-  VoiceAnimation,
-  VoiceAnimationState,
-} from '@/components/VoiceAnimation';
 import { IntroScreen } from '@/components/IntroScreen';
 import { Visualizer } from '@/components/Visualizer';
-import { LastVoiceMessage } from '@/components/LastVoiceMessage';
-import { Backdrop } from '@/components/WebGLBackdrop';
 
 export type ViewsProps = Record<never, never>;
 

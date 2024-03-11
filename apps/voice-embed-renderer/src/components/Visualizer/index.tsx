@@ -1,6 +1,6 @@
 import { Canvas } from "@react-three/fiber"
 import { memo, useRef } from "react"
-import { MeshBasicMaterial, Group, CircleGeometry, AmbientLight } from 'three'
+import { MeshBasicMaterial, Group, CircleGeometry } from 'three'
 import { useVoice } from "@humeai/voice-react";
 import { FC } from 'react';
 import { expressionColors } from "expression-colors";
@@ -42,8 +42,8 @@ const DotRing: FC<DotRingProps> = ({ prosody }) => {
                     <group position={[radius * Math.cos(angle), radius * Math.sin(angle), 0]}>
                         <Dot
                             key={i}
-                            radius={emotion.score > 0.1 ? emotion.score : 0.1}
-                            color={emotion.score > 0.1 ? fill : '#efefef'}
+                            radius={emotion.score > 0.1 ? emotion.score : 0.05}
+                            color={fill}
                         />
                     </group>
                 );
@@ -59,7 +59,7 @@ type VisualizerProps = {
 };
 
 type ExpressionLabelProps = {
-    emotion: { name: string; score: number }
+    emotion: { name: string; score: string }
 }
 
 const ExpressionLabel: FC<ExpressionLabelProps> = ({ emotion }) => {
@@ -69,32 +69,39 @@ const ExpressionLabel: FC<ExpressionLabelProps> = ({ emotion }) => {
     return (
         <div className="flex grow-0 items-center gap-2 rounded-full border border-white bg-tan-200/50 px-1 py-0.5 font-mono text-xs uppercase">
             <Circle fill={fill} stroke={'white'} className="h-3 w-3"/>
-            <span className="">{emotion.name}</span>
-            <span className="ml-auto tabular-num opacity-50">
-                {emotion.score.toFixed(2)}
+            <span>{emotion.name}</span>
+            <span className="ml-auto tabular-nums opacity-50">
+                {Number(emotion.score).toFixed(2)}
             </span>
         </div>
     )
 }
+
 export const Visualizer:FC<VisualizerProps> = ({
     lastVoiceMessage,
 }) => {
         const prosody = lastVoiceMessage?.models[0].entries ?? [];
 
-        const topProsody = [...prosody].sort((a, b) => b.score - a.score).slice(0, 1)[0];
+        const sortedEmotions = [...prosody]
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 3)
+            .map((entry) => {
+            return { ...entry, score: Number(entry.score).toFixed(3) };
+        });
 
         return (
-                <div className="pointer-events-none absolute inset-0 aspect-square">
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
-                        {lastVoiceMessage?.message.content}
+            <div className="pointer-events-none absolute inset-0 aspect-square">
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                <div className="flex flex-col gap-2">
+                    {sortedEmotions.map((emotion) => (
+                    <ExpressionLabel emotion={emotion}/>
+                    ))}
                 </div>
+            </div>
 
-                <Canvas className="pointer-events-none absolute inset-0 p-8">
-                    <DotRing prosody={prosody}/>
-                </Canvas>
-                <div className="mx-12 -mt-6">
-                    <ExpressionLabel emotion={topProsody}/>
-                </div>
-                </div>
+            <Canvas className="pointer-events-none absolute inset-0 p-8">
+                <DotRing prosody={prosody}/>
+            </Canvas>
+            </div>
         )
 }
