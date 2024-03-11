@@ -15,7 +15,7 @@ type EmotionScore = {
   score: number;
 };
 
-type VoiceAnimationProsody = {
+export type VoiceAnimationProsody = {
   emotions: EmotionScore[];
 };
 
