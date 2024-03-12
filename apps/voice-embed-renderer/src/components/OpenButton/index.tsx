@@ -46,8 +46,8 @@ export const OpenButton = ({
       <HumeLogo
         className={
           status === 'connecting'
-            ? 'h-5 w-5 animate-[spin_1s_linear_infinite]'
-            : 'h-5 w-5'
+            ? 'size-5 animate-[spin_1s_linear_infinite]'
+            : 'size-5'
         }
       />
     </motion.div>

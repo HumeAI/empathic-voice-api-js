@@ -12,6 +12,7 @@
   "dependencies": {
     "@humeai/voice-embed-react": "workspace:*",
     "@humeai/voice-react": "workspace:*",
+    "@radix-ui/react-tooltip": "^1.0.7",
     "@react-spring/three": "^9.7.3",
     "@react-three/drei": "^9.99.5",
     "@react-three/fiber": "^8.15.16",

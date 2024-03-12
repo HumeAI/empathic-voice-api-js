@@ -41,7 +41,7 @@ export const CloseButton: FC<CloseButtonProps> = ({ onPress }) => {
       }
       {...mergeProps(closeButtonProps, buttonTransition)}
     >
-      <X className={'h-5 w-5'} />
+      <X className={'size-5'} />
     </motion.div>
   );
 };

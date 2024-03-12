@@ -22,14 +22,14 @@ export const LastVoiceMessage: FC<LastVoiceMessageProps> = ({
     });
 
   return (
-    <div className="pointer-events-none absolute mt-52 p-8 text-center">
+    <div className="pointer-events-none absolute top-48 px-4 text-center">
       {sortedEmotions.map((emotion) => {
         const fill = isExpressionColor(emotion.name)
           ? expressionColors[emotion.name].hex
           : 'white';
 
         return (
-          <div className="mb-2 mr-2 inline-flex items-center gap-2 rounded-full border border-white bg-tan-200/50 px-2 py-0.5 font-mono text-xs uppercase last:mr-0">
+          <div className="mb-2 mr-2 inline-flex items-center gap-2 rounded-full bg-tan-200/50 px-2 py-0.5 font-mono text-xs uppercase last:mr-0">
             <Circle fill={fill} stroke={'white'} className={'size-3'}/>
             <span className="">{emotion.name}</span>
             <span className="ml-auto tabular-nums opacity-50">
