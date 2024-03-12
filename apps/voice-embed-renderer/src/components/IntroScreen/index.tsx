@@ -9,7 +9,7 @@ export const IntroScreen = ({ onConnect }: { onConnect: () => void }) => {
       animate={{ opacity: 1, translateY: -4 }}
       transition={{ duration: 2 }}
     >
-      <h2 className="text-center text-3xl">
+      <h2 className="mt-6 text-center text-3xl">
         Meet EVI, our <CircledText>empathic</CircledText> AI voice
       </h2>
       <div className="w-fit">

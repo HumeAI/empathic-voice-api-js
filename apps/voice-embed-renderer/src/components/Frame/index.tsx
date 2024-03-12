@@ -9,22 +9,21 @@ export type FrameProps = PropsWithChildren;
 const frameStyles = cva(
   [
     'rounded-[25px]',
-    'backdrop-blur-sm',
+    'backdrop-blur-[50px]',
     'absolute bottom-0 right-0',
     'text-black',
     'transition-colors',
-    'shadow-custom',
-    'outline outline-2 -outline-offset-2 outline-tan-200/60',
-    'bg-gradient-to-t from-orange-200/70 from-5%',
+    'outline outline-2 -outline-offset-2 outline-white/80',
   ],
   {
     variants: {
       state: {
         [LayoutState.OPEN]: ['bg-tan-200/70'],
         [LayoutState.CLOSED]: [
-          'bg-tan-200/90 bg-gradient-to-t from-orange-300/90 from-5% hover:bg-tan-200',
+          'bg-white/80',
+          'hover:bg-white',
         ],
-        [LayoutState.MINIMIZED]: ['bg-tan-200'],
+        [LayoutState.MINIMIZED]: ['bg-white'],
       },
     },
   },
@@ -33,8 +32,8 @@ const frameStyles = cva(
 const frameDimensions = (state: LayoutState) =>
   match(state)
     .with(LayoutState.OPEN, () => ({
-      width: '350px',
-      height: '400px',
+      width: '400px',
+      height: '300px',
     }))
     .with(LayoutState.CLOSED, () => ({
       width: '50px',
