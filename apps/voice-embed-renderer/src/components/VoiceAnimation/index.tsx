@@ -33,12 +33,12 @@ export const VoiceAnimation: FC<VoiceAnimationRendererProps> = ({
   fft,
 }) => {
   return (
-    <div className={'relative h-full w-full'}>
+    <div className={'relative size-full'}>
       <motion.svg
         viewBox={'0 0 100 100'}
         width={100}
         height={100}
-        className={'absolute inset-0 h-full w-full'}
+        className={'absolute inset-0 size-full'}
       >
         {Array.from({ length: 24 }).map((_, index) => {
           const value = (fft[index] ?? 0) / 4;

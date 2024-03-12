@@ -52,7 +52,7 @@ export const useLayoutStore = create<LayoutStore>()((set) => {
       clearTimeout(timeout);
       parentDispatch(
         RESIZE_FRAME_ACTION({
-          width: 350,
+          width: 400,
           height: 50,
         }),
       );

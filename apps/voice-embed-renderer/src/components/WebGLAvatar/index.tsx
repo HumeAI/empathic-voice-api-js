@@ -67,7 +67,7 @@ export const WebGLAvatar: FC<WebGLAvatarProps> = ({
 
   return (
     <div
-      className={"isolate"}
+      className={"pointer-events-none absolute isolate"}
       style={{ width: `${width}px`, height: `${height}px` }}
       ref={container}
     />

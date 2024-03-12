@@ -2,22 +2,22 @@ import { motion } from 'framer-motion';
 import { useRef, ComponentRef, FC } from 'react';
 import { useButton, mergeProps } from 'react-aria';
 import { useSafeMotion } from '../../utils/useSafeMotion';
-import { Mic, MicOff } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
-export type MuteButtonProps = {
+
+export type ExpandButtonProps = {
   onPress: () => void;
-  isMuted: boolean;
 };
 
-export const MuteButton: FC<MuteButtonProps> = ({ onPress, isMuted }) => {
-  const MuteButtonRef = useRef<ComponentRef<typeof motion.div>>(null);
-  const { buttonProps: MuteButtonProps } = useButton(
+export const ExpandButton: FC<ExpandButtonProps> = ({ onPress }) => {
+  const ExpandButtonRef = useRef<ComponentRef<typeof motion.div>>(null);
+  const { buttonProps: ExpandButtonProps } = useButton(
     {
       onPress: () => {
         onPress();
       },
     },
-    MuteButtonRef,
+    ExpandButtonRef,
   );
 
   const buttonTransition = useSafeMotion({
@@ -34,19 +34,16 @@ export const MuteButton: FC<MuteButtonProps> = ({ onPress, isMuted }) => {
     },
   });
 
-  const Icon = isMuted ? MicOff : Mic;
-  const descriptiveText = isMuted ? 'Unmute' : 'Mute';
-
   return (
     <motion.div
-      ref={MuteButtonRef}
+      ref={ExpandButtonRef}
       className={
         'z-10 grid size-[36px] cursor-pointer place-content-center rounded-full bg-tan-200/20 text-black transition-colors hover:bg-tan-200/50'
       }
-      {...mergeProps(MuteButtonProps, buttonTransition)}
+      {...mergeProps(ExpandButtonProps, buttonTransition)}
     >
-      <Icon className={'size-5'} />
-      <span className="sr-only">{descriptiveText}</span>
+      <ArrowUpRight className={'size-5'} />
+      <span className="sr-only">Learn more</span>
     </motion.div>
   );
 };

@@ -63,8 +63,8 @@ export const Views: FC<ViewsProps> = () => {
             />
           ) : (
             <>
-              <WebGLAvatar fft={micFft} isPlaying={isPlaying} prosody={lastVoiceMessage?.models[0].entries ?? []} width={400} height={200}/>
               <LastVoiceMessage lastVoiceMessage={lastVoiceMessage} />
+              <WebGLAvatar fft={micFft} isPlaying={isPlaying} prosody={lastVoiceMessage?.models[0].entries ?? []} width={350} height={300}/>
               <Backdrop
                 prosody={lastVoiceMessage?.models[0].entries ?? []}
                 activeView={VoiceAnimationState.IDLE}
