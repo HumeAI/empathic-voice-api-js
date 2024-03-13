@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 export const IntroScreen = ({ onConnect }: { onConnect: () => void }) => {
   return (
     <motion.div
-      className="flex flex-col items-center gap-8 px-4"
+      className="absolute inset-0 flex flex-col items-center justify-center gap-8 px-12"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, translateY: -4 }}
       transition={{ duration: 2 }}
     >
-      <h2 className="mt-6 text-center text-3xl">
+      <h2 className="text-center text-3xl">
         Meet EVI, our <CircledText>empathic</CircledText> AI voice
       </h2>
       <div className="w-fit">

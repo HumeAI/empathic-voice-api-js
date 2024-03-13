@@ -47,7 +47,9 @@ export const ConversationFrame: FC<ConversationFrameProps> = ({
         {children}
       </motion.div>
 
-      <motion.div className={'flex shrink-0 grow-0 items-center gap-2 p-2'}>
+      <motion.div
+        className={'z-10 flex shrink-0 grow-0 items-center gap-2 p-2'}
+      >
         {status.value === 'connected' && (
           <Tooltip.Provider delayDuration={400} skipDelayDuration={500}>
             <Tooltip.Root>
