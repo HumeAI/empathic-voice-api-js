@@ -3,13 +3,12 @@ import { ConversationFrame } from '@/components/ConversationFrame';
 import { LayoutState, useLayoutStore } from '@/store/layout';
 import { OpenButton } from '@/components/OpenButton';
 import { useVoice } from '@humeai/voice-react';
-import {
-  VoiceAnimationState,
-} from '@/components/VoiceAnimation';
+import { VoiceAnimationState } from '@/components/VoiceAnimation';
 import { IntroScreen } from '@/components/IntroScreen';
 import { Backdrop } from '@/components/WebGLBackdrop';
 import { LastVoiceMessage } from '@/components/LastVoiceMessage';
 import { WebGLAvatar } from '@/components/WebGLAvatar';
+import { WaitingPrompt } from '@/components/WaitingPrompt';
 
 export type ViewsProps = Record<never, never>;
 
@@ -25,6 +24,7 @@ export const Views: FC<ViewsProps> = () => {
     lastVoiceMessage,
     isPlaying,
     micFft,
+    lastUserMessage,
   } = useVoice();
 
   if (layoutState === LayoutState.CLOSED) {
@@ -64,7 +64,17 @@ export const Views: FC<ViewsProps> = () => {
           ) : (
             <>
               <LastVoiceMessage lastVoiceMessage={lastVoiceMessage} />
-              <WebGLAvatar fft={micFft} isPlaying={isPlaying} prosody={lastVoiceMessage?.models[0].entries ?? []} width={350} height={300}/>
+              {!lastUserMessage ? (
+                <WaitingPrompt />
+              ) : (
+                <WebGLAvatar
+                  fft={micFft}
+                  isPlaying={isPlaying}
+                  prosody={lastVoiceMessage?.models[0].entries ?? []}
+                  width={400}
+                  height={200}
+                />
+              )}
               <Backdrop
                 prosody={lastVoiceMessage?.models[0].entries ?? []}
                 activeView={VoiceAnimationState.IDLE}
