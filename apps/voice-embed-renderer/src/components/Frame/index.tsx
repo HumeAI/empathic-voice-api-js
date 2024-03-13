@@ -20,8 +20,8 @@ const frameStyles = cva(
       state: {
         [LayoutState.OPEN]: ['bg-tan-200/70'],
         [LayoutState.CLOSED]: [
-          'bg-white/80',
-          'hover:bg-white',
+          'bg-white shadow-custom backdrop-blur-sm',
+          'transition-colors hover:bg-white/50',
         ],
         [LayoutState.MINIMIZED]: ['bg-white'],
       },

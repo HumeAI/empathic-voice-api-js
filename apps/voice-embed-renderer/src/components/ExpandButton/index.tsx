@@ -38,7 +38,7 @@ export const ExpandButton: FC<ExpandButtonProps> = ({ onPress }) => {
     <motion.div
       ref={ExpandButtonRef}
       className={
-        'z-10 grid size-[36px] cursor-pointer place-content-center rounded-full bg-tan-200/20 text-black transition-colors hover:bg-tan-200/50'
+        'z-10 grid size-[36px] cursor-pointer place-content-center rounded-full bg-tan-600/20 text-black transition-colors hover:bg-tan-600/50'
       }
       {...mergeProps(ExpandButtonProps, buttonTransition)}
     >
