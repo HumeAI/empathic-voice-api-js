@@ -1,14 +1,11 @@
-import { FC } from 'react';
 import { ConversationFrame } from '@/components/ConversationFrame';
-import { LayoutState, useLayoutStore } from '@/store/layout';
 import { OpenButton } from '@/components/OpenButton';
+import { LayoutState, useLayoutStore } from '@/store/layout';
+import { ConversationScreen } from '@/views/ConversationScreen';
+import { ErrorScreen } from '@/views/ErrorScreen';
+import { IntroScreen } from '@/views/IntroScreen';
 import { useVoice } from '@humeai/voice-react';
-import { VoiceAnimationState } from '@/components/VoiceAnimation';
-import { IntroScreen } from '@/components/IntroScreen';
-import { Backdrop } from '@/components/WebGLBackdrop';
-import { LastVoiceMessage } from '@/components/LastVoiceMessage';
-import { WebGLAvatar } from '@/components/WebGLAvatar';
-import { WaitingPrompt } from '@/components/WaitingPrompt';
+import { FC } from 'react';
 
 export type ViewsProps = Record<never, never>;
 
@@ -17,15 +14,7 @@ export const Views: FC<ViewsProps> = () => {
   const open = useLayoutStore((store) => store.open);
   const close = useLayoutStore((store) => store.close);
 
-  const {
-    connect,
-    disconnect,
-    status,
-    lastVoiceMessage,
-    isPlaying,
-    micFft,
-    lastUserMessage,
-  } = useVoice();
+  const { connect, disconnect, status } = useVoice();
 
   if (layoutState === LayoutState.CLOSED) {
     return (
@@ -56,43 +45,13 @@ export const Views: FC<ViewsProps> = () => {
       }}
     >
       {status.value === 'error' ? (
-        <div className="flex flex-col items-center justify-center">
-          <div className="text-center">Sorry, we had to end your session.</div>
-          <div>Error: {status.reason}</div>
-          <div className="pt-4">
-            <button
-              className={
-                'flex h-[36px] items-center justify-center rounded-full border border-gray-700 bg-gray-800 px-4 text-base font-medium text-white hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:text-white focus:outline-none'
-              }
-              onClick={onConnect}
-            >
-              Reconnect
-            </button>
-          </div>
-        </div>
+        <ErrorScreen errorReason={status.reason} onConnect={onConnect} />
       ) : (
         <>
           {status.value === 'disconnected' ? (
             <IntroScreen onConnect={onConnect} />
           ) : (
-            <>
-              <LastVoiceMessage lastVoiceMessage={lastVoiceMessage} />
-              {!lastUserMessage ? (
-                <WaitingPrompt />
-              ) : (
-                <WebGLAvatar
-                  fft={micFft}
-                  isPlaying={isPlaying}
-                  prosody={lastVoiceMessage?.models[0].entries ?? []}
-                  width={400}
-                  height={200}
-                />
-              )}
-              <Backdrop
-                prosody={lastVoiceMessage?.models[0].entries ?? []}
-                activeView={VoiceAnimationState.IDLE}
-              />
-            </>
+            <ConversationScreen />
           )}
         </>
       )}
