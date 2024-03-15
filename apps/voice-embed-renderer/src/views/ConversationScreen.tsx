@@ -13,14 +13,15 @@ export const ConversationScreen = () => {
       {!lastUserMessage ? (
         <WaitingPrompt />
       ) : (
-        <WebGLAvatar
+        null
+      )}
+      <WebGLAvatar
           fft={micFft}
           isPlaying={isPlaying}
           prosody={lastVoiceMessage?.models[0].entries ?? []}
           width={400}
           height={200}
         />
-      )}
       <Backdrop
         prosody={lastVoiceMessage?.models[0].entries ?? []}
         activeView={VoiceAnimationState.IDLE}
