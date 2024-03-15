@@ -6,6 +6,9 @@ export default {
       boxShadow: {
         custom: 'inset rgba(var(--hume-tan-600)) 0px 0px 48px -24px',
       },
+      backgroundImage: {
+        gradient: `radial-gradient(circle at center, rgb(255, 219, 176) 40%, rgba(255, 199, 131, 0.8) 80%)`,
+      },
       colors: {
         initial: 'initial',
         inherit: 'inherit',
