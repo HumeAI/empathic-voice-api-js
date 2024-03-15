@@ -1,7 +1,14 @@
+import { Button } from '@/components/Button';
 import { CircledText } from '@/components/CircledText';
 import { motion } from 'framer-motion';
 
-export const IntroScreen = ({ onConnect }: { onConnect: () => void }) => {
+export const IntroScreen = ({
+  onConnect,
+  isConnecting,
+}: {
+  onConnect: () => void;
+  isConnecting: boolean;
+}) => {
   return (
     <motion.div
       className="absolute inset-0 flex flex-col items-center justify-center gap-8 px-12"
@@ -38,16 +45,15 @@ export const IntroScreen = ({ onConnect }: { onConnect: () => void }) => {
             },
           }}
         >
-          <button
-            className={
-              'flex h-[36px] items-center justify-center rounded-full border border-gray-700 bg-gray-800 px-4 text-base font-medium text-white hover:bg-gray-700 hover:text-white focus:bg-gray-700 focus:text-white focus:outline-none'
-            }
+          <Button
             onClick={() => {
               onConnect();
             }}
+            isLoading={isConnecting}
+            loadingText={'Connecting...'}
           >
             Start Conversation
-          </button>
+          </Button>
         </motion.div>
       </div>
     </motion.div>

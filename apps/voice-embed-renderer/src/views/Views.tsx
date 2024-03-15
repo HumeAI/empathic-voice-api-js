@@ -6,6 +6,7 @@ import { ErrorScreen } from '@/views/ErrorScreen';
 import { IntroScreen } from '@/views/IntroScreen';
 import { useVoice } from '@humeai/voice-react';
 import { FC } from 'react';
+import { match } from 'ts-pattern';
 
 export type ViewsProps = Record<never, never>;
 
@@ -44,17 +45,28 @@ export const Views: FC<ViewsProps> = () => {
         disconnect();
       }}
     >
-      {status.value === 'error' ? (
-        <ErrorScreen errorReason={status.reason} onConnect={onConnect} />
-      ) : (
-        <>
-          {status.value === 'disconnected' ? (
-            <IntroScreen onConnect={onConnect} />
-          ) : (
-            <ConversationScreen />
-          )}
-        </>
-      )}
+      {match(status.value)
+        .with('error', () => {
+          return (
+            <ErrorScreen
+              errorReason={status.reason ?? 'Unknown'}
+              onConnect={onConnect}
+              isConnecting={status.value === 'connecting'}
+            />
+          );
+        })
+        .with('disconnected', 'connecting', () => {
+          return (
+            <IntroScreen
+              onConnect={onConnect}
+              isConnecting={status.value === 'connecting'}
+            />
+          );
+        })
+        .with('connected', () => {
+          return <ConversationScreen />;
+        })
+        .exhaustive()}
     </ConversationFrame>
   );
 };
