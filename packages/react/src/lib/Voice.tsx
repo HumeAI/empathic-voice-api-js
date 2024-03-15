@@ -180,9 +180,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const mic = useMicrophone({
     streamRef,
-    onAudioCaptured: (arrayBuffer) => {
-      client.sendAudio(arrayBuffer);
-    },
+    onAudioCaptured: useCallback((arrayBuffer) => {
+      try {
+        client.sendAudio(arrayBuffer);
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'Unknown error';
+        updateError({ type: 'socket_error', message });
+      }
+    }, []),
     onError: useCallback(
       (message) => {
         updateError({ type: 'mic_error', message });
@@ -211,7 +216,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       })
       .then(() => {
         if (props.systemPrompt) {
-          client.sendSystemPrompt(props.systemPrompt);
+          try {
+            client.sendSystemPrompt(props.systemPrompt);
+          } catch (e) {
+            const message = e instanceof Error ? e.message : 'Unknown error';
+            updateError({ type: 'socket_error', message });
+          }
         }
       })
       .catch(() => new Error('Could not connect to the voice'));

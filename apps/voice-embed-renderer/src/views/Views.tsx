@@ -1,14 +1,11 @@
-import { FC } from 'react';
 import { ConversationFrame } from '@/components/ConversationFrame';
-import { LayoutState, useLayoutStore } from '@/store/layout';
 import { OpenButton } from '@/components/OpenButton';
+import { LayoutState, useLayoutStore } from '@/store/layout';
+import { ConversationScreen } from '@/views/ConversationScreen';
+import { ErrorScreen } from '@/views/ErrorScreen';
+import { IntroScreen } from '@/views/IntroScreen';
 import { useVoice } from '@humeai/voice-react';
-import { VoiceAnimationState } from '@/components/VoiceAnimation';
-import { IntroScreen } from '@/components/IntroScreen';
-import { Backdrop } from '@/components/WebGLBackdrop';
-import { LastVoiceMessage } from '@/components/LastVoiceMessage';
-import { WebGLAvatar } from '@/components/WebGLAvatar';
-import { WaitingPrompt } from '@/components/WaitingPrompt';
+import { FC } from 'react';
 
 export type ViewsProps = Record<never, never>;
 
@@ -17,15 +14,7 @@ export const Views: FC<ViewsProps> = () => {
   const open = useLayoutStore((store) => store.open);
   const close = useLayoutStore((store) => store.close);
 
-  const {
-    connect,
-    disconnect,
-    status,
-    lastVoiceMessage,
-    isPlaying,
-    micFft,
-    lastUserMessage,
-  } = useVoice();
+  const { connect, disconnect, status } = useVoice();
 
   if (layoutState === LayoutState.CLOSED) {
     return (
@@ -40,6 +29,14 @@ export const Views: FC<ViewsProps> = () => {
     );
   }
 
+  const onConnect = () => {
+    void connect()
+      .then(() => {})
+      .catch((e) => {
+        console.error(e);
+      });
+  };
+
   return (
     <ConversationFrame
       onClose={() => {
@@ -48,38 +45,13 @@ export const Views: FC<ViewsProps> = () => {
       }}
     >
       {status.value === 'error' ? (
-        <div className="text-center">Error: {status.reason}</div>
+        <ErrorScreen errorReason={status.reason} onConnect={onConnect} />
       ) : (
         <>
           {status.value === 'disconnected' ? (
-            <IntroScreen
-              onConnect={() => {
-                void connect()
-                  .then(() => {})
-                  .catch((e) => {
-                    console.error(e);
-                  });
-              }}
-            />
+            <IntroScreen onConnect={onConnect} />
           ) : (
-            <>
-              <LastVoiceMessage lastVoiceMessage={lastVoiceMessage} />
-              {!lastUserMessage ? (
-                <WaitingPrompt />
-              ) : (
-                <WebGLAvatar
-                  fft={micFft}
-                  isPlaying={isPlaying}
-                  prosody={lastVoiceMessage?.models[0].entries ?? []}
-                  width={400}
-                  height={200}
-                />
-              )}
-              <Backdrop
-                prosody={lastVoiceMessage?.models[0].entries ?? []}
-                activeView={VoiceAnimationState.IDLE}
-              />
-            </>
+            <ConversationScreen />
           )}
         </>
       )}
