@@ -5,6 +5,7 @@ import {
   EXPAND_WIDGET_ACTION,
   MINIMIZE_WIDGET_ACTION,
   RESIZE_FRAME_ACTION,
+  WindowDimensions,
 } from '@humeai/voice-embed-react';
 
 export enum LayoutState {
@@ -15,23 +16,36 @@ export enum LayoutState {
 
 interface LayoutStore {
   state: LayoutState;
-  open: () => void;
+  frameSize: WindowDimensions;
+  open: (dimensions: WindowDimensions) => void;
+  setFrameSize: (dimensions: WindowDimensions) => void;
   close: () => void;
 }
 
 let timeout: number | undefined = undefined;
 
+const DEFAULT_FRAME_WIDTH = 400;
+const DEFAULT_FRAME_HEIGHT = 300;
+const FRAME_MARGIN_X = 48;
+
 export const useLayoutStore = create<LayoutStore>()((set) => {
   return {
     state: LayoutState.CLOSED,
-    open: () => {
+    frameSize: { width: DEFAULT_FRAME_WIDTH, height: DEFAULT_FRAME_HEIGHT },
+    setFrameSize: (parentDimensions: WindowDimensions) => {
+      const frameSize = {
+        width:
+          parentDimensions.width - FRAME_MARGIN_X < DEFAULT_FRAME_WIDTH
+            ? parentDimensions.width - FRAME_MARGIN_X
+            : DEFAULT_FRAME_WIDTH,
+        height: DEFAULT_FRAME_HEIGHT,
+      };
+      set({ frameSize });
+      parentDispatch(RESIZE_FRAME_ACTION(frameSize));
+    },
+    open: (dimensions: WindowDimensions) => {
       clearTimeout(timeout);
-      parentDispatch(
-        RESIZE_FRAME_ACTION({
-          width: 400,
-          height: 300,
-        }),
-      );
+      parentDispatch(RESIZE_FRAME_ACTION(dimensions));
       parentDispatch(EXPAND_WIDGET_ACTION);
       return set({ state: LayoutState.OPEN });
     },

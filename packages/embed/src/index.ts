@@ -9,6 +9,7 @@ export {
   WIDGET_IFRAME_IS_READY_ACTION,
   parseClientToFrameAction,
   type FrameToClientAction,
+  type WindowDimensions,
 } from './lib/embed-messages';
 
 export type {

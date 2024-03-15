@@ -3,6 +3,7 @@ import { FC, PropsWithChildren } from 'react';
 import { LayoutState, useLayoutStore } from '../../store/layout';
 import { cva } from 'class-variance-authority';
 import { match } from 'ts-pattern';
+import { WindowDimensions } from '@humeai/voice-embed-react';
 
 export type FrameProps = PropsWithChildren;
 
@@ -29,11 +30,11 @@ const frameStyles = cva(
   },
 );
 
-const frameDimensions = (state: LayoutState) =>
+const frameDimensions = (state: LayoutState, frameSize: WindowDimensions) =>
   match(state)
     .with(LayoutState.OPEN, () => ({
-      width: '400px',
-      height: '300px',
+      width: `${frameSize.width}px`,
+      height: `${frameSize.height}px`,
     }))
     .with(LayoutState.CLOSED, () => ({
       width: '50px',
@@ -47,11 +48,12 @@ const frameDimensions = (state: LayoutState) =>
 
 export const Frame: FC<FrameProps> = ({ children }) => {
   const state = useLayoutStore((store) => store.state);
+  const frameSize = useLayoutStore((store) => store.frameSize);
 
   return (
     <motion.div
       className={frameStyles({ state })}
-      animate={frameDimensions(state)}
+      animate={frameDimensions(state, frameSize)}
       transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
       data-testid={'frame-component'}
     >

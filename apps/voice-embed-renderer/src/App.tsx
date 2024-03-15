@@ -17,6 +17,7 @@ function App() {
   const config = useConfigStore((store) => store.config);
 
   const open = useLayoutStore((store) => store.open);
+  const setFrameSize = useLayoutStore((store) => store.setFrameSize);
 
   const dispatchMessage: ComponentProps<typeof VoiceProvider>['onMessage'] = (
     message,
@@ -36,8 +37,12 @@ function App() {
           onUpdateConfig={(config) => {
             setConfig(config);
           }}
-          onOpen={() => {
-            open();
+          onOpen={(dimensions) => {
+            setFrameSize(dimensions);
+            open(dimensions);
+          }}
+          onResize={(dimensions) => {
+            setFrameSize(dimensions);
           }}
         />
         {config ? (

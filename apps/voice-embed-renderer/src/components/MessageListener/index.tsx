@@ -1,10 +1,15 @@
-import { parseClientToFrameAction, Config } from '@humeai/voice-embed-react';
+import {
+  parseClientToFrameAction,
+  Config,
+  WindowDimensions,
+} from '@humeai/voice-embed-react';
 import { FC, useEffect, useRef } from 'react';
 
 export type MessageListenerProps = {
   onUpdateConfig?: (config: Config) => void;
   onCancel?: () => void;
-  onOpen?: () => void;
+  onOpen?: (dimensions: WindowDimensions) => void;
+  onResize?: (dimensions: WindowDimensions) => void;
 };
 
 export const MessageListener: FC<MessageListenerProps> = (props) => {
@@ -16,6 +21,9 @@ export const MessageListener: FC<MessageListenerProps> = (props) => {
 
   const onOpen = useRef(props.onOpen);
   onOpen.current = props.onOpen;
+
+  const onResize = useRef(props.onResize);
+  onResize.current = props.onResize;
 
   useEffect(() => {
     const listener = async (event: MessageEvent<unknown>) => {
@@ -37,7 +45,11 @@ export const MessageListener: FC<MessageListenerProps> = (props) => {
           break;
         }
         case 'expand_widget_from_client': {
-          onOpen.current?.();
+          onOpen.current?.(action.payload);
+          break;
+        }
+        case 'send_window_size': {
+          onResize.current?.(action.payload);
           break;
         }
         default:

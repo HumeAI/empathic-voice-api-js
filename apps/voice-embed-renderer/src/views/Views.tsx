@@ -14,6 +14,7 @@ export const Views: FC<ViewsProps> = () => {
   const layoutState = useLayoutStore((store) => store.state);
   const open = useLayoutStore((store) => store.open);
   const close = useLayoutStore((store) => store.close);
+  const frameSize = useLayoutStore((store) => store.frameSize);
 
   const { connect, disconnect, status } = useVoice();
 
@@ -23,7 +24,7 @@ export const Views: FC<ViewsProps> = () => {
         <OpenButton
           status={status.value}
           onPress={() => {
-            open();
+            open(frameSize);
           }}
         />
       </>
