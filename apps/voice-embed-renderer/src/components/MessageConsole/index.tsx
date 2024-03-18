@@ -47,14 +47,12 @@ export const MessageConsole = ({
         return state;
       }
 
-      const prosodyModel = message.models.find(
-        (model) => model.model === 'prosody',
-      ) ?? { entries: [] };
-
       // Sort the emotions based on their scores in ascending order
-      const sortedEmotions: ProsodyScore[] = prosodyModel.entries
-        .sort((a, b) => b.score - a.score)
+      const prosodyScores = message.models.prosody.scores;
+      const sortedEmotions: ProsodyScore[] = Object.entries(prosodyScores)
+        .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
+        .map(([key, value]) => ({ name: key, score: value }))
         .map((entry) => {
           return { ...entry, score: Number(entry.score).toFixed(3) };
         });

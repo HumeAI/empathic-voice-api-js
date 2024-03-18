@@ -1,13 +1,15 @@
 'use client';
 
+import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
 import { useMemo } from 'react';
 import { match } from 'ts-pattern';
 
-function getTop3Expressions(
-  expressionOutputs: { name: string; score: number }[],
-) {
-  return [...expressionOutputs].sort((a, b) => b.score - a.score).slice(0, 3);
+function getTop3Expressions(expressionOutputs: EmotionScores) {
+  return Object.entries(expressionOutputs)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([key, value]) => ({ name: key, score: value }));
 }
 
 const normalizeFft = (fft: number[]) => {
@@ -55,7 +57,7 @@ export const ExampleComponent = () => {
         if (message.type === 'assistant_message') {
           return {
             message: message.message,
-            top3: getTop3Expressions(message.models[0].entries),
+            top3: getTop3Expressions(message.models.prosody.scores),
           };
         }
         return null;

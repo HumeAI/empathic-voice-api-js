@@ -17,4 +17,5 @@ export type {
   Config,
   JSONMessage,
   UserTranscriptMessage,
+  EmotionScores,
 } from '@humeai/voice';

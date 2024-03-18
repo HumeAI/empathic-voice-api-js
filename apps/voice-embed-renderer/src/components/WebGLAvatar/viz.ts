@@ -1,12 +1,13 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import * as THREE from "three";
+import * as THREE from 'three';
 
-import { expressionColors } from "expression-colors";
-import vertexShader from "./shaders/vertex.glsl?raw";
-import fragmentShader from "./shaders/fragment.glsl?raw";
-import screenQuadVertexShader from "./shaders/screenQuadVertexShader.glsl?raw";
-import blendFragmentShader from "./shaders/blendFragmentShader.glsl?raw";
-import { isExpressionColor } from "@/utils/isExpressionColor";
+import { expressionColors } from 'expression-colors';
+import vertexShader from './shaders/vertex.glsl?raw';
+import fragmentShader from './shaders/fragment.glsl?raw';
+import screenQuadVertexShader from './shaders/screenQuadVertexShader.glsl?raw';
+import blendFragmentShader from './shaders/blendFragmentShader.glsl?raw';
+import { isExpressionColor } from '@/utils/isExpressionColor';
+import { EmotionScores } from '@humeai/voice-embed-react';
 
 export enum AvatarState {
   LISTENING = 0,
@@ -213,14 +214,17 @@ export class AvatarVisualization {
     return [0.0, 0.0, 0.0];
   };
 
-  updateProsody = (prosody: { name: string; score: number }[]): void => {
+  updateProsody = (prosody: EmotionScores): void => {
     // Sort prosody data to find the top 3 emotions based on their scores
-    const top3 = prosody.sort((a, b) => b.score - a.score).slice(0, 3);
+    const top3 = Object.entries(prosody)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([key, value]) => ({ name: key, score: value }));
 
     // Retrieve the corresponding colors for the top 3 emotions
-    const colorA = this.getEmotionColor(top3[0]?.name ?? "");
-    const colorB = this.getEmotionColor(top3[1]?.name ?? "");
-    const colorC = this.getEmotionColor(top3[2]?.name ?? "");
+    const colorA = this.getEmotionColor(top3[0]?.name ?? '');
+    const colorB = this.getEmotionColor(top3[1]?.name ?? '');
+    const colorC = this.getEmotionColor(top3[2]?.name ?? '');
 
     // Update shader uniforms for emotion colors
     if (this.particleSystem?.material) {
@@ -288,19 +292,19 @@ export class AvatarVisualization {
 
     // Create the buffer geometry and set attributes
     const geometry = new THREE.BufferGeometry();
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute("velocity", new THREE.BufferAttribute(velocities, 3));
-    geometry.setAttribute("phase", new THREE.BufferAttribute(phases, 1));
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('velocity', new THREE.BufferAttribute(velocities, 3));
+    geometry.setAttribute('phase', new THREE.BufferAttribute(phases, 1));
     geometry.setAttribute(
-      "birthTime",
+      'birthTime',
       new THREE.BufferAttribute(birthTimes, 1),
     ); // Add birth times as an attribute
     geometry.setAttribute(
-      "lifetime",
+      'lifetime',
       new THREE.BufferAttribute(this.lifetimes, 1),
     );
     geometry.setAttribute(
-      "variation",
+      'variation',
       new THREE.BufferAttribute(variations, 1),
     );
 
@@ -418,7 +422,7 @@ export class AvatarVisualization {
       Number(newMotionType) > 9 ||
       newMotionType.toString() === this.currentMotionType.toString()
     ) {
-      console.warn("Invalid or same motion type:", newMotionType.toString());
+      console.warn('Invalid or same motion type:', newMotionType.toString());
       return;
     }
     if (!this.transitioning) {
