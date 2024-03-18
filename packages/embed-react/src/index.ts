@@ -16,4 +16,5 @@ export type {
   FrameToClientAction,
   JSONMessage,
   UserTranscriptMessage,
+  WindowDimensions,
 } from '@humeai/voice-embed';

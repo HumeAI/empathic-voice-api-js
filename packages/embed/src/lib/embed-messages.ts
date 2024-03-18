@@ -42,6 +42,13 @@ import {
 } from '@humeai/voice';
 import { z } from 'zod';
 
+const WindowDimensionsSchema = z.object({
+  width: z.number(),
+  height: z.number(),
+});
+
+export type WindowDimensions = z.infer<typeof WindowDimensionsSchema>;
+
 // ---------------------------------------------------------------------------
 // Client to frame actions
 // ---------------------------------------------------------------------------
@@ -55,6 +62,11 @@ export const ClientToFrameActionSchema = z.union([
   }),
   z.object({
     type: z.literal('expand_widget_from_client'),
+    payload: WindowDimensionsSchema,
+  }),
+  z.object({
+    type: z.literal('send_window_size'),
+    payload: WindowDimensionsSchema,
   }),
 ]);
 
@@ -66,9 +78,16 @@ export const UPDATE_CONFIG_ACTION = (config: Config) =>
     payload: config,
   }) satisfies ClientToFrameAction;
 
-export const EXPAND_FROM_CLIENT_ACTION = () =>
+export const EXPAND_FROM_CLIENT_ACTION = (dimensions: WindowDimensions) =>
   ({
     type: 'expand_widget_from_client',
+    payload: dimensions,
+  }) satisfies ClientToFrameAction;
+
+export const SEND_WINDOW_SIZE_ACTION = (dimensions: WindowDimensions) =>
+  ({
+    type: 'send_window_size',
+    payload: dimensions,
   }) satisfies ClientToFrameAction;
 
 export const parseClientToFrameAction = (

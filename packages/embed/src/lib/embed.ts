@@ -9,6 +9,7 @@ import type { ClientToFrameAction } from './embed-messages';
 import {
   EXPAND_FROM_CLIENT_ACTION,
   FrameToClientActionSchema,
+  SEND_WINDOW_SIZE_ACTION,
   UPDATE_CONFIG_ACTION,
   WIDGET_IFRAME_IS_READY_ACTION,
 } from './embed-messages';
@@ -75,12 +76,17 @@ export class EmbeddedVoice {
       this.messageHandler(event);
     };
 
+    const resizeHandler = () => {
+      this.sendWindowSize();
+    };
+
     const el = container ?? this.createContainer();
 
     this.managedContainer = el;
 
     try {
       window.addEventListener('message', messageHandler);
+      window.addEventListener('resize', resizeHandler);
       el.appendChild(this.iframe);
       this.isMounted = true;
     } catch (e) {
@@ -90,6 +96,7 @@ export class EmbeddedVoice {
     const unmount = () => {
       try {
         window.removeEventListener('message', messageHandler);
+        window.removeEventListener('resize', resizeHandler);
         this.iframe.remove();
         this.isMounted = false;
       } catch (e) {
@@ -174,6 +181,7 @@ export class EmbeddedVoice {
       case WIDGET_IFRAME_IS_READY_ACTION.type: {
         this.showIframe();
         this.sendConfigObject();
+        this.sendWindowSize();
         break;
       }
       case 'resize_frame': {
@@ -192,12 +200,23 @@ export class EmbeddedVoice {
   }
 
   openEmbed() {
-    const action = EXPAND_FROM_CLIENT_ACTION();
+    const action = EXPAND_FROM_CLIENT_ACTION({
+      width: window.document.body.clientWidth,
+      height: window.document.body.clientHeight,
+    });
     this.sendMessageToFrame(action);
   }
 
   private sendConfigObject() {
     const action = UPDATE_CONFIG_ACTION(this.config);
+    this.sendMessageToFrame(action);
+  }
+
+  private sendWindowSize() {
+    const action = SEND_WINDOW_SIZE_ACTION({
+      width: window.document.body.clientWidth,
+      height: window.document.body.clientHeight,
+    });
     this.sendMessageToFrame(action);
   }
 
