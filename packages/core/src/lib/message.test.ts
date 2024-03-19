@@ -17,29 +17,19 @@ describe('parseMessageData', () => {
           content: 'Hi.',
         },
         id: 'abc',
-        models: [
-          {
-            model: 'prosody',
-            entries: [
-              {
-                name: 'Admiration',
-                score: 0.03162447735667229,
-              },
-              {
-                name: 'Adoration',
-                score: 0.03475363552570343,
-              },
-              {
-                name: 'Aesthetic Appreciation',
-                score: 0.024020226672291756,
-              },
-            ],
-            time: {
-              begin: 640,
-              end: 1140,
+        models: {
+          prosody: {
+            scores: {
+              Admiration: 0.03162447735667229,
+              Adoration: 0.03475363552570343,
+              'Aesthetic Appreciation': 0.024020226672291756,
             },
           },
-        ],
+          time: {
+            begin: 640,
+            end: 1140,
+          },
+        },
       }),
     );
     expect(output.success).toBe(true);
@@ -54,29 +44,19 @@ describe('parseMessageData', () => {
           role: 'assistant',
           content: 'Hey there!',
         },
-        models: [
-          {
-            model: 'prosody',
-            entries: [
-              {
-                name: 'Admiration',
-                score: 0.07727637141942978,
-              },
-              {
-                name: 'Adoration',
-                score: 0.05045051500201225,
-              },
-              {
-                name: 'Aesthetic Appreciation',
-                score: 0.04880306124687195,
-              },
-              {
-                name: 'Amusement',
-                score: 0.1744036227464676,
-              },
-            ],
+        models: {
+          prosody: {
+            scores: {
+              Admiration: 0.03162447735667229,
+              Adoration: 0.03475363552570343,
+              'Aesthetic Appreciation': 0.024020226672291756,
+            },
           },
-        ],
+          time: {
+            begin: 640,
+            end: 1140,
+          },
+        },
       }),
     );
     expect(output.success).toBe(true);
