@@ -30,6 +30,9 @@ function App() {
           setIsEmbedOpen(false);
         }}
         isEmbedOpen={isEmbedOpen}
+        hostname={String(
+          import.meta.env['VITE_PUBLIC_HOSTNAME'] ?? 'api.hume.ai',
+        )}
       />
     </>
   );
