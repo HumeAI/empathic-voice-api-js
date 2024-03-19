@@ -10,20 +10,16 @@ export const ConversationScreen = () => {
   return (
     <>
       <LastVoiceMessage lastVoiceMessage={lastVoiceMessage} />
-      {!lastUserMessage ? (
-        <WaitingPrompt />
-      ) : (
-        null
-      )}
+      {!lastUserMessage ? <WaitingPrompt /> : null}
       <WebGLAvatar
-          fft={micFft}
-          isPlaying={isPlaying}
-          prosody={lastVoiceMessage?.models[0].entries ?? []}
-          width={400}
-          height={200}
-        />
+        fft={micFft}
+        isPlaying={isPlaying}
+        prosody={lastVoiceMessage?.models.prosody.scores ?? {}}
+        width={400}
+        height={200}
+      />
       <Backdrop
-        prosody={lastVoiceMessage?.models[0].entries ?? []}
+        prosody={lastVoiceMessage?.models.prosody.scores ?? {}}
         activeView={VoiceAnimationState.IDLE}
       />
     </>

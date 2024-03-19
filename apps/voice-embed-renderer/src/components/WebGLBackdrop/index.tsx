@@ -6,19 +6,21 @@ import { WebGLBurst } from './WebGLBurst';
 import { WebGLEmotionBursts } from './WebGLEmotionBursts';
 import { cn } from '@/utils';
 import { VoiceAnimationState } from '../VoiceAnimation';
+import { EmotionScores } from '@humeai/voice-embed-react';
 
 export const Backdrop = ({
-  prosody,
+  prosody = {},
   activeView,
 }: {
-  prosody: { name: string; score: number }[];
+  prosody: EmotionScores | undefined;
   activeView: VoiceAnimationState;
 }) => {
-  const top3Prosody = Array.from(prosody)
+  const top3Prosody = Object.entries(prosody)
     .sort((a, b) => {
-      return b.score - a.score;
+      return b[1] - a[1];
     })
-    .slice(0, 3);
+    .slice(0, 3)
+    .map(([key, value]) => ({ name: key, score: value }));
 
   const [{ y, radius, opacity }, transition] = useSpring(() => ({
     y: -1.0,

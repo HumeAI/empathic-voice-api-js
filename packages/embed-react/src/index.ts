@@ -17,4 +17,5 @@ export type {
   JSONMessage,
   UserTranscriptMessage,
   WindowDimensions,
+  EmotionScores,
 } from '@humeai/voice-embed';

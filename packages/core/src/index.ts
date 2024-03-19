@@ -15,5 +15,6 @@ export * from './models/audio-output-message';
 export * from './models/error-message';
 export * from './models/json-message';
 export * from './models/time-slice';
+export * from './models/transcript-models';
 export * from './models/user-interruption-message';
 export * from './models/user-message';
