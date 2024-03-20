@@ -61,6 +61,11 @@ export const ConfigSchema = z.object({
     })
     .max(MAX_SYSTEM_PROMPT_LENGTH)
     .optional(),
+  configId: z
+    .string({
+      description: 'The ID of the configuration to use.',
+    })
+    .optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;
