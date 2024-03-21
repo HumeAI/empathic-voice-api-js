@@ -3,7 +3,7 @@
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
 import { useEffect, useMemo, useRef } from 'react';
-import { P, match } from 'ts-pattern';
+import { match } from 'ts-pattern';
 
 function getTop3Expressions(expressionOutputs: EmotionScores) {
   return Object.entries(expressionOutputs)
