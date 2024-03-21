@@ -1,6 +1,7 @@
 'use client';
-import { ExampleComponent } from '@/components/ExampleComponent';
 import { VoiceProvider } from '@humeai/voice-react';
+
+import { ExampleComponent } from '@/components/ExampleComponent';
 
 export const Voice = ({ accessToken }: { accessToken: string }) => {
   return (
@@ -8,7 +9,8 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
       auth={{ type: 'accessToken', value: accessToken }}
       hostname={process.env.HUME_VOICE_HOSTNAME || 'api.hume.ai'}
       onMessage={(message) => {
-        console.log('got message', message);
+        // eslint-disable-next-line no-console
+        console.log('message', message);
       }}
     >
       <ExampleComponent />
