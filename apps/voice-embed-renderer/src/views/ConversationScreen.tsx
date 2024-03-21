@@ -14,12 +14,12 @@ export const ConversationScreen = () => {
       <WebGLAvatar
         fft={micFft}
         isPlaying={isPlaying}
-        prosody={lastVoiceMessage?.models.prosody.scores ?? {}}
+        prosody={lastVoiceMessage?.models.prosody?.scores ?? {}}
         width={400}
         height={200}
       />
       <Backdrop
-        prosody={lastVoiceMessage?.models.prosody.scores ?? {}}
+        prosody={lastVoiceMessage?.models.prosody?.scores ?? {}}
         activeView={VoiceAnimationState.IDLE}
       />
     </>

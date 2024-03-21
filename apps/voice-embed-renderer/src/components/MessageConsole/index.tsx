@@ -48,7 +48,7 @@ export const MessageConsole = ({
       }
 
       // Sort the emotions based on their scores in ascending order
-      const prosodyScores = message.models.prosody.scores;
+      const prosodyScores = message.models.prosody?.scores ?? {};
       const sortedEmotions: ProsodyScore[] = Object.entries(prosodyScores)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
