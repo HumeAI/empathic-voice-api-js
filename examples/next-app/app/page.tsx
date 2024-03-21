@@ -1,9 +1,8 @@
 import { fetchAccessToken } from '@humeai/voice';
-import { VoiceProvider } from '@humeai/voice-react';
 import dynamic from 'next/dynamic';
 import type { FC, PropsWithChildren } from 'react';
 
-import { ExampleComponent } from '@/components/ExampleComponent';
+import { Voice } from '@/components/Voice';
 
 const NoOp: FC<PropsWithChildren<Record<never, never>>> = ({ children }) => (
   <>{children}</>
@@ -26,12 +25,7 @@ export default async function Home() {
 
       <NoSSR>
         {accessToken ? (
-          <VoiceProvider
-            auth={{ type: 'accessToken', value: accessToken }}
-            hostname={process.env.HUME_VOICE_HOSTNAME || 'api.hume.ai'}
-          >
-            <ExampleComponent />
-          </VoiceProvider>
+          <Voice accessToken={accessToken} />
         ) : (
           <div>Missing API Key</div>
         )}
