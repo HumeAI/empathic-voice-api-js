@@ -12,7 +12,11 @@ export const useMessages = ({
   sendMessageToParent,
 }: {
   sendMessageToParent?: (
-    message: UserTranscriptMessage | AgentTranscriptMessage,
+    message:
+      | UserTranscriptMessage
+      | AgentTranscriptMessage
+      | UserInterruptionMessage
+      | JSONErrorMessage,
   ) => void;
 }) => {
   const [voiceMessageMap, setVoiceMessageMap] = useState<
@@ -59,19 +63,24 @@ export const useMessages = ({
   const onMessage = useCallback((message: JSONMessage) => {
     switch (message.type) {
       case 'assistant_message':
+        // for assistant messages, `sendMessageToParent` is called in `onPlayAudio`
+        // in order to line up the transcript event with the correct audio clip
         setVoiceMessageMap((prev) => ({
           ...prev,
           [message.id]: message,
         }));
         break;
       case 'user_message':
+        sendMessageToParent?.(message);
         setLastUserMessage(message);
         setMessages((prev) => prev.concat([message]));
         break;
       case 'user_interruption':
+        sendMessageToParent?.(message);
         setMessages((prev) => prev.concat([message]));
         break;
       case 'error':
+        sendMessageToParent?.(message);
         setMessages((prev) => prev.concat([message]));
         break;
       default:
