@@ -109,11 +109,16 @@ export const useVoiceClient = (props: {
     client.current?.sendSystemPrompt(prompt);
   }, []);
 
+  const sendText = useCallback((text: string) => {
+    client.current?.sendText(text);
+  }, []);
+
   return {
     readyState,
     sendAudio,
     connect,
     disconnect,
     sendSystemPrompt,
+    sendText,
   };
 };

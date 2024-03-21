@@ -2,7 +2,7 @@
 
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
 
 function getTop3Expressions(expressionOutputs: EmotionScores) {
@@ -41,7 +41,22 @@ export const ExampleComponent = () => {
     unmute,
     messages,
     micFft,
+    sendText,
   } = useVoice();
+
+  const initialMessageSent = useRef(false);
+
+  useEffect(() => {
+    if (!initialMessageSent.current && status.value === 'connected') {
+      initialMessageSent.current = true;
+      sendText(
+        'Please greet me as though I were a long lost friend from your childhood',
+      );
+    }
+    return () => {
+      initialMessageSent.current = false;
+    };
+  }, [status.value, sendText]);
 
   const normalizedFft = useMemo(() => {
     return normalizeFft(audioFft);
@@ -57,7 +72,7 @@ export const ExampleComponent = () => {
         if (message.type === 'assistant_message') {
           return {
             message: message.message,
-            top3: getTop3Expressions(message.models.prosody.scores),
+            top3: getTop3Expressions(message.models.prosody?.scores ?? {}),
           };
         }
         return null;

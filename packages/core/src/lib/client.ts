@@ -162,7 +162,7 @@ export class VoiceClient {
       throw new Error('Socket is not open.');
     }
 
-    const json = JSON.stringify({ text });
+    const json = JSON.stringify({ text, type: 'text_input' });
 
     this.socket.send(json);
   }

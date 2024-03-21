@@ -60,7 +60,7 @@ const EmotionLabel = (prosody: ProsodyScore) => {
 export const LastVoiceMessage: FC<LastVoiceMessageProps> = ({
   lastVoiceMessage,
 }) => {
-  const prosody = lastVoiceMessage?.models.prosody.scores ?? {};
+  const prosody = lastVoiceMessage?.models.prosody?.scores ?? {};
   const sortedEmotions: ProsodyScore[] = Object.entries(prosody)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
