@@ -1,5 +1,6 @@
-import { useCallback, useRef, useState } from 'react';
 import { type AudioOutputMessage, base64ToBlob } from '@humeai/voice';
+import { useCallback, useRef, useState } from 'react';
+
 import { generateEmptyFft } from './generateEmptyFft';
 
 export const useSoundPlayer = (props: {
@@ -79,8 +80,8 @@ export const useSoundPlayer = (props: {
           playNextClip();
         }
       } catch (e) {
-        const message = e instanceof Error ? e.message : 'Unknown error';
-        onError.current(`Failed to add clip to queue: ${message}`);
+        const eMessage = e instanceof Error ? e.message : 'Unknown error';
+        onError.current(`Failed to add clip to queue: ${eMessage}`);
       }
     },
     [playNextClip],
@@ -91,7 +92,7 @@ export const useSoundPlayer = (props: {
     isProcessing.current = false;
 
     if (audioContext.current) {
-      audioContext.current.close().then(() => {
+      void audioContext.current.close().then(() => {
         audioContext.current = null;
       });
     }
