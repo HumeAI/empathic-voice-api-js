@@ -18,4 +18,5 @@ export type {
   UserTranscriptMessage,
   WindowDimensions,
   EmotionScores,
+  LanguageModelOption,
 } from '@humeai/voice-embed';
