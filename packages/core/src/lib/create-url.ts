@@ -46,5 +46,9 @@ export const createSocketUrl = (config: Config): string => {
     url.searchParams.set('config_id', config.configId.toString());
   }
 
+  if (config.languageModel) {
+    url.searchParams.set('language_model', config.languageModel.toString());
+  }
+
   return url.href;
 };

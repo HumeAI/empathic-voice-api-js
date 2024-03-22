@@ -18,3 +18,4 @@ export * from './models/time-slice';
 export * from './models/transcript-models';
 export * from './models/user-interruption-message';
 export * from './models/user-message';
+export * from './models/llm';
