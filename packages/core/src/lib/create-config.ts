@@ -1,8 +1,10 @@
 import { z } from 'zod';
 
 import { Channels } from './audio';
-import { AuthStrategySchema } from './auth';
 import { TTSService } from './tts';
+import { AuthStrategySchema } from '../models/auth';
+
+import { LanguageModelOption } from '@/models/llm';
 
 /**
  * @name MAX_SYSTEM_PROMPT_LENGTH
@@ -64,6 +66,11 @@ export const ConfigSchema = z.object({
   configId: z
     .string({
       description: 'The ID of the configuration to use.',
+    })
+    .optional(),
+  languageModel: z
+    .nativeEnum(LanguageModelOption, {
+      description: 'The underlying LLM model to use',
     })
     .optional(),
 });
