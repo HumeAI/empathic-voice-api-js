@@ -9,7 +9,8 @@
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "iframe:dev": "turbo run dev --filter=@humeai/voice --filter=@humeai/voice-react --filter=voice-embed-renderer --filter=example-vite-app-embed",
-    "release": "pnpm build && pnpm publish -r --access restricted --no-git-checks"
+    "release": "pnpm build && pnpm publish -r --access restricted --no-git-checks",
+    "generate-docs": "ts-node ./tools/generate-docs/index.ts"
   },
   "devDependencies": {
     "@humeai/eslint-config": "workspace:*",
@@ -20,5 +21,9 @@
   "packageManager": "pnpm@8.9.0",
   "engines": {
     "node": ">=18"
+  },
+  "dependencies": {
+    "ts-node": "^10.9.2",
+    "tsdoc-markdown": "^0.4.0"
   }
 }
