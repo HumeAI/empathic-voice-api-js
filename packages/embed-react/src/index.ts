@@ -8,6 +8,7 @@ export {
   TRANSCRIPT_MESSAGE_ACTION,
   WIDGET_IFRAME_IS_READY_ACTION,
   parseClientToFrameAction,
+  LanguageModelOption,
 } from '@humeai/voice-embed';
 
 export type {
@@ -18,5 +19,4 @@ export type {
   UserTranscriptMessage,
   WindowDimensions,
   EmotionScores,
-  LanguageModelOption,
 } from '@humeai/voice-embed';

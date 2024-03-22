@@ -18,5 +18,6 @@ export type {
   JSONMessage,
   UserTranscriptMessage,
   EmotionScores,
-  LanguageModelOption,
 } from '@humeai/voice';
+
+export { LanguageModelOption } from '@humeai/voice';
