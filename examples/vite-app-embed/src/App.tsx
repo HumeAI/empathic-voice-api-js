@@ -1,4 +1,4 @@
-import { EmbeddedVoice } from '@humeai/voice-embed-react';
+import { EmbeddedVoice, LanguageModelOption } from '@humeai/voice-embed-react';
 
 import './App.css';
 import { useState } from 'react';
@@ -33,6 +33,7 @@ function App() {
         hostname={String(
           import.meta.env['VITE_PUBLIC_HOSTNAME'] ?? 'api.hume.ai',
         )}
+        languageModel={LanguageModelOption.GPT_4_TURBO_PREVIEW}
       />
     </>
   );
