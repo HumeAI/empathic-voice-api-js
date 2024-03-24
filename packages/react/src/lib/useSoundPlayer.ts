@@ -1,6 +1,7 @@
 import { type AudioOutputMessage, base64ToBlob } from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
 
+import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
 
 export const useSoundPlayer = (props: {
@@ -38,15 +39,44 @@ export const useSoundPlayer = (props: {
     if (!nextClip) return;
 
     isProcessing.current = true;
-    const source = audioContext.current!.createBufferSource();
-    currentlyPlayingAudioBuffer.current = source;
-    source.buffer = nextClip.buffer;
-    source.connect(audioContext.current!.destination);
-    source.start(0);
-    console.log('Starting source');
+
+    // Use AudioBufferSourceNode for audio playback. Safari suffered a truncation issue usig HTML5 audio playback
+    const bufferSource = audioContext.current!.createBufferSource();
+    bufferSource.buffer = nextClip.buffer;
+
+    const bufferSampleRate = bufferSource.buffer.sampleRate;
+
+    // Use AnalyserNode to get fft frequency data for visualizations
+    const analyser = audioContext.current!.createAnalyser();
+    analyser.fftSize = 2048; // Must be a power of 2
+
+    bufferSource.connect(analyser);
+    analyser.connect(audioContext.current!.destination);
+
+    currentlyPlayingAudioBuffer.current = bufferSource;
+
+    const updateFrequencyData = () => {
+      const dataArray = new Uint8Array(analyser.frequencyBinCount); // frequencyBinCount is 1/2 of fftSize
+      analyser.getByteFrequencyData(dataArray); // Using getByteFrequencyData for performance
+
+      const barkFrequencies = convertLinearFrequenciesToBark(
+        dataArray,
+        bufferSampleRate,
+      );
+
+      setFft(() => barkFrequencies);
+    };
+
+    const frequencyDataInterval = setInterval(updateFrequencyData, 10);
+
+    bufferSource.start(0);
     onPlayAudio.current(nextClip.id);
 
-    source.onended = () => {
+    bufferSource.onended = () => {
+      clearInterval(frequencyDataInterval);
+      setFft(generateEmptyFft());
+      bufferSource.disconnect();
+      analyser.disconnect();
       isProcessing.current = false;
       currentlyPlayingAudioBuffer.current = null;
       playNextClip();
@@ -54,7 +84,7 @@ export const useSoundPlayer = (props: {
   }, []);
 
   const initPlayer = useCallback(() => {
-    audioContext.current = new window.AudioContext();
+    audioContext.current = new AudioContext();
     isInitialized.current = true;
   }, []);
 
@@ -76,7 +106,9 @@ export const useSoundPlayer = (props: {
           buffer: audioBuffer,
         });
 
-        if (clipQueue.current.length > 0) {
+        // playNextClip will iterate the clipQueue upon finishing the playback of the current audio clip, so we can
+        // just call playNextClip here if it's the only one in the queue
+        if (clipQueue.current.length === 1) {
           playNextClip();
         }
       } catch (e) {
@@ -104,7 +136,9 @@ export const useSoundPlayer = (props: {
   const clearQueue = useCallback(() => {
     if (currentlyPlayingAudioBuffer.current) {
       currentlyPlayingAudioBuffer.current.stop();
+      currentlyPlayingAudioBuffer.current = null;
     }
+
     clipQueue.current = [];
     isProcessing.current = false;
     setFft(generateEmptyFft());
