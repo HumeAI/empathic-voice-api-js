@@ -8,6 +8,7 @@ export const useSoundPlayer = (props: {
   onError: (message: string) => void;
   onPlayAudio: (id: string) => void;
 }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
   const audioContext = useRef<AudioContext | null>(null);
@@ -41,6 +42,7 @@ export const useSoundPlayer = (props: {
     if (!nextClip) return;
 
     isProcessing.current = true;
+    setIsPlaying(true);
 
     // Use AudioBufferSourceNode for audio playback. Safari suffered a truncation issue usig HTML5 audio playback
     const bufferSource = audioContext.current!.createBufferSource();
@@ -76,6 +78,7 @@ export const useSoundPlayer = (props: {
       setFft(generateEmptyFft());
       bufferSource.disconnect();
       isProcessing.current = false;
+      setIsPlaying(false);
       currentlyPlayingAudioBuffer.current = null;
       playNextClip();
     };
@@ -128,6 +131,7 @@ export const useSoundPlayer = (props: {
   const stopAll = useCallback(() => {
     isInitialized.current = false;
     isProcessing.current = false;
+    setIsPlaying(false);
 
     if (frequencyDataIntervalId.current) {
       clearInterval(frequencyDataIntervalId.current);
@@ -161,6 +165,7 @@ export const useSoundPlayer = (props: {
 
     clipQueue.current = [];
     isProcessing.current = false;
+    setIsPlaying(false);
     setFft(generateEmptyFft());
   }, []);
 
@@ -168,7 +173,7 @@ export const useSoundPlayer = (props: {
     addToQueue,
     fft,
     initPlayer,
-    isPlaying: isProcessing.current,
+    isPlaying,
     stopAll,
     clearQueue,
   };
