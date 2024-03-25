@@ -25,7 +25,7 @@ export const useSoundPlayer = (props: {
   const currentlyPlayingAudioBuffer = useRef<AudioBufferSourceNode | null>(
     null,
   );
-  const frequencyDataIntervalId = useRef<NodeJS.Timeout | null>(null);
+  const frequencyDataIntervalId = useRef<number | null>(null);
 
   const onPlayAudio = useRef<typeof props.onPlayAudio>(props.onPlayAudio);
   onPlayAudio.current = props.onPlayAudio;
@@ -34,6 +34,11 @@ export const useSoundPlayer = (props: {
   onError.current = props.onError;
 
   const playNextClip = useCallback(() => {
+    if (analyserNode.current === null || audioContext.current === null) {
+      onError.current('Audio environment is not initialized');
+      return;
+    }
+
     if (clipQueue.current.length === 0 || isProcessing.current) {
       return;
     }
@@ -44,19 +49,24 @@ export const useSoundPlayer = (props: {
     isProcessing.current = true;
     setIsPlaying(true);
 
-    // Use AudioBufferSourceNode for audio playback. Safari suffered a truncation issue usig HTML5 audio playback
-    const bufferSource = audioContext.current!.createBufferSource();
+    // Use AudioBufferSourceNode for audio playback.
+    // Safari suffered a truncation issue using HTML5 audio playback
+    const bufferSource = audioContext.current.createBufferSource();
+
     bufferSource.buffer = nextClip.buffer;
 
-    const bufferSampleRate = bufferSource.buffer.sampleRate;
-
-    bufferSource.connect(analyserNode.current!);
+    bufferSource.connect(analyserNode.current);
 
     currentlyPlayingAudioBuffer.current = bufferSource;
 
     const updateFrequencyData = () => {
-      const dataArray = new Uint8Array(analyserNode.current!.frequencyBinCount); // frequencyBinCount is 1/2 of fftSize
-      analyserNode.current!.getByteFrequencyData(dataArray); // Using getByteFrequencyData for performance
+      const bufferSampleRate = bufferSource.buffer?.sampleRate;
+
+      if (!analyserNode.current || typeof bufferSampleRate === 'undefined')
+        return;
+
+      const dataArray = new Uint8Array(analyserNode.current.frequencyBinCount); // frequencyBinCount is 1/2 of fftSize
+      analyserNode.current.getByteFrequencyData(dataArray); // Using getByteFrequencyData for performance
 
       const barkFrequencies = convertLinearFrequenciesToBark(
         dataArray,
@@ -66,7 +76,10 @@ export const useSoundPlayer = (props: {
       setFft(() => barkFrequencies);
     };
 
-    frequencyDataIntervalId.current = setInterval(updateFrequencyData, 5);
+    frequencyDataIntervalId.current = window.setInterval(
+      updateFrequencyData,
+      5,
+    );
 
     bufferSource.start(0);
     onPlayAudio.current(nextClip.id);
@@ -134,7 +147,7 @@ export const useSoundPlayer = (props: {
     setIsPlaying(false);
 
     if (frequencyDataIntervalId.current) {
-      clearInterval(frequencyDataIntervalId.current);
+      window.clearInterval(frequencyDataIntervalId.current);
     }
 
     if (currentlyPlayingAudioBuffer.current) {

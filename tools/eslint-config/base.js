@@ -1,4 +1,4 @@
-/*eslint-env commonjs*/
+/* eslint-env commonjs*/
 // @ts-check
 /** @type {import('eslint').ESLint.Options} */
 
@@ -49,6 +49,7 @@ module.exports = {
             trailingUnderscore: 'allow',
           },
         ],
+        '@typescript-eslint/no-non-null-assertion': 'error',
         'import/extensions': 'off',
       },
     },
