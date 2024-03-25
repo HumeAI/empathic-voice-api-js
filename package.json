@@ -4,12 +4,13 @@
   "private": true,
   "scripts": {
     "build": "turbo build",
+    "build:packages": "turbo build --filter='./packages/**'",
     "dev": "turbo dev",
+    "dev:iframe": "turbo run dev --filter='./packages/**' --filter=example-vite-app-embed",
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "iframe:dev": "turbo run dev --filter=@humeai/voice --filter=@humeai/voice-react --filter=voice-embed-renderer --filter=example-vite-app-embed",
-    "release": "pnpm build && pnpm publish -r --access restricted --no-git-checks"
+    "release": "pnpm build:packages && pnpm publish -r --access restricted --no-git-checks"
   },
   "devDependencies": {
     "@humeai/eslint-config": "workspace:*",
