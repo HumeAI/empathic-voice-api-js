@@ -21,7 +21,9 @@ export function convertLinearFrequenciesToBark(
     const linearDataIndex = Math.round(barkFreq / frequencyResolution);
     if (linearDataIndex >= 0 && linearDataIndex < linearData.length) {
       return (
-        ((linearData[linearDataIndex]! - minValue) / (maxValue - minValue)) * 2
+        (((linearData[linearDataIndex] ?? 0) - minValue) /
+          (maxValue - minValue)) *
+        2
       );
     } else {
       return 0;

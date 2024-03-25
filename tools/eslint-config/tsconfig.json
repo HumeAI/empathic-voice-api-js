@@ -1,0 +1,3 @@
+{
+    "extends": "@humeai/typescript-config/base.json"
+}
