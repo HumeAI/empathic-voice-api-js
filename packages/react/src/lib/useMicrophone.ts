@@ -19,6 +19,8 @@ export type MicrophoneProps = {
 export const useMicrophone = (props: MicrophoneProps) => {
   const { streamRef, onAudioCaptured, onError } = props;
   const [isMuted, setIsMuted] = useState(false);
+  const isMutedRef = useRef(isMuted);
+
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
   const currentAnalyzer = useRef<Meyda.MeydaAnalyzer | null>(null);
   const mimeTypeRef = useRef<MimeType | null>(null);
@@ -29,6 +31,11 @@ export const useMicrophone = (props: MicrophoneProps) => {
   sendAudio.current = onAudioCaptured;
 
   const dataHandler = useCallback((event: BlobEvent) => {
+    if (isMutedRef.current) {
+      // Do not send audio if the microphone is muted
+      return;
+    }
+
     const blob = event.data;
 
     blob
@@ -106,9 +113,12 @@ export const useMicrophone = (props: MicrophoneProps) => {
       currentAnalyzer.current.stop();
       setFft(generateEmptyFft());
     }
+
     streamRef.current?.getTracks().forEach((track) => {
       track.enabled = false;
     });
+
+    isMutedRef.current = true;
     setIsMuted(true);
   }, [streamRef]);
 
@@ -116,10 +126,12 @@ export const useMicrophone = (props: MicrophoneProps) => {
     if (currentAnalyzer.current) {
       currentAnalyzer.current.start();
     }
+
     streamRef.current?.getTracks().forEach((track) => {
       track.enabled = true;
     });
 
+    isMutedRef.current = false;
     setIsMuted(false);
   }, [streamRef]);
 
