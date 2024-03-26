@@ -8,6 +8,7 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
     <VoiceProvider
       auth={{ type: 'accessToken', value: accessToken }}
       hostname={process.env.HUME_VOICE_HOSTNAME || 'api.hume.ai'}
+      messageHistoryLimit={10}
       onMessage={(message) => {
         // eslint-disable-next-line no-console
         console.log('message', message);
