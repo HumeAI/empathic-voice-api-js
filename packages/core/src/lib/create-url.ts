@@ -38,10 +38,6 @@ export const createSocketUrl = (config: Config): string => {
     url.searchParams.set('sample_rate', config.sampleRate.toString());
   }
 
-  if (config.speedRatio) {
-    url.searchParams.set('speed_ratio', config.speedRatio.toString());
-  }
-
   if (config.configId) {
     url.searchParams.set('config_id', config.configId.toString());
   }

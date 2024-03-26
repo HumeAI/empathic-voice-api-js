@@ -40,11 +40,6 @@ export const ConfigSchema = z.object({
     })
     .optional()
     .default(TTSService.DEFAULT),
-  speedRatio: z
-    .number({
-      description: 'Speed ratio of the TTS service.',
-    })
-    .optional(),
   reconnectAttempts: z
     .number({
       description: 'Number of times to attempt to reconnect to the API.',
