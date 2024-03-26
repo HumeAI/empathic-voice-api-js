@@ -18,7 +18,6 @@ describe('parseEmbedMessage', () => {
         reconnectAttempts: 0,
         debug: false,
         tts: TTSService.DEFAULT,
-        speedRatio: 1,
       });
       return parseClientToFrameAction(action);
     };

@@ -25,16 +25,5 @@ describe('create-url', () => {
         config.auth.value
       }&tts=${config.tts.toString()}`,
     );
-
-    const configWithSpeedRatio = createConfig({
-      ...cfg,
-      speedRatio: 0.5,
-    });
-
-    expect(createSocketUrl(configWithSpeedRatio)).toBe(
-      `wss://api.hume.ai/v0/assistant/chat?no_binary=true&${config.auth.type}=${
-        config.auth.value
-      }&tts=${config.tts.toString()}&speed_ratio=0.5`,
-    );
   });
 });
