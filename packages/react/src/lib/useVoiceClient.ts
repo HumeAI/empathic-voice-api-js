@@ -5,6 +5,7 @@ import type {
   JSONErrorMessage,
   UserInterruptionMessage,
   UserTranscriptMessage,
+  VoiceEventMap,
 } from '@humeai/voice';
 import { VoiceClient } from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
@@ -27,7 +28,7 @@ export const useVoiceClient = (props: {
   ) => void;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
-  onClose?: () => void;
+  onClose?: VoiceEventMap['close'];
 }) => {
   const client = useRef<VoiceClient | null>(null);
 
@@ -79,8 +80,8 @@ export const useVoiceClient = (props: {
         }
       });
 
-      client.current.on('close', () => {
-        onClose.current?.();
+      client.current.on('close', (event) => {
+        onClose.current?.(event);
         setReadyState(VoiceReadyState.CLOSED);
       });
 

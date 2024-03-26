@@ -1,4 +1,4 @@
-import ReconnectingWebsocket from 'reconnecting-websocket';
+import ReconnectingWebsocket, { type CloseEvent } from 'reconnecting-websocket';
 
 import type { Config } from './create-config';
 import { createSocketUrl } from './create-url';
@@ -21,7 +21,7 @@ import type { JSONMessage } from '@/models/json-message';
 export type VoiceEventMap = {
   open?: () => void;
   message?: (message: JSONMessage | AudioMessage) => void;
-  close?: () => void;
+  close?: (event: CloseEvent) => void;
   error?: (error: Error) => void;
 };
 
@@ -91,8 +91,8 @@ export class VoiceClient {
     });
   };
 
-  private handleClose = () => {
-    this.eventHandlers.close?.();
+  private handleClose = (event: CloseEvent) => {
+    this.eventHandlers.close?.(event);
   };
 
   private handleError = () => {

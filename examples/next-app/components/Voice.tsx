@@ -12,6 +12,15 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
         // eslint-disable-next-line no-console
         console.log('message', message);
       }}
+      onClose={(event) => {
+        const niceClosure = 1000;
+        const code = event.code;
+
+        if (code !== niceClosure) {
+          // eslint-disable-next-line no-console
+          console.error('close event was not nice', event);
+        }
+      }}
     >
       <ExampleComponent />
     </VoiceProvider>

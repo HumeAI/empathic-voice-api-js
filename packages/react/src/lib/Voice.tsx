@@ -6,6 +6,7 @@ import {
   JSONMessage,
   UserInterruptionMessage,
   UserTranscriptMessage,
+  VoiceEventMap,
 } from '@humeai/voice';
 import React, {
   createContext,
@@ -79,7 +80,7 @@ export type VoiceProviderProps = PropsWithChildren<
   onMessage?: (message: JSONMessage) => void;
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
-  onClose?: () => void;
+  onClose?: VoiceEventMap['close'];
   /**
    * @default true
    * @description Clear messages when the voice is disconnected.
@@ -113,6 +114,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const onError = useRef(props.onError ?? noop);
   onError.current = props.onError ?? noop;
+
+  const onClose = useRef(props.onClose ?? noop);
+  onClose.current = props.onClose ?? noop;
 
   const messageStore = useMessages({
     sendMessageToParent: props.onMessage,
@@ -173,10 +177,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       messageStore.createConnectMessage();
       props.onOpen?.();
     }, [props.onOpen]),
-    onClose: useCallback(() => {
+    onClose: useCallback<NonNullable<VoiceEventMap['close']>>((event) => {
       messageStore.createDisconnectMessage();
-      props.onClose?.();
-    }, [props.onClose]),
+      onClose.current?.(event);
+    }, []),
   });
 
   const mic = useMicrophone({
