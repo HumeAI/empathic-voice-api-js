@@ -1,11 +1,21 @@
 import { EmbeddedVoice, LanguageModelOption } from '@humeai/voice-embed-react';
 
 import './App.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function App() {
   const apiKey = String(import.meta.env['VITE_PUBLIC_HUME_API_KEY'] ?? '');
   const [isEmbedOpen, setIsEmbedOpen] = useState(false);
+  const [openOnMount, setIsOpenOnMount] = useState(false);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const launch = urlParams.get('launchWidget');
+    if (launch === 'true') {
+      setIsOpenOnMount(true);
+    }
+  }, []);
+
   return (
     <>
       <div>Demo of embedding voice as an iframe</div>
@@ -33,6 +43,7 @@ function App() {
         hostname={String(
           import.meta.env['VITE_PUBLIC_HOSTNAME'] ?? 'api.hume.ai',
         )}
+        openOnMount={openOnMount}
         languageModel={LanguageModelOption.GPT_4_TURBO_PREVIEW}
       />
     </>

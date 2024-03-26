@@ -37,18 +37,24 @@ export class EmbeddedVoice {
 
   private onClose: CloseHandler;
 
+  private openOnMount: boolean;
+
   private constructor({
     onMessage = () => {},
     onClose = () => {},
+    openOnMount,
     ...config
   }: {
     onMessage?: TranscriptMessageHandler;
     onClose?: CloseHandler;
+    openOnMount?: boolean;
   } & EmbeddedVoiceConfig) {
     this.config = config;
     this.iframe = this.createIframe(config);
     this.onMessage = onMessage;
     this.onClose = onClose;
+    this.openOnMount = openOnMount ?? false;
+    this.messageHandler = this.messageHandler.bind(this);
     this.messageHandler = this.messageHandler.bind(this);
   }
 
@@ -56,10 +62,12 @@ export class EmbeddedVoice {
     rendererUrl,
     onMessage,
     onClose,
+    openOnMount,
     ...config
   }: Partial<EmbeddedVoiceConfig> & {
     onMessage?: TranscriptMessageHandler;
     onClose?: CloseHandler;
+    openOnMount?: boolean;
   } & NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>>): EmbeddedVoice {
     const parsedConfig = createConfig(config);
 
@@ -67,6 +75,7 @@ export class EmbeddedVoice {
       rendererUrl: rendererUrl ?? 'https://voice-widget.hume.ai',
       onMessage,
       onClose,
+      openOnMount,
       ...parsedConfig,
     });
   }
@@ -182,6 +191,9 @@ export class EmbeddedVoice {
         this.showIframe();
         this.sendConfigObject();
         this.sendWindowSize();
+        if (this.openOnMount) {
+          this.openEmbed();
+        }
         break;
       }
       case 'resize_frame': {

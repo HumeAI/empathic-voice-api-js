@@ -11,10 +11,17 @@ type EmbeddedVoiceProps = Partial<EmbeddedVoiceConfig> &
     onMessage?: TranscriptMessageHandler;
     onClose?: CloseHandler;
     isEmbedOpen: boolean;
+    openOnMount?: boolean;
   };
 
 export const EmbeddedVoice = (props: EmbeddedVoiceProps) => {
-  const { onMessage, isEmbedOpen, onClose, ...config } = props;
+  const {
+    onMessage,
+    isEmbedOpen,
+    onClose,
+    openOnMount = false,
+    ...config
+  } = props;
   const embeddedVoice = useRef<EA | null>(null);
   const onMessageHandler = useRef<TranscriptMessageHandler | undefined>();
   onMessageHandler.current = onMessage;
@@ -34,6 +41,7 @@ export const EmbeddedVoice = (props: EmbeddedVoiceProps) => {
       embeddedVoice.current = EA.create({
         onMessage: onMessageHandler.current,
         onClose: onCloseHandler.current,
+        openOnMount: openOnMount,
         ...stableConfig.current,
       });
       unmount = embeddedVoice.current.mount();
@@ -43,7 +51,7 @@ export const EmbeddedVoice = (props: EmbeddedVoiceProps) => {
       unmount?.();
       embeddedVoice.current = null;
     };
-  }, []);
+  }, [openOnMount]);
 
   useEffect(() => {
     if (isEmbedOpen) {
