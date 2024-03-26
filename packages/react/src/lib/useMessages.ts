@@ -64,6 +64,14 @@ export const useMessages = ({
   }, []);
 
   const onMessage = useCallback((message: JSONMessage) => {
+    /* 
+      1. message comes in from the backend
+        - if the message IS NOT AgentTranscriptMessage, store in `messages` immediately  
+        - if the message is an AgentTranscriptMessage, stored in `voiceMessageMap`
+      2. audio clip plays
+        - find the AgentTranscriptMessage with a matching ID, and store it in `messages`
+        - remove the AgentTranscriptMessage from `voiceMessageMap`
+    */
     switch (message.type) {
       case 'assistant_message':
         // for assistant messages, `sendMessageToParent` is called in `onPlayAudio`
@@ -125,6 +133,7 @@ export const useMessages = ({
     setMessages([]);
     setLastVoiceMessage(null);
     setLastUserMessage(null);
+    setVoiceMessageMap({});
   }, []);
 
   return {
