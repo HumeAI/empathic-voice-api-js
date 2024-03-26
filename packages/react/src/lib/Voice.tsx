@@ -86,6 +86,11 @@ export type VoiceProviderProps = PropsWithChildren<
    * @description Clear messages when the voice is disconnected.
    */
   clearMessagesOnDisconnect?: boolean;
+  /**
+   * @default 100
+   * @description The maximum number of messages to keep in memory.
+   */
+  messageHistoryLimit?: number;
 };
 
 export const useVoice = () => {
@@ -99,6 +104,7 @@ export const useVoice = () => {
 export const VoiceProvider: FC<VoiceProviderProps> = ({
   children,
   clearMessagesOnDisconnect = true,
+  messageHistoryLimit = 100,
   ...props
 }) => {
   const [status, setStatus] = useState<VoiceStatus>({
@@ -120,6 +126,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const messageStore = useMessages({
     sendMessageToParent: props.onMessage,
+    messageHistoryLimit,
   });
 
   const updateError = useCallback((err: VoiceError | null) => {

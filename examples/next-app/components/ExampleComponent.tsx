@@ -153,6 +153,16 @@ export const ExampleComponent = () => {
 
                 <div>
                   <div className={'font-medium'}>
+                    All Messages ({messages.length})
+                  </div>
+                  <textarea
+                    className={'w-full bg-black font-mono text-white'}
+                    value={JSON.stringify(messages, null, 0)}
+                  ></textarea>
+                </div>
+
+                <div>
+                  <div className={'font-medium'}>
                     Last transcript message received from voice:
                   </div>
                   {voiceMessages.length > 0 ? (

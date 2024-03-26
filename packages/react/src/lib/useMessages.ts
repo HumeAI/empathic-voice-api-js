@@ -7,9 +7,11 @@ import {
 import { useCallback, useState } from 'react';
 
 import type { ConnectionMessage } from './connection-message';
+import { keepLastN } from '../utils';
 
 export const useMessages = ({
   sendMessageToParent,
+  messageHistoryLimit,
 }: {
   sendMessageToParent?: (
     message:
@@ -18,6 +20,7 @@ export const useMessages = ({
       | UserInterruptionMessage
       | JSONErrorMessage,
   ) => void;
+  messageHistoryLimit: number;
 }) => {
   const [voiceMessageMap, setVoiceMessageMap] = useState<
     Record<string, AgentTranscriptMessage>
@@ -73,15 +76,21 @@ export const useMessages = ({
       case 'user_message':
         sendMessageToParent?.(message);
         setLastUserMessage(message);
-        setMessages((prev) => prev.concat([message]));
+        setMessages((prev) => {
+          return keepLastN(messageHistoryLimit, prev.concat([message]));
+        });
         break;
       case 'user_interruption':
         sendMessageToParent?.(message);
-        setMessages((prev) => prev.concat([message]));
+        setMessages((prev) => {
+          return keepLastN(messageHistoryLimit, prev.concat([message]));
+        });
         break;
       case 'error':
         sendMessageToParent?.(message);
-        setMessages((prev) => prev.concat([message]));
+        setMessages((prev) => {
+          return keepLastN(messageHistoryLimit, prev.concat([message]));
+        });
         break;
       default:
         break;
@@ -94,7 +103,12 @@ export const useMessages = ({
       if (matchingTranscript) {
         sendMessageToParent?.(matchingTranscript);
         setLastVoiceMessage(matchingTranscript);
-        setMessages((prev) => prev.concat([matchingTranscript]));
+        setMessages((prev) => {
+          return keepLastN(
+            messageHistoryLimit,
+            prev.concat([matchingTranscript]),
+          );
+        });
         // remove the message from the map to ensure we don't
         // accidentally push it to the messages array more than once
         setVoiceMessageMap((prev) => {
@@ -104,7 +118,7 @@ export const useMessages = ({
         });
       }
     },
-    [voiceMessageMap, sendMessageToParent],
+    [voiceMessageMap, sendMessageToParent, messageHistoryLimit],
   );
 
   const clearMessages = useCallback(() => {
