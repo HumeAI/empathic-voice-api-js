@@ -1,4 +1,7 @@
-import ReconnectingWebsocket, { type CloseEvent } from 'reconnecting-websocket';
+import ReconnectingWebsocket, {
+  type CloseEvent,
+  type ErrorEvent as WebsocketErrorEvent,
+} from 'reconnecting-websocket';
 
 import type { Config } from './create-config';
 import { createSocketUrl } from './create-url';
@@ -95,8 +98,9 @@ export class VoiceClient {
     this.eventHandlers.close?.(event);
   };
 
-  private handleError = () => {
-    this.eventHandlers.error?.(new Error('WebSocket error.'));
+  private handleError = (e: WebsocketErrorEvent) => {
+    const message = e.message ?? 'WebSocket error';
+    this.eventHandlers.error?.(new Error(message));
   };
 
   /**
