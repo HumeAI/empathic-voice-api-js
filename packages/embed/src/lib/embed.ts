@@ -128,7 +128,7 @@ export class EmbeddedVoice {
       position: 'fixed',
       bottom: '0',
       right: '0',
-      padding: '24px',
+      margin: '24px',
       zIndex: '999999',
       fontSize: '0px',
       pointerEvents: 'none',
@@ -213,8 +213,8 @@ export class EmbeddedVoice {
 
   openEmbed() {
     const action = EXPAND_FROM_CLIENT_ACTION({
-      width: window.document.body.clientWidth,
-      height: window.document.body.clientHeight,
+      width: window.screen.availWidth,
+      height: window.screen.availHeight,
     });
     this.sendMessageToFrame(action);
   }
@@ -226,8 +226,8 @@ export class EmbeddedVoice {
 
   private sendWindowSize() {
     const action = SEND_WINDOW_SIZE_ACTION({
-      width: window.document.body.clientWidth,
-      height: window.document.body.clientHeight,
+      width: window.screen.availWidth,
+      height: window.screen.availHeight,
     });
     this.sendMessageToFrame(action);
   }
