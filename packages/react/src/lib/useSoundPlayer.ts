@@ -161,9 +161,17 @@ export const useSoundPlayer = (props: {
     }
 
     if (audioContext.current) {
-      void audioContext.current.close().then(() => {
-        audioContext.current = null;
-      });
+      void audioContext.current
+        .close()
+        .then(() => {
+          audioContext.current = null;
+        })
+        .catch(() => {
+          // .close() rejects if the audio context is already closed.
+          // Therefore, we just need to catch the error, but we don't need to
+          // do anything with it.
+          return null;
+        });
     }
 
     clipQueue.current = [];

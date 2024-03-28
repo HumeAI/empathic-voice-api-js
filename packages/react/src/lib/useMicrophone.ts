@@ -25,6 +25,8 @@ export const useMicrophone = (props: MicrophoneProps) => {
   const currentAnalyzer = useRef<Meyda.MeydaAnalyzer | null>(null);
   const mimeTypeRef = useRef<MimeType | null>(null);
 
+  const audioContext = useRef<AudioContext | null>(null);
+
   const recorder = useRef<MediaRecorder | null>(null);
 
   const sendAudio = useRef(onAudioCaptured);
@@ -57,6 +59,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
     }
 
     const context = new AudioContext();
+    audioContext.current = context;
     const input = context.createMediaStreamSource(stream);
 
     try {
@@ -92,6 +95,20 @@ export const useMicrophone = (props: MicrophoneProps) => {
       if (currentAnalyzer.current) {
         currentAnalyzer.current.stop();
         currentAnalyzer.current = null;
+      }
+
+      if (audioContext.current) {
+        void audioContext.current
+          .close()
+          .then(() => {
+            audioContext.current = null;
+          })
+          .catch(() => {
+            // .close() rejects if the audio context is already closed.
+            // Therefore, we just need to catch the error, but we don't need to
+            // do anything with it.
+            return null;
+          });
       }
 
       recorder.current?.stop();
