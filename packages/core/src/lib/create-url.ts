@@ -15,7 +15,7 @@ import type { Config } from './create-config';
 export const createSocketUrl = (config: Config): string => {
   const url = new URL(`wss://${config.hostname}`);
 
-  url.pathname = '/v0/assistant/chat';
+  url.pathname = '/v0/evi/chat';
 
   // receive audio responses as json with IDs instead of binary messages
   url.searchParams.set('no_binary', String(true));
