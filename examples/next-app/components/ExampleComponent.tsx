@@ -42,6 +42,7 @@ export const ExampleComponent = () => {
     messages,
     micFft,
     sendText,
+    callDurationTimestamp,
   } = useVoice();
 
   const initialMessageSent = useRef(false);
@@ -114,6 +115,7 @@ export const ExampleComponent = () => {
   return (
     <div>
       <div className={'font-light'}>
+        <div>Duration: {callDurationTimestamp}</div>
         <div className="flex max-w-sm flex-col gap-4">
           {match(status.value)
             .with('connected', () => (
