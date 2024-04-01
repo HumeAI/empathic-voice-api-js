@@ -172,6 +172,25 @@ export class VoiceClient {
   }
 
   /**
+   * @name sendTTSText
+   * @description
+   * Send text data to the websocket for TTS.
+   */
+  sendTTSText(text: string) {
+    if (!this.socket) {
+      throw new Error('Socket is not connected.');
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('Socket is not open.');
+    }
+
+    const json = JSON.stringify({ text, type: 'tts' });
+
+    this.socket.send(json);
+  }
+
+  /**
    * @name sendSystemPrompt
    * @description
    * Send a custom system prompt to the websocket.
