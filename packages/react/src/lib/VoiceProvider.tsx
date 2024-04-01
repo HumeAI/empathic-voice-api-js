@@ -64,6 +64,7 @@ export type VoiceContextType = {
   unmute: () => void;
   readyState: VoiceReadyState;
   sendText: (text: string) => void;
+  sendTTSText: (text: string) => void;
   status: VoiceStatus;
   micFft: number[];
   error: VoiceError | null;
@@ -330,6 +331,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         mute: mic.mute,
         readyState: client.readyState,
         sendText: client.sendText,
+        sendTTSText: client.sendTTSText,
         status,
         unmute: mic.unmute,
         error,
@@ -354,6 +356,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       messageStore.clearMessages,
       client.readyState,
       client.sendText,
+      client.sendTTSText,
       status,
       error,
       isAudioError,

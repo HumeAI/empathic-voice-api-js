@@ -114,6 +114,10 @@ export const useVoiceClient = (props: {
     client.current?.sendText(text);
   }, []);
 
+  const sendTTSText = useCallback((text: string) => {
+    client.current?.sendTTSText(text);
+  }, []);
+
   return {
     readyState,
     sendAudio,
@@ -121,5 +125,6 @@ export const useVoiceClient = (props: {
     disconnect,
     sendSystemPrompt,
     sendText,
+    sendTTSText,
   };
 };
