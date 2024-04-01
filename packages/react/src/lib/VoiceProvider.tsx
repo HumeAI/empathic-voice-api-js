@@ -22,6 +22,7 @@ import React, {
 
 import { ConnectionMessage } from './connection-message';
 import { noop } from './noop';
+import { useCallDuration } from './useCallDuration';
 import { useEncoding } from './useEncoding';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
@@ -70,6 +71,7 @@ export type VoiceContextType = {
   isError: boolean;
   isMicrophoneError: boolean;
   isSocketError: boolean;
+  callDurationTimestamp: string | null;
 };
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
@@ -107,6 +109,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   messageHistoryLimit = 100,
   ...props
 }) => {
+  const {
+    timestamp: callDurationTimestamp,
+    start: startTimer,
+    stop: stopTimer,
+  } = useCallDuration();
+
   const [status, setStatus] = useState<VoiceStatus>({
     value: 'disconnected',
   });
@@ -140,6 +148,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     Parameters<typeof useVoiceClient>[0]['onError']
   > = useCallback(
     (message, err) => {
+      stopTimer();
       updateError({ type: 'socket_error', message, error: err });
     },
     [updateError],
@@ -181,13 +190,18 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     ),
     onError: onClientError,
     onOpen: useCallback(() => {
+      startTimer();
       messageStore.createConnectMessage();
       props.onOpen?.();
-    }, [props.onOpen]),
-    onClose: useCallback<NonNullable<VoiceEventMap['close']>>((event) => {
-      messageStore.createDisconnectMessage();
-      onClose.current?.(event);
-    }, []),
+    }, [messageStore, props, startTimer]),
+    onClose: useCallback<NonNullable<VoiceEventMap['close']>>(
+      (event) => {
+        stopTimer();
+        messageStore.createDisconnectMessage();
+        onClose.current?.(event);
+      },
+      [messageStore, stopTimer],
+    ),
   });
 
   const mic = useMicrophone({
@@ -275,6 +289,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         setStatus({ value: 'error', reason: 'Microphone permission denied' });
       }
 
+      stopTimer();
+
       disconnectFromVoice();
 
       if (status.value !== 'error' && !disconnectOnError) {
@@ -283,7 +299,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         setStatus({ value: 'disconnected' });
       }
     },
-    [micPermission, status.value, disconnectFromVoice],
+    [micPermission, stopTimer, disconnectFromVoice, status.value],
   );
 
   useEffect(() => {
@@ -321,6 +337,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         isError,
         isMicrophoneError,
         isSocketError,
+        callDurationTimestamp,
       }) satisfies VoiceContextType,
     [
       connect,
@@ -343,6 +360,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isError,
       isMicrophoneError,
       isSocketError,
+      callDurationTimestamp,
     ],
   );
 
