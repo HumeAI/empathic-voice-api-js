@@ -160,6 +160,7 @@ export const ExampleComponent = () => {
                   <textarea
                     className={'w-full bg-black font-mono text-white'}
                     value={JSON.stringify(messages, null, 0)}
+                    readOnly
                   ></textarea>
                 </div>
 

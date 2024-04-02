@@ -21,7 +21,7 @@ describe('create-url', () => {
     const config = createConfig(cfg);
 
     expect(createSocketUrl(config)).toBe(
-      `wss://api.hume.ai/v0/assistant/chat?no_binary=true&${config.auth.type}=${
+      `wss://api.hume.ai/v0/evi/chat?no_binary=true&${config.auth.type}=${
         config.auth.value
       }&tts=${config.tts.toString()}`,
     );
