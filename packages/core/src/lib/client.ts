@@ -125,14 +125,14 @@ export class VoiceClient {
    * Disconnect from the websocket.
    */
   disconnect() {
-    // Remove event listeners before closing the socket
+    // Close socket before removing event listeners so that "onClose" is still called
+    this.socket?.close();
+
+    // Remove event listeners
     this.socket.removeEventListener('open', this.handleOpen);
     this.socket.removeEventListener('message', this.handleMessage);
     this.socket.removeEventListener('close', this.handleClose);
     this.socket.removeEventListener('error', this.handleError);
-
-    // Close socket
-    this.socket?.close();
   }
 
   /**
