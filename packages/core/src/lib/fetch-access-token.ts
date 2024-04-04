@@ -20,7 +20,8 @@ function base64Encode(str: string): string {
  *
  * @param args - The arguments for the request.
  * @returns Promise that resolves to the new access token.
- * @throws If the request fails or the response is not as expected.
+ * @throws If the base64 encoding fails.
+ * @throws If the network request fails.
  * @example
  * ```typescript
  * async function getToken() {
@@ -39,25 +40,33 @@ export const fetchAccessToken = async (args: {
 }): Promise<string> => {
   const { apiKey, clientSecret, host = 'api.hume.ai' } = args;
 
-  const protocol = isLocalhostHost(host) ? 'http' : 'https';
+  try {
+    const protocol = isLocalhostHost(host) ? 'http' : 'https';
 
-  const authString = `${apiKey}:${clientSecret}`;
-  const encoded = base64Encode(authString);
+    const authString = `${apiKey}:${clientSecret}`;
+    const encoded = base64Encode(authString);
 
-  const res = await fetch(`${protocol}://${host}/oauth2-cc/token`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${encoded}`,
-    },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-    }).toString(),
-    cache: 'no-cache',
-  });
+    const res = await fetch(`${protocol}://${host}/oauth2-cc/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${encoded}`,
+      },
+      body: new URLSearchParams({
+        grant_type: 'client_credentials',
+      }).toString(),
+      cache: 'no-cache',
+    });
 
-  const data = (await res.json()) as { access_token: string };
+    if (!res.ok) {
+      throw new Error(`Failed to fetch access token: ${res.statusText}`);
+    }
 
-  const accessToken = String(data['access_token']);
-  return accessToken;
+    const data = (await res.json()) as { access_token: string };
+
+    const accessToken = String(data['access_token']);
+    return accessToken;
+  } catch (e) {
+    throw e;
+  }
 };
