@@ -128,6 +128,8 @@ export class VoiceClient {
     // Close socket before removing event listeners so that "onClose" is still called
     this.socket?.close();
 
+    this.handleClose({ code: 1000 } as CloseEvent);
+
     // Remove event listeners
     this.socket.removeEventListener('open', this.handleOpen);
     this.socket.removeEventListener('message', this.handleMessage);
