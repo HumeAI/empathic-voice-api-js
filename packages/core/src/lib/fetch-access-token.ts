@@ -3,6 +3,18 @@ function isLocalhostHost(host: string): boolean {
   return ['localhost', '127.0.0.1', '::1'].includes(hostname);
 }
 
+function base64Encode(str: string): string {
+  if (typeof Buffer === 'function') {
+    // Node.js environment
+    return Buffer.from(str).toString('base64');
+  } else if (typeof btoa === 'function') {
+    // Browser environment
+    return btoa(str);
+  } else {
+    throw new Error('Base64 encoding not supported in this environment.');
+  }
+}
+
 /**
  * Fetches a new access token from the Hume API using the provided API key and client secret.
  *
@@ -30,7 +42,7 @@ export const fetchAccessToken = async (args: {
   const protocol = isLocalhostHost(host) ? 'http' : 'https';
 
   const authString = `${apiKey}:${clientSecret}`;
-  const encoded = Buffer.from(authString).toString('base64');
+  const encoded = base64Encode(authString);
 
   const res = await fetch(`${protocol}://${host}/oauth2-cc/token`, {
     method: 'POST',
