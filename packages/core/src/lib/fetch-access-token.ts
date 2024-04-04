@@ -1,18 +1,23 @@
+function isLocalhostHost(host: string): boolean {
+  const hostname = host.trim().split(':')[0] || '';
+  return ['localhost', '127.0.0.1', '::1'].includes(hostname);
+}
+
 /**
- * @name fetchAccessToken
- * @description
- * Fetch an access token from the Hume API.
+ * Fetches a new access token from the Hume API using the provided API key and client secret.
+ *
  * @param args - The arguments for the request.
- * @returns
- * A new access token.
+ * @returns Promise that resolves to the new access token.
+ * @throws If the request fails or the response is not as expected.
  * @example
- * ```ts
- * const accessToken = await fetchAccessToken({
- * apiKey: '
- * test',
- * clientSecret
- * : 'test',
- * });
+ * ```typescript
+ * async function getToken() {
+ *   const accessToken = await fetchAccessToken({
+ *     apiKey: 'test',
+ *     clientSecret: 'test',
+ *   });
+ *   console.log(accessToken); // Outputs the access token
+ * }
  * ```
  */
 export const fetchAccessToken = async (args: {
@@ -22,10 +27,12 @@ export const fetchAccessToken = async (args: {
 }): Promise<string> => {
   const { apiKey, clientSecret, host = 'api.hume.ai' } = args;
 
+  const protocol = isLocalhostHost(host) ? 'http' : 'https';
+
   const authString = `${apiKey}:${clientSecret}`;
   const encoded = Buffer.from(authString).toString('base64');
 
-  const res = await fetch(`https://${host}/oauth2-cc/token`, {
+  const res = await fetch(`${protocol}://${host}/oauth2-cc/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
