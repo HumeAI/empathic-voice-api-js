@@ -11,6 +11,7 @@ export const AgentTranscriptMessageSchema = z
       content: z.string(),
     }),
     models: TranscriptModelsSchema,
+    from_tts: z.boolean().catch(false),
   })
   .transform((obj) => {
     return Object.assign(obj, {
