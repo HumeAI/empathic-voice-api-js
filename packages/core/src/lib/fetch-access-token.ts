@@ -1,8 +1,10 @@
-function isLocalhostHost(host: string): boolean {
-  const hostname = host.trim().split(':')[0] || '';
-  return ['localhost', '127.0.0.1', '::1'].includes(hostname);
-}
-
+/**
+ * Function which detects whether the function is being ran in the browser or node environment,
+ * and base64 encodes the string input using the natively available method.
+ *
+ * @param str
+ * @returns base64 encoded string
+ */
 function base64Encode(str: string): string {
   if (typeof Buffer === 'function') {
     // Node.js environment
@@ -11,7 +13,9 @@ function base64Encode(str: string): string {
     // Browser environment
     return btoa(str);
   } else {
-    throw new Error('Base64 encoding not supported in this environment.');
+    throw new Error(
+      'Base64 encoding is not natively supported in this environment.',
+    );
   }
 }
 
@@ -41,12 +45,10 @@ export const fetchAccessToken = async (args: {
   const { apiKey, clientSecret, host = 'api.hume.ai' } = args;
 
   try {
-    const protocol = isLocalhostHost(host) ? 'http' : 'https';
-
     const authString = `${apiKey}:${clientSecret}`;
     const encoded = base64Encode(authString);
 
-    const res = await fetch(`${protocol}://${host}/oauth2-cc/token`, {
+    const res = await fetch(`https://${host}/oauth2-cc/token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -63,8 +65,8 @@ export const fetchAccessToken = async (args: {
     }
 
     const data = (await res.json()) as { access_token: string };
-
     const accessToken = String(data['access_token']);
+
     return accessToken;
   } catch (e) {
     throw e;
