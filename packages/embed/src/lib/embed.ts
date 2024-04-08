@@ -1,5 +1,5 @@
 import type {
-  AgentTranscriptMessage,
+  AssistantTranscriptMessage,
   Config,
   UserTranscriptMessage,
 } from '@humeai/voice';
@@ -19,7 +19,7 @@ export type EmbeddedVoiceConfig = {
 } & Config;
 
 export type TranscriptMessageHandler = (
-  message: UserTranscriptMessage | AgentTranscriptMessage,
+  message: UserTranscriptMessage | AssistantTranscriptMessage,
 ) => void;
 
 export type CloseHandler = () => void;

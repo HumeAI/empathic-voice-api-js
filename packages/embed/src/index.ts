@@ -13,7 +13,7 @@ export {
 } from './lib/embed-messages';
 
 export type {
-  AgentTranscriptMessage,
+  AssistantTranscriptMessage,
   Config,
   JSONMessage,
   UserTranscriptMessage,

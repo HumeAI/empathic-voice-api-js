@@ -1,5 +1,5 @@
 import type {
-  AgentTranscriptMessage,
+  AssistantTranscriptMessage,
   AudioOutputMessage,
   Config,
   JSONErrorMessage,
@@ -22,7 +22,7 @@ export const useVoiceClient = (props: {
   onMessage?: (
     message:
       | UserTranscriptMessage
-      | AgentTranscriptMessage
+      | AssistantTranscriptMessage
       | UserInterruptionMessage
       | JSONErrorMessage,
   ) => void;

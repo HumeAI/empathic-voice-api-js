@@ -2,7 +2,7 @@ import z from 'zod';
 
 import { TranscriptModelsSchema } from './transcript-models';
 
-export const AgentTranscriptMessageSchema = z
+export const AssistantTranscriptMessageSchema = z
   .object({
     type: z.literal('assistant_message'),
     id: z.string(),
@@ -19,6 +19,6 @@ export const AgentTranscriptMessageSchema = z
     });
   });
 
-export type AgentTranscriptMessage = z.infer<
-  typeof AgentTranscriptMessageSchema
+export type AssistantTranscriptMessage = z.infer<
+  typeof AssistantTranscriptMessageSchema
 >;
