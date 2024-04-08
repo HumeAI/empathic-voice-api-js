@@ -12,7 +12,7 @@ export {
 } from '@humeai/voice-embed';
 
 export type {
-  AgentTranscriptMessage,
+  AssistantTranscriptMessage,
   Config,
   FrameToClientAction,
   JSONMessage,
