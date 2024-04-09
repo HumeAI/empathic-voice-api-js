@@ -59,10 +59,6 @@ export const fetchAccessToken = async (args: {
     cache: 'no-cache',
   });
 
-  if (!res.ok) {
-    throw new Error(`Failed to fetch access token: ${res.statusText}`);
-  }
-
   const data = (await res.json()) as { access_token: string };
   const accessToken = String(data['access_token']);
 
