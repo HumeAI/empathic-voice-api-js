@@ -1,6 +1,6 @@
 import type { JSONErrorMessage, UserInterruptionMessage } from '@humeai/voice';
 import {
-  type AgentTranscriptMessage,
+  type AssistantTranscriptMessage,
   type JSONMessage,
   type UserTranscriptMessage,
 } from '@humeai/voice';
@@ -16,19 +16,19 @@ export const useMessages = ({
   sendMessageToParent?: (
     message:
       | UserTranscriptMessage
-      | AgentTranscriptMessage
+      | AssistantTranscriptMessage
       | UserInterruptionMessage
       | JSONErrorMessage,
   ) => void;
   messageHistoryLimit: number;
 }) => {
   const [voiceMessageMap, setVoiceMessageMap] = useState<
-    Record<string, AgentTranscriptMessage>
+    Record<string, AssistantTranscriptMessage>
   >({});
 
   const [messages, setMessages] = useState<
     Array<
-      | AgentTranscriptMessage
+      | AssistantTranscriptMessage
       | UserTranscriptMessage
       | ConnectionMessage
       | UserInterruptionMessage
@@ -37,7 +37,7 @@ export const useMessages = ({
   >([]);
 
   const [lastVoiceMessage, setLastVoiceMessage] =
-    useState<AgentTranscriptMessage | null>(null);
+    useState<AssistantTranscriptMessage | null>(null);
   const [lastUserMessage, setLastUserMessage] =
     useState<UserTranscriptMessage | null>(null);
 
@@ -66,11 +66,11 @@ export const useMessages = ({
   const onMessage = useCallback((message: JSONMessage) => {
     /* 
       1. message comes in from the backend
-        - if the message IS NOT AgentTranscriptMessage, store in `messages` immediately  
-        - if the message is an AgentTranscriptMessage, stored in `voiceMessageMap`
+        - if the message IS NOT AssistantTranscriptMessage, store in `messages` immediately  
+        - if the message is an AssistantTranscriptMessage, stored in `voiceMessageMap`
       2. audio clip plays
-        - find the AgentTranscriptMessage with a matching ID, and store it in `messages`
-        - remove the AgentTranscriptMessage from `voiceMessageMap`
+        - find the AssistantTranscriptMessage with a matching ID, and store it in `messages`
+        - remove the AssistantTranscriptMessage from `voiceMessageMap`
     */
     switch (message.type) {
       case 'assistant_message':

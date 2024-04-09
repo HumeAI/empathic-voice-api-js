@@ -31,12 +31,12 @@
  └───────────────────────────┘                                           
                                                                        */
 import type {
-  AgentTranscriptMessage,
+  AssistantTranscriptMessage,
   Config,
   UserTranscriptMessage,
 } from '@humeai/voice';
 import {
-  AgentTranscriptMessageSchema,
+  AssistantTranscriptMessageSchema,
   ConfigSchema,
   UserTranscriptMessageSchema,
 } from '@humeai/voice';
@@ -123,7 +123,7 @@ export const FrameToClientActionSchema = z.union([
     type: z.literal('transcript_message'),
     payload: z.union([
       UserTranscriptMessageSchema,
-      AgentTranscriptMessageSchema,
+      AssistantTranscriptMessageSchema,
     ]),
   }),
   z.object({
@@ -154,7 +154,7 @@ export const WIDGET_IFRAME_IS_READY_ACTION = {
 } satisfies FrameToClientAction;
 
 export const TRANSCRIPT_MESSAGE_ACTION = (
-  message: UserTranscriptMessage | AgentTranscriptMessage,
+  message: UserTranscriptMessage | AssistantTranscriptMessage,
 ) => {
   return {
     type: 'transcript_message',

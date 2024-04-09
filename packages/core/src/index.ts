@@ -8,8 +8,8 @@ export * from './lib/tts';
 export * from './lib/microphone';
 export * from './lib/fetch-access-token';
 
-export * from './models/agent-end-message';
-export * from './models/agent-message';
+export * from './models/assistant-end-message';
+export * from './models/assistant-message';
 export * from './models/audio-message';
 export * from './models/audio-output-message';
 export * from './models/error-message';

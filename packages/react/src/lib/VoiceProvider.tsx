@@ -1,5 +1,5 @@
 import {
-  AgentTranscriptMessage,
+  AssistantTranscriptMessage,
   AudioOutputMessage,
   createConfig,
   JSONErrorMessage,
@@ -52,12 +52,12 @@ export type VoiceContextType = {
   isPlaying: boolean;
   messages: (
     | UserTranscriptMessage
-    | AgentTranscriptMessage
+    | AssistantTranscriptMessage
     | ConnectionMessage
     | UserInterruptionMessage
     | JSONErrorMessage
   )[];
-  lastVoiceMessage: AgentTranscriptMessage | null;
+  lastVoiceMessage: AssistantTranscriptMessage | null;
   lastUserMessage: UserTranscriptMessage | null;
   clearMessages: () => void;
   mute: () => void;
@@ -176,7 +176,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       (
         message:
           | UserTranscriptMessage
-          | AgentTranscriptMessage
+          | AssistantTranscriptMessage
           | UserInterruptionMessage
           | JSONErrorMessage,
       ) => {

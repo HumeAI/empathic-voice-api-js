@@ -1,6 +1,6 @@
 import z from 'zod';
 
-export const AgentEndMessageSchema = z
+export const AssistantEndMessageSchema = z
   .object({
     type: z.literal('assistant_end'),
   })
@@ -10,4 +10,4 @@ export const AgentEndMessageSchema = z
     });
   });
 
-export type AgentEndMessage = z.infer<typeof AgentEndMessageSchema>;
+export type AssistantEndMessage = z.infer<typeof AssistantEndMessageSchema>;
