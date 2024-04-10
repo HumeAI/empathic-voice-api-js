@@ -68,6 +68,11 @@ export const ConfigSchema = z.object({
       description: 'The underlying LLM model to use',
     })
     .optional(),
+  languageModelApiKey: z
+    .string({
+      description: 'API key used for the language model authentication.',
+    })
+    .optional(),
 });
 
 export type Config = z.infer<typeof ConfigSchema>;

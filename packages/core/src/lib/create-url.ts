@@ -45,6 +45,12 @@ export const createSocketUrl = (config: Config): string => {
   if (config.languageModel) {
     url.searchParams.set('language_model', config.languageModel.toString());
   }
+  if (config.languageModelApiKey) {
+    url.searchParams.set(
+      'language_model_api_key',
+      config.languageModelApiKey.toString(),
+    );
+  }
 
   return url.href;
 };
