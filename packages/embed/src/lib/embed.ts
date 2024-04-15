@@ -16,6 +16,7 @@ import {
 
 export type EmbeddedVoiceConfig = {
   rendererUrl: string;
+  iframeTitle?: string;
 } & Config;
 
 export type TranscriptMessageHandler = (
@@ -141,7 +142,7 @@ export class EmbeddedVoice {
     return div;
   }
 
-  private createIframe({ rendererUrl }: EmbeddedVoiceConfig) {
+  private createIframe({ rendererUrl, iframeTitle }: EmbeddedVoiceConfig) {
     const el = document.createElement('iframe');
 
     Object.assign(el.style, {
@@ -154,9 +155,9 @@ export class EmbeddedVoice {
     });
 
     el.id = 'hume-embedded-voice';
-
     el.src = `${rendererUrl}`;
 
+    el.setAttribute('title', iframeTitle ?? 'Hume Empathic Voice Widget');
     el.setAttribute('frameborder', '0');
     el.setAttribute('allowtransparency', 'true');
     el.setAttribute('scrolling', 'no');
