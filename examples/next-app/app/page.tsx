@@ -21,7 +21,7 @@ export default async function Home() {
 
   return (
     <div className={'p-6'}>
-      <h1 className={'font-medium text-lg my-4'}>Hume EVI React Example</h1>
+      <h1 className={'my-4 text-lg font-medium'}>Hume EVI React Example</h1>
 
       <NoSSR>
         {accessToken ? (

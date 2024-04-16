@@ -1,10 +1,11 @@
 'use client';
 
-import { Waveform } from '@/components/Waveform';
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
 import { useEffect, useMemo, useRef } from 'react';
 import { match } from 'ts-pattern';
+
+import { Waveform } from '@/components/Waveform';
 
 function getTop3Expressions(expressionOutputs: EmotionScores) {
   return Object.entries(expressionOutputs)
@@ -60,14 +61,14 @@ export const ExampleComponent = () => {
 
   const callDuration = (
     <div>
-      <div className={'font-medium uppercase text-sm'}>Call duration</div>
+      <div className={'text-sm font-medium uppercase'}>Call duration</div>
       <div>{callDurationTimestamp ?? 'n/a'}</div>
     </div>
   );
 
   return (
     <div>
-      <div className={'flex flex-col font-light gap-4'}>
+      <div className={'flex flex-col gap-4 font-light'}>
         <div className="flex max-w-sm flex-col gap-4">
           {match(status.value)
             .with('connected', () => (
@@ -75,13 +76,13 @@ export const ExampleComponent = () => {
                 <div className="flex gap-6">
                   {callDuration}
                   <div>
-                    <div className={'font-medium uppercase text-sm'}>
+                    <div className={'text-sm font-medium uppercase'}>
                       Playing
                     </div>
                     <div>{isPlaying ? 'true' : 'false'}</div>
                   </div>
                   <div>
-                    <div className={'font-medium uppercase text-sm'}>
+                    <div className={'text-sm font-medium uppercase'}>
                       Ready state
                     </div>
                     <div>{readyState}</div>
@@ -118,12 +119,12 @@ export const ExampleComponent = () => {
                 </div>
 
                 <div>
-                  <div className={'font-medium uppercase text-sm'}>
+                  <div className={'text-sm font-medium uppercase'}>
                     All messages ({messages.length})
                   </div>
                   <textarea
                     className={
-                      'w-full bg-neutral-800 font-mono text-white text-sm'
+                      'w-full bg-neutral-800 font-mono text-sm text-white'
                     }
                     value={JSON.stringify(messages, null, 0)}
                     readOnly
@@ -131,11 +132,11 @@ export const ExampleComponent = () => {
                 </div>
 
                 <div>
-                  <div className={'font-medium uppercase text-sm'}>
+                  <div className={'text-sm font-medium uppercase'}>
                     Last assistant message
                   </div>
                   {assistantMessages.length > 0 ? (
-                    <div className="bg-neutral-800 font-mono text-white text-sm">
+                    <div className="bg-neutral-800 font-mono text-sm text-white">
                       {JSON.stringify(
                         assistantMessages[assistantMessages.length - 1],
                         null,
