@@ -1,5 +1,6 @@
 'use client';
 
+import { Waveform } from '@/components/Waveform';
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
 import { useEffect, useMemo, useRef } from 'react';
@@ -11,22 +12,6 @@ function getTop3Expressions(expressionOutputs: EmotionScores) {
     .slice(0, 3)
     .map(([key, value]) => ({ name: key, score: value }));
 }
-
-const normalizeFft = (fft: number[]) => {
-  const max = 2.5;
-  const min = Math.min(...fft);
-
-  // define a minimum possible value because we want the bar to have
-  // a height even when the audio is off
-  const minNormalizedValue = 0.01;
-  return Array.from(fft).map((x) => {
-    // normalize & avoid divide by zero
-    const normalized = max === min ? max : (x - min) / (max - min);
-    const lowerBounded = Math.max(minNormalizedValue, normalized);
-    const upperBounded = Math.min(1, lowerBounded);
-    return Math.round(upperBounded * 100);
-  });
-};
 
 export const ExampleComponent = () => {
   const {
@@ -59,15 +44,7 @@ export const ExampleComponent = () => {
     };
   }, [status.value, sendText]);
 
-  const normalizedFft = useMemo(() => {
-    return normalizeFft(audioFft);
-  }, [audioFft]);
-
-  const normalizedMicFft = useMemo(() => {
-    return normalizeFft(micFft);
-  }, [micFft]);
-
-  const voiceMessages = useMemo(() => {
+  const assistantMessages = useMemo(() => {
     return messages
       .map((message) => {
         if (message.type === 'assistant_message') {
@@ -81,96 +58,86 @@ export const ExampleComponent = () => {
       .filter(Boolean);
   }, [messages]);
 
-  const voiceFftAnimation = (fft: number[]) => (
-    <div className="grid h-32 grid-cols-1 grid-rows-2 p-4">
-      <div className="flex items-end gap-1">
-        {fft.map((val, i) => {
-          return (
-            <div
-              key={`fft-top-${i}`}
-              style={{ height: `${val}%` }}
-              className={
-                'w-2 rounded-full bg-neutral-500 transition-all duration-75'
-              }
-            ></div>
-          );
-        })}
-      </div>
-      <div className="flex items-start gap-1">
-        {fft.map((val, i) => {
-          return (
-            <div
-              key={`fft-bottom-${i}`}
-              style={{ height: `${val}%` }}
-              className={
-                'w-2 rounded-full bg-neutral-500 transition-all duration-75'
-              }
-            ></div>
-          );
-        })}
-      </div>
+  const callDuration = (
+    <div>
+      <div className={'font-medium uppercase text-sm'}>Call duration</div>
+      <div>{callDurationTimestamp ?? 'n/a'}</div>
     </div>
   );
 
   return (
     <div>
-      <div className={'font-light'}>
-        <div>Duration: {callDurationTimestamp}</div>
+      <div className={'flex flex-col font-light gap-4'}>
         <div className="flex max-w-sm flex-col gap-4">
           {match(status.value)
             .with('connected', () => (
               <>
-                <div className="flex gap-2">
-                  <button
-                    className="rounded border border-neutral-500 p-2"
-                    onClick={() => {
-                      disconnect();
-                    }}
-                  >
-                    Disconnect
-                  </button>
-
-                  {isMuted ? (
-                    <button
-                      className="rounded border border-neutral-500 p-2"
-                      onClick={() => unmute()}
-                    >
-                      Unmute mic
-                    </button>
-                  ) : (
-                    <button
-                      className="rounded border border-neutral-500 p-2"
-                      onClick={() => mute()}
-                    >
-                      Mute mic
-                    </button>
-                  )}
+                <div className="flex gap-6">
+                  {callDuration}
+                  <div>
+                    <div className={'font-medium uppercase text-sm'}>
+                      Playing
+                    </div>
+                    <div>{isPlaying ? 'true' : 'false'}</div>
+                  </div>
+                  <div>
+                    <div className={'font-medium uppercase text-sm'}>
+                      Ready state
+                    </div>
+                    <div>{readyState}</div>
+                  </div>
                 </div>
 
-                {voiceFftAnimation(normalizedFft)}
-                {voiceFftAnimation(normalizedMicFft)}
+                <button
+                  className="rounded border border-neutral-500 p-2"
+                  onClick={() => {
+                    disconnect();
+                  }}
+                >
+                  Disconnect
+                </button>
+                {isMuted ? (
+                  <button
+                    className="rounded border border-neutral-500 p-2"
+                    onClick={() => unmute()}
+                  >
+                    Unmute mic
+                  </button>
+                ) : (
+                  <button
+                    className="rounded border border-neutral-500 p-2"
+                    onClick={() => mute()}
+                  >
+                    Mute mic
+                  </button>
+                )}
 
-                <div>Playing: {isPlaying ? 'true' : 'false'}</div>
-                <div>Ready State: {readyState}</div>
+                <div className="flex gap-10">
+                  <Waveform fft={audioFft} />
+                  <Waveform fft={micFft} />
+                </div>
 
                 <div>
-                  <div className={'font-medium'}>
-                    All Messages ({messages.length})
+                  <div className={'font-medium uppercase text-sm'}>
+                    All messages ({messages.length})
                   </div>
                   <textarea
-                    className={'w-full bg-black font-mono text-white'}
+                    className={
+                      'w-full bg-neutral-800 font-mono text-white text-sm'
+                    }
                     value={JSON.stringify(messages, null, 0)}
+                    readOnly
                   ></textarea>
                 </div>
 
                 <div>
-                  <div className={'font-medium'}>
-                    Last transcript message received from voice:
+                  <div className={'font-medium uppercase text-sm'}>
+                    Last assistant message
                   </div>
-                  {voiceMessages.length > 0 ? (
-                    <div>
+                  {assistantMessages.length > 0 ? (
+                    <div className="bg-neutral-800 font-mono text-white text-sm">
                       {JSON.stringify(
-                        voiceMessages[voiceMessages.length - 1],
+                        assistantMessages[assistantMessages.length - 1],
                         null,
                         2,
                       )}
@@ -182,25 +149,34 @@ export const ExampleComponent = () => {
               </>
             ))
             .with('disconnected', () => (
-              <button
-                className="rounded border border-neutral-500 p-2"
-                onClick={() => {
-                  void connect();
-                }}
-              >
-                Connect to voice
-              </button>
+              <>
+                {callDuration}
+
+                <button
+                  className="rounded border border-neutral-500 p-2"
+                  onClick={() => {
+                    void connect();
+                  }}
+                >
+                  Connect to voice
+                </button>
+              </>
             ))
             .with('connecting', () => (
-              <button
-                className="cursor-not-allowed rounded border border-neutral-500 p-2"
-                disabled
-              >
-                Connecting...
-              </button>
+              <>
+                {callDuration}
+                <button
+                  className="cursor-not-allowed rounded border border-neutral-500 p-2"
+                  disabled
+                >
+                  Connecting...
+                </button>
+              </>
             ))
             .with('error', () => (
               <div className="flex flex-col gap-4">
+                {callDuration}
+
                 <button
                   className="rounded border border-neutral-500 p-2"
                   onClick={() => {
