@@ -18,7 +18,7 @@ const AudioConfigurationSchema = z.object({
   channels: z.nativeEnum(Channels, {
     description: 'Number of channels in the input audio.',
   }),
-  encoding: z.nativeEnum(Channels, {
+  encoding: z.nativeEnum(AudioEncoding, {
     description: 'Encoding of the input audio.',
   }),
   sample_rate: z.number({

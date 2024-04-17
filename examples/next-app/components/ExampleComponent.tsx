@@ -2,7 +2,7 @@
 
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
-import { useEffect, useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { match } from 'ts-pattern';
 
 import { Waveform } from '@/components/Waveform';
@@ -27,23 +27,8 @@ export const ExampleComponent = () => {
     unmute,
     messages,
     micFft,
-    sendText,
     callDurationTimestamp,
   } = useVoice();
-
-  const initialMessageSent = useRef(false);
-
-  useEffect(() => {
-    if (!initialMessageSent.current && status.value === 'connected') {
-      initialMessageSent.current = true;
-      sendText(
-        'Please greet me as though I were a long lost friend from your childhood',
-      );
-    }
-    return () => {
-      initialMessageSent.current = false;
-    };
-  }, [status.value, sendText]);
 
   const assistantMessages = useMemo(() => {
     return messages

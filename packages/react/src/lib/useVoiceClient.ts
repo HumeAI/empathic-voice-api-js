@@ -87,7 +87,6 @@ export const useVoiceClient = (props: {
       });
 
       client.current.on('error', (e) => {
-        console.log('errr', e);
         const message = e instanceof Error ? e.message : 'Unknown error';
         onError.current?.(message, e instanceof Error ? e : undefined);
         reject(e);
