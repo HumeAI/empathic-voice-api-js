@@ -57,7 +57,6 @@ function App() {
       <button onClick={() => setIsEmbedOpen(true)}>Open Widget</button>
       <EmbeddedVoice
         auth={{ type: 'apiKey', value: apiKey }}
-        systemPrompt={'Your system prompt goes here.'}
         onMessage={(msg) => console.log('Message received: ', msg)}
         onClose={() => setIsEmbedOpen(false)}
         isEmbedOpen={isEmbedOpen}
@@ -84,7 +83,6 @@ The table below outlines the props accepted by the EmbeddedVoice component:
 | tts               | no       | Text-To-Speech service. If not provided this value will default to `"hume_ai"`, specifying Hume's text-to-speech service. Other options include: `"eleven_labs"` and `"play_ht"`.                                                                                                                                                   |
 | reconnectAttempts | no       | Number of times to attempt to reconnect to the API. If not provided this value will default to `30`.                                                                                                                                                                                                                                |
 | debug             | no       | Enable debug mode. If not provided this value will default to `false`.                                                                                                                                                                                                                                                              |
-| systemPrompt      | no       | System prompt to use for the Voice. The system prompt has a character limit of 100,000 characters. If not provided, this value will default to the default Hume system prompt.                                                                                                                                                              |
 | onMessage         | no       | Callback function to invoke upon receiving a message through the web socket.                                                                                                                                                                                                                                                        |
 | onClose           | no       | Callback function to invoke upon the web socket connection being closed.                                                                                                                                                                                                                                                            |
 
