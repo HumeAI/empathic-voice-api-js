@@ -263,16 +263,27 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       return Promise.reject(error);
     }
 
-    const [micPromise, playerPromise] = await Promise.allSettled([
-      mic.start(),
-      player.initPlayer(),
-    ]);
+    try {
+      const [micPromise, playerPromise] = await Promise.allSettled([
+        mic.start(),
+        player.initPlayer(),
+      ]);
 
-    if (
-      micPromise.status === 'fulfilled' &&
-      playerPromise.status === 'fulfilled'
-    ) {
-      setStatus({ value: 'connected' });
+      if (
+        micPromise.status === 'fulfilled' &&
+        playerPromise.status === 'fulfilled'
+      ) {
+        setStatus({ value: 'connected' });
+      }
+    } catch (e) {
+      const error: VoiceError = {
+        type: 'audio_error',
+        message:
+          e instanceof Error
+            ? e.message
+            : 'We could not connect to audio. Please try again.',
+      };
+      updateError(error);
     }
   }, [client, config, getStream, mic, player, updateError]);
 
