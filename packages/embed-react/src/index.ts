@@ -13,7 +13,7 @@ export {
 
 export type {
   AssistantTranscriptMessage,
-  Config,
+  SocketConfig,
   FrameToClientAction,
   JSONMessage,
   UserTranscriptMessage,

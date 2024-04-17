@@ -5,7 +5,7 @@ export * from './lib/useVoiceClient';
 export * from './lib/connection-message';
 
 export {
-  type Config,
+  type SocketConfig,
   Channels,
   TTSService,
   AudioEncoding,

@@ -32,12 +32,12 @@
                                                                        */
 import type {
   AssistantTranscriptMessage,
-  Config,
+  SocketConfig,
   UserTranscriptMessage,
 } from '@humeai/voice';
 import {
   AssistantTranscriptMessageSchema,
-  ConfigSchema,
+  SocketConfigSchema,
   UserTranscriptMessageSchema,
 } from '@humeai/voice';
 import { z } from 'zod';
@@ -55,7 +55,7 @@ export type WindowDimensions = z.infer<typeof WindowDimensionsSchema>;
 export const ClientToFrameActionSchema = z.union([
   z.object({
     type: z.literal('update_config'),
-    payload: ConfigSchema,
+    payload: SocketConfigSchema,
   }),
   z.object({
     type: z.literal('cancel'),
@@ -72,7 +72,7 @@ export const ClientToFrameActionSchema = z.union([
 
 export type ClientToFrameAction = z.infer<typeof ClientToFrameActionSchema>;
 
-export const UPDATE_CONFIG_ACTION = (config: Config) =>
+export const UPDATE_CONFIG_ACTION = (config: SocketConfig) =>
   ({
     type: 'update_config',
     payload: config,

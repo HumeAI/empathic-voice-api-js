@@ -139,27 +139,6 @@ export class VoiceClient {
   }
 
   /**
-   * @name sendSessionSettings
-   * @description
-   * Send session settings to the websocket
-   */
-  sendSessionSettings(sessionSettings: SessionSettings) {
-    if (!this.socket) {
-      throw new Error('Socket is not connected.');
-    }
-
-    if (this.socket.readyState !== WebSocket.OPEN) {
-      throw new Error('Socket is not open.');
-    }
-
-    const json = JSON.stringify({
-      ...sessionSettings,
-      type: 'session_settings',
-    });
-    this.socket.send(json);
-  }
-
-  /**
    * @name sendAudio
    * @description
    * Send audio data to the websocket.
@@ -211,6 +190,27 @@ export class VoiceClient {
 
     const json = JSON.stringify({ text, type: 'tts' });
 
+    this.socket.send(json);
+  }
+
+  /**
+   * @name sendSessionSettings
+   * @description
+   * Send session settings to the websocket
+   */
+  sendSessionSettings(sessionSettings: SessionSettings) {
+    if (!this.socket) {
+      throw new Error('Socket is not connected.');
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('Socket is not open.');
+    }
+
+    const json = JSON.stringify({
+      ...sessionSettings,
+      type: 'session_settings',
+    });
     this.socket.send(json);
   }
 

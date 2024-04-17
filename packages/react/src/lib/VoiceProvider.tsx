@@ -1,7 +1,7 @@
 import {
   AssistantTranscriptMessage,
   AudioOutputMessage,
-  createConfig,
+  createSocketConfig,
   JSONErrorMessage,
   JSONMessage,
   UserInterruptionMessage,
@@ -78,7 +78,7 @@ export type VoiceContextType = {
 const VoiceContext = createContext<VoiceContextType | null>(null);
 
 export type VoiceProviderProps = PropsWithChildren<
-  Parameters<typeof createConfig>[0]
+  Parameters<typeof createSocketConfig>[0]
 > & { sessionSettings: string } & {
   onMessage?: (message: JSONMessage) => void;
   onError?: (err: VoiceError) => void;
@@ -155,7 +155,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [updateError],
   );
 
-  const config = createConfig(props);
+  const config = createSocketConfig(props);
 
   const player = useSoundPlayer({
     onError: (message) => {
@@ -237,13 +237,13 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       return Promise.reject(error);
     }
 
-    const err = await client
-      .connect({
-        ...config,
-      })
-      .catch(() => new Error('Could not connect to the voice'));
+    const err = await client.connect({
+      ...config,
+    });
+    // .catch(() => new Error('Could not connect to the voice'));
 
     if (err) {
+      console.log('err', err);
       const error: VoiceError = {
         type: 'socket_error',
         message: 'We could not connect to the voice. Please try again.',

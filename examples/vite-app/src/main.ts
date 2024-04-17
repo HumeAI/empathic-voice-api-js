@@ -1,5 +1,5 @@
 import type { AudioMessage, JSONMessage } from '@humeai/voice';
-import { VoiceClient, createConfig } from '@humeai/voice';
+import { VoiceClient, createSocketConfig } from '@humeai/voice';
 
 const body = document.querySelector('body')!;
 
@@ -26,7 +26,7 @@ const appendMessage = (message: JSONMessage | AudioMessage) => {
   messageHistory.appendChild(messageContainer);
 };
 
-const config = createConfig({
+const config = createSocketConfig({
   auth: {
     type: 'apiKey',
     value: String(import.meta.env['VITE_HUME_API_KEY']),

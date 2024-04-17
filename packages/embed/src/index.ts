@@ -14,7 +14,7 @@ export {
 
 export type {
   AssistantTranscriptMessage,
-  Config,
+  SocketConfig,
   JSONMessage,
   UserTranscriptMessage,
   EmotionScores,
