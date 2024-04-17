@@ -7,7 +7,7 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
   return (
     <VoiceProvider
       auth={{ type: 'accessToken', value: accessToken }}
-      hostname={process.env.HUME_VOICE_HOSTNAME || 'api.hume.ai'}
+      hostname={process.env.NEXT_PUBLIC_HUME_VOICE_HOSTNAME || 'api.hume.ai'}
       messageHistoryLimit={10}
       onMessage={(message) => {
         // eslint-disable-next-line no-console
@@ -21,6 +21,9 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
           // eslint-disable-next-line no-console
           console.error('close event was not nice', event);
         }
+      }}
+      sessionSettings={{
+        languageModelApiKey: '23ipu34u',
       }}
     >
       <ExampleComponent />

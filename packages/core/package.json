@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "reconnecting-websocket": "^4.4.0",
+    "snakecase-keys": "^8.0.0",
     "ts-pattern": "^5.0.6",
     "zod": "^3.22.4"
   },

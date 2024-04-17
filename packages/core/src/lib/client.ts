@@ -2,6 +2,7 @@ import ReconnectingWebsocket, {
   type CloseEvent,
   type ErrorEvent as WebsocketErrorEvent,
 } from 'reconnecting-websocket';
+import snakecaseKeys from 'snakecase-keys';
 
 import type { SocketConfig } from './create-socket-config';
 import { createSocketUrl } from './create-url';
@@ -9,7 +10,7 @@ import { parseMessageType } from './message';
 
 import type { AudioMessage } from '@/models/audio-message';
 import type { JSONMessage } from '@/models/json-message';
-import type { SessionSettings } from '@/models/session-settings';
+import { type SessionSettings } from '@/models/session-settings';
 
 /**
  * @name VoiceEventMap
@@ -207,9 +208,11 @@ export class VoiceClient {
       throw new Error('Socket is not open.');
     }
 
+    const snakeCaseSettings = snakecaseKeys(sessionSettings);
+
     const json = JSON.stringify({
-      ...sessionSettings,
-      type: 'session_settings',
+      ...snakeCaseSettings,
+      type: 'configuration',
     });
     this.socket.send(json);
   }

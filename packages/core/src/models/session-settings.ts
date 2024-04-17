@@ -21,7 +21,7 @@ const AudioConfigurationSchema = z.object({
   encoding: z.nativeEnum(AudioEncoding, {
     description: 'Encoding of the input audio.',
   }),
-  sample_rate: z.number({
+  sampleRate: z.number({
     description: 'Sample rate of the input audio.',
   }),
 });
@@ -34,7 +34,7 @@ const ContextConfigurationSchema = z.object({
 export const SessionSettingsSchema = z.object({
   audio: AudioConfigurationSchema.optional(),
   context: ContextConfigurationSchema.optional(),
-  language_model_api_key: z.string().optional(),
+  languageModelApiKey: z.string().optional(),
 });
 
 export type SessionSettings = z.infer<typeof SessionSettingsSchema>;
