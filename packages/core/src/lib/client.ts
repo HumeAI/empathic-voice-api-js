@@ -3,12 +3,13 @@ import ReconnectingWebsocket, {
   type ErrorEvent as WebsocketErrorEvent,
 } from 'reconnecting-websocket';
 
-import type { Config } from './create-config';
+import type { SocketConfig } from './create-socket-config';
 import { createSocketUrl } from './create-url';
 import { parseMessageType } from './message';
 
 import type { AudioMessage } from '@/models/audio-message';
 import type { JSONMessage } from '@/models/json-message';
+import type { SessionSettings } from '@/models/session-settings';
 
 /**
  * @name VoiceEventMap
@@ -35,7 +36,7 @@ export class VoiceClient {
 
   private eventHandlers: VoiceEventMap = {};
 
-  private constructor(config: Config) {
+  private constructor(config: SocketConfig) {
     this.url = createSocketUrl(config);
     this.socket = new ReconnectingWebsocket(this.url, [], {
       startClosed: true,
@@ -56,7 +57,7 @@ export class VoiceClient {
    * const client = VoiceClient.create(config);
    * ```
    */
-  static create(config: Config) {
+  static create(config: SocketConfig) {
     return new VoiceClient(config);
   }
 
@@ -138,6 +139,27 @@ export class VoiceClient {
   }
 
   /**
+   * @name sendSessionSettings
+   * @description
+   * Send session settings to the websocket
+   */
+  sendSessionSettings(sessionSettings: SessionSettings) {
+    if (!this.socket) {
+      throw new Error('Socket is not connected.');
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('Socket is not open.');
+    }
+
+    const json = JSON.stringify({
+      ...sessionSettings,
+      type: 'session_settings',
+    });
+    this.socket.send(json);
+  }
+
+  /**
    * @name sendAudio
    * @description
    * Send audio data to the websocket.
@@ -188,25 +210,6 @@ export class VoiceClient {
     }
 
     const json = JSON.stringify({ text, type: 'tts' });
-
-    this.socket.send(json);
-  }
-
-  /**
-   * @name sendSystemPrompt
-   * @description
-   * Send a custom system prompt to the websocket.
-   */
-  sendSystemPrompt(text: string) {
-    if (!this.socket) {
-      throw new Error('Socket is not connected.');
-    }
-
-    if (this.socket.readyState !== WebSocket.OPEN) {
-      throw new Error('Socket is not open.');
-    }
-
-    const json = JSON.stringify({ type: 'configuration', system_prompt: text });
 
     this.socket.send(json);
   }

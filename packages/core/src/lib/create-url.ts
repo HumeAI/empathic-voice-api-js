@@ -1,4 +1,4 @@
-import type { Config } from './create-config';
+import type { SocketConfig } from '@/lib/create-socket-config';
 
 /**
  * @name createSocketUrl
@@ -12,13 +12,10 @@ import type { Config } from './create-config';
  * const url = createSocketUrl(config);
  * ```
  */
-export const createSocketUrl = (config: Config): string => {
+export const createSocketUrl = (config: SocketConfig): string => {
   const url = new URL(`wss://${config.hostname}`);
 
   url.pathname = '/v0/evi/chat';
-
-  // receive audio responses as json with IDs instead of binary messages
-  url.searchParams.set('no_binary', String(true));
 
   if (config.auth.type === 'accessToken') {
     url.searchParams.set('accessToken', config.auth.value);
@@ -26,24 +23,12 @@ export const createSocketUrl = (config: Config): string => {
     url.searchParams.set('apiKey', config.auth.value);
   }
 
-  if (config.tts) {
-    url.searchParams.set('tts', config.tts.toString());
-  }
-
-  if (config.channels) {
-    url.searchParams.set('channels', config.channels.toString());
-  }
-
-  if (config.sampleRate) {
-    url.searchParams.set('sample_rate', config.sampleRate.toString());
-  }
-
   if (config.configId) {
-    url.searchParams.set('config_id', config.configId.toString());
+    url.searchParams.set('config_id', config.configId);
   }
 
-  if (config.languageModel) {
-    url.searchParams.set('language_model', config.languageModel.toString());
+  if (config.configVersion) {
+    url.searchParams.set('config_version', String(config.configVersion));
   }
 
   return url.href;

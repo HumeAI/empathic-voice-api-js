@@ -106,10 +106,6 @@ export const useVoiceClient = (props: {
     client.current?.sendAudio(arrayBuffer);
   }, []);
 
-  const sendSystemPrompt = useCallback((prompt: string) => {
-    client.current?.sendSystemPrompt(prompt);
-  }, []);
-
   const sendText = useCallback((text: string) => {
     client.current?.sendText(text);
   }, []);
@@ -123,7 +119,6 @@ export const useVoiceClient = (props: {
     sendAudio,
     connect,
     disconnect,
-    sendSystemPrompt,
     sendText,
     sendTTSText,
   };

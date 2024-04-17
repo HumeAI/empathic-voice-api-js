@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { createConfig, MAX_SYSTEM_PROMPT_LENGTH } from '..';
+import { createSocketConfig } from '..';
 
 describe('create-config', () => {
   it('creates a new config object with defaults', () => {
-    const config = createConfig({
+    const config = createSocketConfig({
       auth: {
         type: 'apiKey',
         value: 'hume-api-key-1234',
@@ -22,22 +22,10 @@ describe('create-config', () => {
     });
   });
 
-  it('throws an error if the system prompt is too long', () => {
-    expect(() => {
-      createConfig({
-        systemPrompt: 'a'.repeat(MAX_SYSTEM_PROMPT_LENGTH + 1),
-        auth: {
-          type: 'apiKey',
-          value: 'hume-api-key-1234',
-        },
-      });
-    }).toThrow();
-  });
-
   it('throws an error if the API key is missing', () => {
     expect(() => {
       // @ts-expect-error - testing invalid input
-      createConfig({});
+      createSocketConfig({});
     }).toThrow();
   });
 });

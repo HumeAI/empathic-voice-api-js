@@ -79,7 +79,7 @@ const VoiceContext = createContext<VoiceContextType | null>(null);
 
 export type VoiceProviderProps = PropsWithChildren<
   Parameters<typeof createConfig>[0]
-> & {
+> & { sessionSettings: string } & {
   onMessage?: (message: JSONMessage) => void;
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
@@ -240,16 +240,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     const err = await client
       .connect({
         ...config,
-      })
-      .then(() => {
-        if (props.systemPrompt) {
-          try {
-            client.sendSystemPrompt(props.systemPrompt);
-          } catch (e) {
-            const message = e instanceof Error ? e.message : 'Unknown error';
-            updateError({ type: 'socket_error', message });
-          }
-        }
       })
       .catch(() => new Error('Could not connect to the voice'));
 
