@@ -1,9 +1,9 @@
 import type {
   AssistantTranscriptMessage,
-  Config,
+  SocketConfig,
   UserTranscriptMessage,
 } from '@humeai/voice';
-import { createConfig } from '@humeai/voice';
+import { createSocketConfig } from '@humeai/voice';
 
 import type { ClientToFrameAction } from './embed-messages';
 import {
@@ -17,7 +17,7 @@ import {
 export type EmbeddedVoiceConfig = {
   rendererUrl: string;
   iframeTitle?: string;
-} & Config;
+} & SocketConfig;
 
 export type TranscriptMessageHandler = (
   message: UserTranscriptMessage | AssistantTranscriptMessage,
@@ -70,7 +70,7 @@ export class EmbeddedVoice {
     onClose?: CloseHandler;
     openOnMount?: boolean;
   } & NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>>): EmbeddedVoice {
-    const parsedConfig = createConfig(config);
+    const parsedConfig = createSocketConfig(config);
 
     return new EmbeddedVoice({
       rendererUrl: rendererUrl ?? 'https://voice-widget.hume.ai',

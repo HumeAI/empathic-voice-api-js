@@ -2,7 +2,7 @@ import { match } from 'ts-pattern';
 import { describe, expect, it } from 'vitest';
 
 import { VoiceClient } from './client';
-import { defaultConfig } from './create-config';
+import { defaultConfig } from './create-socket-config';
 
 describe('client', () => {
   it('to start closed', () => {

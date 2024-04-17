@@ -1,8 +1,9 @@
 import type {
   AssistantTranscriptMessage,
   AudioOutputMessage,
-  Config,
   JSONErrorMessage,
+  SessionSettings,
+  SocketConfig,
   UserInterruptionMessage,
   UserTranscriptMessage,
   VoiceEventMap,
@@ -55,7 +56,7 @@ export const useVoiceClient = (props: {
   const onClose = useRef<typeof props.onClose>(props.onClose);
   onClose.current = props.onClose;
 
-  const connect = useCallback((config: Config) => {
+  const connect = useCallback((config: SocketConfig) => {
     return new Promise((resolve, reject) => {
       client.current = VoiceClient.create(config);
 
@@ -102,12 +103,15 @@ export const useVoiceClient = (props: {
     client.current?.disconnect();
   }, []);
 
+  const sendSessionSettings = useCallback(
+    (sessionSettings: SessionSettings) => {
+      client.current?.sendSessionSettings(sessionSettings);
+    },
+    [],
+  );
+
   const sendAudio = useCallback((arrayBuffer: ArrayBufferLike) => {
     client.current?.sendAudio(arrayBuffer);
-  }, []);
-
-  const sendSystemPrompt = useCallback((prompt: string) => {
-    client.current?.sendSystemPrompt(prompt);
   }, []);
 
   const sendText = useCallback((text: string) => {
@@ -120,10 +124,10 @@ export const useVoiceClient = (props: {
 
   return {
     readyState,
+    sendSessionSettings,
     sendAudio,
     connect,
     disconnect,
-    sendSystemPrompt,
     sendText,
     sendTTSText,
   };

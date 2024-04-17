@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { createConfig } from './create-config';
+import { createSocketConfig } from './create-socket-config';
 import { createSocketUrl } from './create-url';
 
 describe('create-url', () => {
@@ -18,12 +18,24 @@ describe('create-url', () => {
       },
     } as const,
   ])('createSocketUrl', (cfg) => {
-    const config = createConfig(cfg);
+    const config = createSocketConfig(cfg);
 
     expect(createSocketUrl(config)).toBe(
-      `wss://api.hume.ai/v0/evi/chat?no_binary=true&${config.auth.type}=${
-        config.auth.value
-      }&tts=${config.tts.toString()}`,
+      `wss://api.hume.ai/v0/evi/chat?${config.auth.type}=${config.auth.value}`,
+    );
+  });
+
+  test('creates a new socket URL with configId and configVersion', () => {
+    const config = createSocketConfig({
+      auth: {
+        type: 'apiKey',
+        value: 'testing',
+      },
+      configId: 'test-config-id',
+      configVersion: 1,
+    });
+    expect(createSocketUrl(config)).toBe(
+      `wss://api.hume.ai/v0/evi/chat?${config.auth.type}=${config.auth.value}&config_id=${config.configId}&config_version=${config.configVersion}`,
     );
   });
 });

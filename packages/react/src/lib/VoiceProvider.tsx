@@ -1,9 +1,10 @@
 import {
   AssistantTranscriptMessage,
   AudioOutputMessage,
-  createConfig,
+  createSocketConfig,
   JSONErrorMessage,
   JSONMessage,
+  SessionSettings,
   UserInterruptionMessage,
   UserTranscriptMessage,
   VoiceEventMap,
@@ -65,6 +66,7 @@ export type VoiceContextType = {
   readyState: VoiceReadyState;
   sendText: (text: string) => void;
   sendTTSText: (text: string) => void;
+  sendSessionSettings: (sessionSettings: SessionSettings) => void;
   status: VoiceStatus;
   micFft: number[];
   error: VoiceError | null;
@@ -78,8 +80,9 @@ export type VoiceContextType = {
 const VoiceContext = createContext<VoiceContextType | null>(null);
 
 export type VoiceProviderProps = PropsWithChildren<
-  Parameters<typeof createConfig>[0]
+  Parameters<typeof createSocketConfig>[0]
 > & {
+  sessionSettings?: SessionSettings;
   onMessage?: (message: JSONMessage) => void;
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
@@ -108,6 +111,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   children,
   clearMessagesOnDisconnect = true,
   messageHistoryLimit = 100,
+  sessionSettings,
   ...props
 }) => {
   const {
@@ -155,7 +159,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [updateError],
   );
 
-  const config = createConfig(props);
+  const config = createSocketConfig(props);
 
   const player = useSoundPlayer({
     onError: (message) => {
@@ -237,23 +241,20 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       return Promise.reject(error);
     }
 
-    const err = await client
-      .connect({
-        ...config,
-      })
-      .then(() => {
-        if (props.systemPrompt) {
-          try {
-            client.sendSystemPrompt(props.systemPrompt);
-          } catch (e) {
-            const message = e instanceof Error ? e.message : 'Unknown error';
-            updateError({ type: 'socket_error', message });
+    try {
+      await client
+        .connect({
+          ...config,
+        })
+        .then(() => {
+          if (
+            sessionSettings !== undefined &&
+            Object.keys(sessionSettings).length > 0
+          ) {
+            client.sendSessionSettings(sessionSettings);
           }
-        }
-      })
-      .catch(() => new Error('Could not connect to the voice'));
-
-    if (err) {
+        });
+    } catch (e) {
       const error: VoiceError = {
         type: 'socket_error',
         message: 'We could not connect to the voice. Please try again.',
@@ -332,6 +333,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         readyState: client.readyState,
         sendText: client.sendText,
         sendTTSText: client.sendTTSText,
+        sendSessionSettings: client.sendSessionSettings,
         status,
         unmute: mic.unmute,
         error,
@@ -357,6 +359,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       client.readyState,
       client.sendText,
       client.sendTTSText,
+      client.sendSessionSettings,
       status,
       error,
       isAudioError,

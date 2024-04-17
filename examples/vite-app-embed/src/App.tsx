@@ -1,4 +1,4 @@
-import { EmbeddedVoice, LanguageModelOption } from '@humeai/voice-embed-react';
+import { EmbeddedVoice } from '@humeai/voice-embed-react';
 
 import './App.css';
 import { useEffect, useState } from 'react';
@@ -25,9 +25,6 @@ function App() {
           type: 'apiKey',
           value: apiKey,
         }}
-        systemPrompt={
-          'You are an angry cat, always replying to the user with a bad attitude.'
-        }
         rendererUrl={
           import.meta.env.PROD
             ? 'https://voice-widget.hume.ai/'
@@ -44,7 +41,6 @@ function App() {
           import.meta.env['VITE_PUBLIC_HOSTNAME'] ?? 'api.hume.ai',
         )}
         openOnMount={openOnMount}
-        languageModel={LanguageModelOption.GPT_4_TURBO_PREVIEW}
       />
     </>
   );
