@@ -40,7 +40,7 @@ This will download and include the package in your project, making it ready for 
 import { EmbeddedVoice } from '@humeai/voice-embed';
 ```
 
-__NOTE:__ If you are building a React application, you can use our React voice embed SDK instead of this one. [Documentation can be found here](https://github.com/HumeAI/empathic-voice-api-js/blob/main/packages/embed-react/README.md).
+__NOTE:__ If you are building a React application, you can use our React voice embed SDK instead of this one. [Documentation can be found here](https://github.com/HumeAI/empathic-voice-api-js/blob/main/packages/embed-react).
 
 ## Usage
 
@@ -65,7 +65,7 @@ const embeddedVoice = EA.create({
 
 ### Configuration options
 
-Configuration options for the embedded voice include all props that are accepted by the VoiceProvider in the [@humeai/voice-react package](https://github.com/HumeAI/empathic-voice-api-js/blob/main/packages/react/README.md).
+Configuration options for the embedded voice include all props that are accepted by the VoiceProvider in the [@humeai/voice-react package](https://github.com/HumeAI/empathic-voice-api-js/blob/main/packages/react).
 
 In addition, it accepts a few other configurations specific to creating a widget:
 
