@@ -3,9 +3,11 @@
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
 import { useMemo, useState } from 'react';
-import { match } from 'ts-pattern';
+import { P, match } from 'ts-pattern';
 
 import { Waveform } from '@/components/Waveform';
+import { Select, SelectGroup } from '@/components/Select';
+import { Label, SelectItem } from '@radix-ui/react-select';
 
 function getTop3Expressions(expressionOutputs: EmotionScores) {
   return Object.entries(expressionOutputs)
@@ -109,8 +111,26 @@ export const ExampleComponent = () => {
                 </div>
 
                 <div className="flex flex-col gap-2 justify-start">
+                  <div className="uppercase text-sm font-medium">
+                    Send a message
+                  </div>
+                  <SelectGroup>
+                    <Label>Source</Label>
+                    <Select
+                      value={textInputType}
+                      onValueChange={(value) => {
+                        if (value === 'user' || value === 'assistant') {
+                          setTextInputType(value);
+                        }
+                      }}
+                    >
+                      <SelectItem value="user">User</SelectItem>
+                      <SelectItem value="assistant">Assistant</SelectItem>
+                    </Select>
+                  </SelectGroup>
+
                   <label className="flex flex-col gap-2">
-                    <span>Message</span>
+                    <span>Content</span>
                     <input
                       className="border border-black px-2 py-1"
                       value={textValue}
@@ -118,7 +138,14 @@ export const ExampleComponent = () => {
                     />
                   </label>
 
-                  <button className="border border-black">Send message</button>
+                  <button
+                    className="border border-black"
+                    onClick={() => {
+                      console.log('sending message', textValue, textInputType);
+                    }}
+                  >
+                    Send message
+                  </button>
                 </div>
 
                 <div>
