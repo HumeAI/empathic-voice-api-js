@@ -11,7 +11,7 @@ export const AssistantTranscriptMessageSchema = z
       content: z.string(),
     }),
     models: TranscriptModelsSchema,
-    from_tts: z.boolean().catch(false),
+    from_text: z.boolean().catch(false),
   })
   .transform((obj) => {
     return Object.assign(obj, {

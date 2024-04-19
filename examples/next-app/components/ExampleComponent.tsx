@@ -2,9 +2,17 @@
 
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
-import { useMemo } from 'react';
+import { SelectItem } from '@radix-ui/react-select';
+import { useMemo, useState } from 'react';
 import { match } from 'ts-pattern';
 
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/Select';
 import { Waveform } from '@/components/Waveform';
 
 function getTop3Expressions(expressionOutputs: EmotionScores) {
@@ -28,7 +36,14 @@ export const ExampleComponent = () => {
     messages,
     micFft,
     callDurationTimestamp,
+    sendUserInput,
+    sendAssistantInput,
   } = useVoice();
+
+  const [textValue, setTextValue] = useState('');
+  const [textInputType, setTextInputType] = useState<'user' | 'assistant'>(
+    'user',
+  );
 
   const assistantMessages = useMemo(() => {
     return messages
@@ -101,6 +116,55 @@ export const ExampleComponent = () => {
                 <div className="flex gap-10">
                   <Waveform fft={audioFft} />
                   <Waveform fft={micFft} />
+                </div>
+
+                <div className="flex flex-col justify-start gap-2">
+                  <div className="text-sm font-medium uppercase">
+                    Send a text input message
+                  </div>
+                  <div className="flex gap-2">
+                    <SelectGroup className="shrink-0">
+                      <Select
+                        value={textInputType}
+                        onValueChange={(value) => {
+                          if (value === 'user' || value === 'assistant') {
+                            setTextInputType(value);
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select message input type" />
+                          {textInputType === 'user' ? 'User' : 'Assistant'}
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          <SelectItem value="user">User</SelectItem>
+                          <SelectItem value="assistant">Assistant</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </SelectGroup>
+                    <label className="flex grow flex-col gap-2">
+                      <span className="sr-only">Text input content</span>
+                      <input
+                        className="border px-2 py-1"
+                        placeholder="Write an input message here"
+                        value={textValue}
+                        onChange={(e) => setTextValue(e.target.value)}
+                      />
+                    </label>
+                  </div>
+
+                  <button
+                    className="border border-black p-2"
+                    onClick={() => {
+                      const method =
+                        textInputType === 'user'
+                          ? sendUserInput
+                          : sendAssistantInput;
+                      method(textValue);
+                    }}
+                  >
+                    Send text input message
+                  </button>
                 </div>
 
                 <div>

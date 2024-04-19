@@ -114,12 +114,12 @@ export const useVoiceClient = (props: {
     client.current?.sendAudio(arrayBuffer);
   }, []);
 
-  const sendText = useCallback((text: string) => {
-    client.current?.sendText(text);
+  const sendUserInput = useCallback((text: string) => {
+    client.current?.sendUserInput(text);
   }, []);
 
-  const sendTTSText = useCallback((text: string) => {
-    client.current?.sendTTSText(text);
+  const sendAssistantInput = useCallback((text: string) => {
+    client.current?.sendAssistantInput(text);
   }, []);
 
   return {
@@ -128,7 +128,7 @@ export const useVoiceClient = (props: {
     sendAudio,
     connect,
     disconnect,
-    sendText,
-    sendTTSText,
+    sendUserInput,
+    sendAssistantInput,
   };
 };

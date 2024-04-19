@@ -64,8 +64,8 @@ export type VoiceContextType = {
   mute: () => void;
   unmute: () => void;
   readyState: VoiceReadyState;
-  sendText: (text: string) => void;
-  sendTTSText: (text: string) => void;
+  sendUserInput: (text: string) => void;
+  sendAssistantInput: (text: string) => void;
   sendSessionSettings: (sessionSettings: SessionSettings) => void;
   status: VoiceStatus;
   micFft: number[];
@@ -342,8 +342,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         clearMessages: messageStore.clearMessages,
         mute: mic.mute,
         readyState: client.readyState,
-        sendText: client.sendText,
-        sendTTSText: client.sendTTSText,
+        sendUserInput: client.sendUserInput,
+        sendAssistantInput: client.sendAssistantInput,
         sendSessionSettings: client.sendSessionSettings,
         status,
         unmute: mic.unmute,
@@ -368,8 +368,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       messageStore.lastUserMessage,
       messageStore.clearMessages,
       client.readyState,
-      client.sendText,
-      client.sendTTSText,
+      client.sendUserInput,
+      client.sendAssistantInput,
       client.sendSessionSettings,
       status,
       error,

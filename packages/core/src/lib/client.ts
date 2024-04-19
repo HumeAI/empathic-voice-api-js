@@ -157,11 +157,11 @@ export class VoiceClient {
   }
 
   /**
-   * @name sendText
+   * @name sendUserInput
    * @description
    * Send text data to the websocket.
    */
-  sendText(text: string) {
+  sendUserInput(text: string) {
     if (!this.socket) {
       throw new Error('Socket is not connected.');
     }
@@ -170,17 +170,17 @@ export class VoiceClient {
       throw new Error('Socket is not open.');
     }
 
-    const json = JSON.stringify({ text, type: 'text_input' });
+    const json = JSON.stringify({ text, type: 'user_input' });
 
     this.socket.send(json);
   }
 
   /**
-   * @name sendTTSText
+   * @name sendAssistantInput
    * @description
    * Send text data to the websocket for TTS.
    */
-  sendTTSText(text: string) {
+  sendAssistantInput(text: string) {
     if (!this.socket) {
       throw new Error('Socket is not connected.');
     }
@@ -189,7 +189,7 @@ export class VoiceClient {
       throw new Error('Socket is not open.');
     }
 
-    const json = JSON.stringify({ text, type: 'tts' });
+    const json = JSON.stringify({ text, type: 'assistant_input' });
 
     this.socket.send(json);
   }
