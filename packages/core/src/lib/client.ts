@@ -170,7 +170,7 @@ export class VoiceClient {
       throw new Error('Socket is not open.');
     }
 
-    const json = JSON.stringify({ text, type: 'text_input' });
+    const json = JSON.stringify({ text, type: 'user_input' });
 
     this.socket.send(json);
   }
@@ -189,7 +189,7 @@ export class VoiceClient {
       throw new Error('Socket is not open.');
     }
 
-    const json = JSON.stringify({ text, type: 'tts' });
+    const json = JSON.stringify({ text, type: 'assistant_input' });
 
     this.socket.send(json);
   }

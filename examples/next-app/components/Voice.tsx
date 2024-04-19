@@ -22,9 +22,6 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
           console.error('close event was not nice', event);
         }
       }}
-      sessionSettings={{
-        languageModelApiKey: '23ipu34u',
-      }}
     >
       <ExampleComponent />
     </VoiceProvider>

@@ -2,7 +2,7 @@
 
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { match } from 'ts-pattern';
 
 import { Waveform } from '@/components/Waveform';
@@ -29,6 +29,11 @@ export const ExampleComponent = () => {
     micFft,
     callDurationTimestamp,
   } = useVoice();
+
+  const [textValue, setTextValue] = useState('');
+  const [textInputType, setTextInputType] = useState<'user' | 'assistant'>(
+    'user',
+  );
 
   const assistantMessages = useMemo(() => {
     return messages
@@ -101,6 +106,19 @@ export const ExampleComponent = () => {
                 <div className="flex gap-10">
                   <Waveform fft={audioFft} />
                   <Waveform fft={micFft} />
+                </div>
+
+                <div className="flex flex-col gap-2 justify-start">
+                  <label className="flex flex-col gap-2">
+                    <span>Message</span>
+                    <input
+                      className="border border-black px-2 py-1"
+                      value={textValue}
+                      onChange={(e) => setTextValue(e.target.value)}
+                    />
+                  </label>
+
+                  <button className="border border-black">Send message</button>
                 </div>
 
                 <div>
