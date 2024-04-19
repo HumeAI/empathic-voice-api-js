@@ -157,11 +157,11 @@ export class VoiceClient {
   }
 
   /**
-   * @name sendText
+   * @name sendUserInput
    * @description
    * Send text data to the websocket.
    */
-  sendText(text: string) {
+  sendUserInput(text: string) {
     if (!this.socket) {
       throw new Error('Socket is not connected.');
     }
@@ -176,11 +176,11 @@ export class VoiceClient {
   }
 
   /**
-   * @name sendTTSText
+   * @name sendAssistantInput
    * @description
    * Send text data to the websocket for TTS.
    */
-  sendTTSText(text: string) {
+  sendAssistantInput(text: string) {
     if (!this.socket) {
       throw new Error('Socket is not connected.');
     }

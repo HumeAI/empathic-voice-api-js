@@ -2,12 +2,18 @@
 
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
+import { SelectItem } from '@radix-ui/react-select';
 import { useMemo, useState } from 'react';
-import { P, match } from 'ts-pattern';
+import { match } from 'ts-pattern';
 
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/Select';
 import { Waveform } from '@/components/Waveform';
-import { Select, SelectGroup } from '@/components/Select';
-import { Label, SelectItem } from '@radix-ui/react-select';
 
 function getTop3Expressions(expressionOutputs: EmotionScores) {
   return Object.entries(expressionOutputs)
@@ -30,6 +36,8 @@ export const ExampleComponent = () => {
     messages,
     micFft,
     callDurationTimestamp,
+    sendUserInput,
+    sendAssistantInput,
   } = useVoice();
 
   const [textValue, setTextValue] = useState('');
@@ -110,41 +118,52 @@ export const ExampleComponent = () => {
                   <Waveform fft={micFft} />
                 </div>
 
-                <div className="flex flex-col gap-2 justify-start">
-                  <div className="uppercase text-sm font-medium">
-                    Send a message
+                <div className="flex flex-col justify-start gap-2">
+                  <div className="text-sm font-medium uppercase">
+                    Send a text input message
                   </div>
-                  <SelectGroup>
-                    <Label>Source</Label>
-                    <Select
-                      value={textInputType}
-                      onValueChange={(value) => {
-                        if (value === 'user' || value === 'assistant') {
-                          setTextInputType(value);
-                        }
-                      }}
-                    >
-                      <SelectItem value="user">User</SelectItem>
-                      <SelectItem value="assistant">Assistant</SelectItem>
-                    </Select>
-                  </SelectGroup>
-
-                  <label className="flex flex-col gap-2">
-                    <span>Content</span>
-                    <input
-                      className="border border-black px-2 py-1"
-                      value={textValue}
-                      onChange={(e) => setTextValue(e.target.value)}
-                    />
-                  </label>
+                  <div className="flex gap-2">
+                    <SelectGroup className="shrink-0">
+                      <Select
+                        value={textInputType}
+                        onValueChange={(value) => {
+                          if (value === 'user' || value === 'assistant') {
+                            setTextInputType(value);
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select message input type" />
+                          {textInputType === 'user' ? 'User' : 'Assistant'}
+                        </SelectTrigger>
+                        <SelectContent className="bg-white">
+                          <SelectItem value="user">User</SelectItem>
+                          <SelectItem value="assistant">Assistant</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </SelectGroup>
+                    <label className="flex grow flex-col gap-2">
+                      <span className="sr-only">Text input content</span>
+                      <input
+                        className="border px-2 py-1"
+                        placeholder="Write an input message here"
+                        value={textValue}
+                        onChange={(e) => setTextValue(e.target.value)}
+                      />
+                    </label>
+                  </div>
 
                   <button
-                    className="border border-black"
+                    className="border border-black p-2"
                     onClick={() => {
-                      console.log('sending message', textValue, textInputType);
+                      const method =
+                        textInputType === 'user'
+                          ? sendUserInput
+                          : sendAssistantInput;
+                      method(textValue);
                     }}
                   >
-                    Send message
+                    Send text input message
                   </button>
                 </div>
 
