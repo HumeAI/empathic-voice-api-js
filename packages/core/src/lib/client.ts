@@ -212,7 +212,7 @@ export class VoiceClient {
 
     const json = JSON.stringify({
       ...snakeCaseSettings,
-      type: 'configuration',
+      type: 'session_settings',
     });
     this.socket.send(json);
   }
