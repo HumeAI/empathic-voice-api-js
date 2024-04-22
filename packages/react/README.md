@@ -134,4 +134,4 @@ export const ExampleComponent = () => {
 
 ## Support
 
-If you have questions or require assistance pertaining to this package, [reach out to us on Discord](https://discord.com/invite/WPRSugvAm6)!
+If you have questions or require assistance pertaining to this package, [reach out to us on Discord](https://hume.ai/discord)!

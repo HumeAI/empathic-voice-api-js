@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://storage.googleapis.com/hume-public-logos/hume/hume-banner.png">
-  <h1>Hume AI Voice Embed</h1>
+  <h1>Hume AI Voice Embed SDK</h1>
   <p>
     <strong>Integrate Hume's Empathic Voice Interface directly into your web application</strong>
   </p>
@@ -79,4 +79,4 @@ In addition, it accepts a few other configurations specific to creating a widget
 
 ## Support
 
-If you have questions or require assistance pertaining to this package, [reach out to us on Discord](https://discord.com/invite/WPRSugvAm6)!
+If you have questions or require assistance pertaining to this package, [reach out to us on Discord](https://hume.ai/discord)!

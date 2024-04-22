@@ -1,8 +1,8 @@
 <div align="center">
   <img src="https://storage.googleapis.com/hume-public-logos/hume/hume-banner.png">
-  <h1>Hume AI EVI React SDK</h1>
+  <h1>Hume AI EVI Core Typescript SDK</h1>
   <p>
-    <strong>Integrate Hume's Empathic Voice Interface in your React application</strong>
+    <strong>Integrate Hume's Empathic Voice Interface in your web application</strong>
   </p>
 </div>
 
@@ -44,4 +44,4 @@ We also offer a [empathic voice React SDK](https://github.com/HumeAI/empathic-vo
 
 ## Support
 
-If you have questions or require assistance pertaining to this package, [reach out to us on Discord](https://discord.com/invite/WPRSugvAm6)!
+If you have questions or require assistance pertaining to this package, [reach out to us on Discord](https://hume.ai/discord)!
