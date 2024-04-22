@@ -35,6 +35,7 @@ export const SessionSettingsSchema = z.object({
   audio: AudioConfigurationSchema.optional(),
   context: ContextConfigurationSchema.optional(),
   languageModelApiKey: z.string().optional(),
+  customSessionId: z.string().optional(),
 });
 
 export type SessionSettings = z.infer<typeof SessionSettingsSchema>;
