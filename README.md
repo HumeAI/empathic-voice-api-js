@@ -1,81 +1,42 @@
-# Turborepo starter
+<div align="center">
+  <img src="https://storage.googleapis.com/hume-public-logos/hume/hume-banner.png">
+  <h1>Hume AI EVI Typescript SDK</h1>
+  <p>
+    <strong>Integrate Hume's Empathic Voice Interface in your web application</strong>
+  </p>
+</div>
 
-This is an official starter Turborepo.
+## Getting started
 
-## Using this example
+This repository contains several Typescript SDKs for the Hume Empathic Voice Interface.
 
-Run the following command:
+EVI API
+* [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/core](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/core)
+* [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react)
 
-```sh
-npx create-turbo@latest
-```
+Embedded Widget
+* [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react)
+* [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed)
 
-## What's inside?
+Aside from the Typescript SDKs, you may visit [our documentation page](https://dev.hume.ai/docs/empathic-voice-interface-evi/overview) for guides on how to use the EVI API.
 
-This Turborepo includes the following packages/apps:
 
-### Apps and Packages
+## Example applications
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+* [Next.js example](https://github.com/HumeAI/empathic-voice-api-js/tree/main/examples/next-app)
+* [Embedded widget parent page example](https://github.com/HumeAI/empathic-voice-api-js/tree/main/examples/vite-app-embed)
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+## Local development
 
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
+This SDK is developed on Turborepo. To get started with local development, run:
 
 ```
-cd my-turborepo
-pnpm build
-```
-
-### Develop
-
-To develop all apps and packages, run the following command:
-
-```
-cd my-turborepo
+pnpm install
 pnpm dev
 ```
 
-### Remote Caching
+This will start the development server for each SDK package, as well as each of the example applications.
 
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+## Support
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+If you have questions or require assistance pertaining to this package, [reach out to us on Discord](https://hume.ai/discord)!
