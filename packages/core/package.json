@@ -7,7 +7,7 @@
   "types": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HumeAI/voice-sdk.git",
+    "url": "https://github.com/HumeAI/empathic-voice-api-js.git",
     "directory": "packages/core"
   },
   "files": [
