@@ -10,7 +10,7 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "release": "pnpm build:packages && pnpm publish -r --access restricted --no-git-checks"
+    "release": "pnpm install && pnpm build:packages && pnpm publish -r --access public --no-git-checks"
   },
   "devDependencies": {
     "@humeai/eslint-config": "workspace:*",
