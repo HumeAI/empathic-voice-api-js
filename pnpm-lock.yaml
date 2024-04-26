@@ -323,9 +323,6 @@ importers:
       '@humeai/voice':
         specifier: workspace:*
         version: link:../core
-      '@testing-library/react-hooks':
-        specifier: ^8.0.1
-        version: 8.0.1(@types/react@18.2.65)(react-dom@18.2.0)(react@18.2.0)
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0
@@ -351,6 +348,9 @@ importers:
       '@testing-library/react':
         specifier: ^14.2.1
         version: 14.2.1(react-dom@18.2.0)(react@18.2.0)
+      '@testing-library/react-hooks':
+        specifier: ^8.0.1
+        version: 8.0.1(@types/react@18.2.65)(react-dom@18.2.0)(react@18.2.0)
       '@types/eslint':
         specifier: ^8.56.2
         version: 8.56.5
@@ -677,6 +677,7 @@ packages:
     engines: {node: '>=6.9.0'}
     dependencies:
       regenerator-runtime: 0.14.1
+    dev: true
 
   /@babel/runtime@7.24.1:
     resolution: {integrity: sha512-+BIznRzyqBf+2wCTxcKE3wDjfGeCoVE61KSHGpkzqrLi8qxqFwBeUFyId2cxkTmm55fzDGnm0+yCxaxygrLUnQ==}
@@ -1988,7 +1989,7 @@ packages:
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
       react-error-boundary: 3.1.4(react@18.2.0)
-    dev: false
+    dev: true
 
   /@testing-library/react-hooks@8.0.1(@types/react@18.2.70)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-Aqhl2IVmLt8IovEVarNDFuJDVWVvhnr9/GCU6UUnrYXwgDFF9h2L2o2P9KBni1AST5sT6riAyoukFLyjQUgD/g==}
@@ -5628,6 +5629,7 @@ packages:
     dependencies:
       '@babel/runtime': 7.24.1
       react: 18.2.0
+    dev: true
 
   /react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
