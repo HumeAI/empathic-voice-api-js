@@ -5,6 +5,9 @@ import {
   JSONErrorMessage,
   JSONMessage,
   SessionSettings,
+  ToolCall,
+  ToolError,
+  ToolResponse,
   UserInterruptionMessage,
   UserTranscriptMessage,
   VoiceEventMap,
@@ -57,6 +60,9 @@ export type VoiceContextType = {
     | ConnectionMessage
     | UserInterruptionMessage
     | JSONErrorMessage
+    | ToolCall
+    | ToolResponse
+    | ToolError
   )[];
   lastVoiceMessage: AssistantTranscriptMessage | null;
   lastUserMessage: UserTranscriptMessage | null;
@@ -182,7 +188,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           | UserTranscriptMessage
           | AssistantTranscriptMessage
           | UserInterruptionMessage
-          | JSONErrorMessage,
+          | JSONErrorMessage
+          | ToolCall
+          | ToolResponse
+          | ToolError,
       ) => {
         // store message
         messageStore.onMessage(message);

@@ -18,6 +18,9 @@ export type {
   JSONMessage,
   UserTranscriptMessage,
   EmotionScores,
+  ToolCall,
+  ToolResponse,
+  ToolError,
 } from '@humeai/voice';
 
 export { LanguageModelOption } from '@humeai/voice';

@@ -4,6 +4,9 @@ import type {
   JSONErrorMessage,
   SessionSettings,
   SocketConfig,
+  ToolCall,
+  ToolError,
+  ToolResponse,
   UserInterruptionMessage,
   UserTranscriptMessage,
   VoiceEventMap,
@@ -25,7 +28,10 @@ export const useVoiceClient = (props: {
       | UserTranscriptMessage
       | AssistantTranscriptMessage
       | UserInterruptionMessage
-      | JSONErrorMessage,
+      | JSONErrorMessage
+      | ToolCall
+      | ToolResponse
+      | ToolError,
   ) => void;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
