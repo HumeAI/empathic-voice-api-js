@@ -218,6 +218,68 @@ export class VoiceClient {
   }
 
   /**
+   * @name sendToolResponse
+   * @description
+   * Send tool response to the websocket, e.g. for function calling
+   */
+  sendToolResponse({
+    toolCallId,
+    content,
+  }: {
+    toolCallId: string;
+    content: string | JSON;
+  }) {
+    if (!this.socket) {
+      throw new Error('Socket is not connected.');
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('Socket is not open.');
+    }
+
+    const json = JSON.stringify({
+      type: 'tool_response',
+      tool_call_id: toolCallId,
+      content,
+    });
+
+    this.socket.send(json);
+  }
+
+  sendToolError({
+    toolCallId,
+    content,
+    error,
+    code,
+    level,
+  }: {
+    toolCallId: string;
+    content: string | JSON;
+    error: string;
+    code: string;
+    level: string;
+  }) {
+    if (!this.socket) {
+      throw new Error('Socket is not connected.');
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('Socket is not open.');
+    }
+
+    const json = JSON.stringify({
+      type: 'tool_error',
+      tool_call_id: toolCallId,
+      error,
+      code,
+      level,
+      content,
+    });
+
+    this.socket.send(json);
+  }
+
+  /**
    * @name readyState
    * @description
    * The current ready state of the socket.
