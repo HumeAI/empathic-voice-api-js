@@ -37,6 +37,15 @@ describe('client', () => {
         .with('error', () => {
           console.log('error');
         })
+        .with('tool_call', () => {
+          console.log('tool call');
+        })
+        .with('tool_response', () => {
+          console.log('tool response');
+        })
+        .with('tool_error', () => {
+          console.log('tool error');
+        })
         .exhaustive();
     });
 

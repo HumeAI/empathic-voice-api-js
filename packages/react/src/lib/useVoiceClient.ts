@@ -4,6 +4,9 @@ import type {
   JSONErrorMessage,
   SessionSettings,
   SocketConfig,
+  ToolCall,
+  ToolError,
+  ToolResponse,
   UserInterruptionMessage,
   UserTranscriptMessage,
   VoiceEventMap,
@@ -25,7 +28,10 @@ export const useVoiceClient = (props: {
       | UserTranscriptMessage
       | AssistantTranscriptMessage
       | UserInterruptionMessage
-      | JSONErrorMessage,
+      | JSONErrorMessage
+      | ToolCall
+      | ToolResponse
+      | ToolError,
   ) => void;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
@@ -122,6 +128,44 @@ export const useVoiceClient = (props: {
     client.current?.sendAssistantInput(text);
   }, []);
 
+  const sendToolResponse = useCallback(
+    ({
+      toolCallId,
+      content,
+    }: {
+      toolCallId: string;
+      content: string | JSON;
+    }) => {
+      client.current?.sendToolResponse({ toolCallId, content });
+    },
+    [],
+  );
+
+  const sendToolError = useCallback(
+    ({
+      toolCallId,
+      content,
+      error,
+      code,
+      level,
+    }: {
+      toolCallId: string;
+      content: string | JSON;
+      error: string;
+      code: string;
+      level: string;
+    }) => {
+      client.current?.sendToolError({
+        toolCallId,
+        content,
+        error,
+        code,
+        level,
+      });
+    },
+    [],
+  );
+
   return {
     readyState,
     sendSessionSettings,
@@ -130,5 +174,7 @@ export const useVoiceClient = (props: {
     disconnect,
     sendUserInput,
     sendAssistantInput,
+    sendToolResponse,
+    sendToolError,
   };
 };

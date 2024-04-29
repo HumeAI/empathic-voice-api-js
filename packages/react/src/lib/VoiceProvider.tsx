@@ -5,6 +5,9 @@ import {
   JSONErrorMessage,
   JSONMessage,
   SessionSettings,
+  ToolCall,
+  ToolError,
+  ToolResponse,
   UserInterruptionMessage,
   UserTranscriptMessage,
   VoiceEventMap,
@@ -57,6 +60,9 @@ export type VoiceContextType = {
     | ConnectionMessage
     | UserInterruptionMessage
     | JSONErrorMessage
+    | ToolCall
+    | ToolResponse
+    | ToolError
   )[];
   lastVoiceMessage: AssistantTranscriptMessage | null;
   lastUserMessage: UserTranscriptMessage | null;
@@ -67,6 +73,17 @@ export type VoiceContextType = {
   sendUserInput: (text: string) => void;
   sendAssistantInput: (text: string) => void;
   sendSessionSettings: (sessionSettings: SessionSettings) => void;
+  sendToolResponse: (toolResponse: {
+    toolCallId: string;
+    content: string | JSON;
+  }) => void;
+  sendToolError: (toolError: {
+    toolCallId: string;
+    content: string | JSON;
+    error: string;
+    code: string;
+    level: string;
+  }) => void;
   status: VoiceStatus;
   micFft: number[];
   error: VoiceError | null;
@@ -182,7 +199,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           | UserTranscriptMessage
           | AssistantTranscriptMessage
           | UserInterruptionMessage
-          | JSONErrorMessage,
+          | JSONErrorMessage
+          | ToolCall
+          | ToolResponse
+          | ToolError,
       ) => {
         // store message
         messageStore.onMessage(message);
@@ -345,6 +365,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         sendUserInput: client.sendUserInput,
         sendAssistantInput: client.sendAssistantInput,
         sendSessionSettings: client.sendSessionSettings,
+        sendToolResponse: client.sendToolResponse,
+        sendToolError: client.sendToolError,
         status,
         unmute: mic.unmute,
         error,
@@ -371,6 +393,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       client.sendUserInput,
       client.sendAssistantInput,
       client.sendSessionSettings,
+      client.sendToolResponse,
+      client.sendToolError,
       status,
       error,
       isAudioError,

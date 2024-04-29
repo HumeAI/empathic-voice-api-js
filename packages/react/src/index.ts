@@ -17,5 +17,8 @@ export {
   type TimeSlice,
   type UserInterruptionMessage,
   type UserTranscriptMessage,
+  type ToolCall,
+  type ToolResponse,
+  type ToolError,
   LanguageModelOption,
 } from '@humeai/voice';

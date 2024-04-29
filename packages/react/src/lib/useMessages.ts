@@ -1,4 +1,10 @@
-import type { JSONErrorMessage, UserInterruptionMessage } from '@humeai/voice';
+import type {
+  JSONErrorMessage,
+  ToolCall,
+  ToolError,
+  ToolResponse,
+  UserInterruptionMessage,
+} from '@humeai/voice';
 import {
   type AssistantTranscriptMessage,
   type JSONMessage,
@@ -18,7 +24,10 @@ export const useMessages = ({
       | UserTranscriptMessage
       | AssistantTranscriptMessage
       | UserInterruptionMessage
-      | JSONErrorMessage,
+      | JSONErrorMessage
+      | ToolCall
+      | ToolResponse
+      | ToolError,
   ) => void;
   messageHistoryLimit: number;
 }) => {
@@ -33,6 +42,9 @@ export const useMessages = ({
       | ConnectionMessage
       | UserInterruptionMessage
       | JSONErrorMessage
+      | ToolCall
+      | ToolResponse
+      | ToolError
     >
   >([]);
 
