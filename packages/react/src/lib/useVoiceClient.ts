@@ -33,6 +33,7 @@ export const useVoiceClient = (props: {
       | ToolResponse
       | ToolError,
   ) => void;
+  onToolCall?: (message: ToolCall) => Promise<ToolResponse | ToolError>;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
   onClose?: VoiceEventMap['close'];
@@ -53,6 +54,9 @@ export const useVoiceClient = (props: {
   const onMessage = useRef<typeof props.onMessage>(props.onMessage);
   onMessage.current = props.onMessage;
 
+  const onToolCall = useRef<typeof props.onToolCall>(props.onToolCall);
+  onToolCall.current = props.onToolCall;
+
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
 
@@ -72,7 +76,7 @@ export const useVoiceClient = (props: {
         resolve(VoiceReadyState.OPEN);
       });
 
-      client.current.on('message', (message) => {
+      client.current.on('message', async (message) => {
         if (message.type === 'audio_output') {
           onAudioMessage.current?.(message);
         }
@@ -82,11 +86,20 @@ export const useVoiceClient = (props: {
           message.type === 'user_message' ||
           message.type === 'user_interruption' ||
           message.type === 'error' ||
-          message.type === 'tool_call' ||
           message.type === 'tool_response' ||
           message.type === 'tool_error'
         ) {
           onMessage.current?.(message);
+        }
+
+        if (message.type === 'tool_call') {
+          const response = await onToolCall.current?.(message);
+          if (response) {
+            client.current?.sendToolResponse({
+              toolCallId: message.tool_call_id,
+              content: response.content as string,
+            });
+          }
         }
       });
 
