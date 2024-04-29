@@ -81,7 +81,10 @@ export const useVoiceClient = (props: {
           message.type === 'assistant_message' ||
           message.type === 'user_message' ||
           message.type === 'user_interruption' ||
-          message.type === 'error'
+          message.type === 'error' ||
+          message.type === 'tool_call' ||
+          message.type === 'tool_response' ||
+          message.type === 'tool_error'
         ) {
           onMessage.current?.(message);
         }

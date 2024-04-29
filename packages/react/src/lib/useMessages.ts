@@ -112,6 +112,24 @@ export const useMessages = ({
           return keepLastN(messageHistoryLimit, prev.concat([message]));
         });
         break;
+      case 'tool_call':
+        sendMessageToParent?.(message);
+        setMessages((prev) => {
+          return keepLastN(messageHistoryLimit, prev.concat([message]));
+        });
+        break;
+      case 'tool_response':
+        sendMessageToParent?.(message);
+        setMessages((prev) => {
+          return keepLastN(messageHistoryLimit, prev.concat([message]));
+        });
+        break;
+      case 'tool_error':
+        sendMessageToParent?.(message);
+        setMessages((prev) => {
+          return keepLastN(messageHistoryLimit, prev.concat([message]));
+        });
+        break;
       default:
         break;
     }
