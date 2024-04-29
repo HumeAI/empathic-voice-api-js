@@ -2,6 +2,7 @@ import z from 'zod';
 
 export const ToolCallSchema = z.object({
   type: z.literal('tool_call'),
+  tool_type: z.enum(['built_in', 'function']),
   tool_call_id: z.string(),
   response_required: z.boolean(),
   name: z.string(),
@@ -21,7 +22,7 @@ export type ToolResponse = z.infer<typeof ToolResponseSchema>;
 export const ToolErrorSchema = z.object({
   type: z.literal('tool_error'),
   tool_call_id: z.string(),
-  content: z.any().nullish(),
+  content: z.string().nullish(),
   error: z.string(),
   code: z.string(),
   level: z.string(),
