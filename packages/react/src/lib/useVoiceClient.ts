@@ -111,6 +111,7 @@ export const useVoiceClient = (props: {
         }
 
         if (message.type === 'tool_call' && onToolCall.current) {
+          onMessage.current?.(message);
           void onToolCall
             .current(message, {
               success: (content: unknown) => ({
