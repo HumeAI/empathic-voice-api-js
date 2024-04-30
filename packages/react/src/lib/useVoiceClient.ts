@@ -21,6 +21,19 @@ export enum VoiceReadyState {
   CLOSED = 'closed',
 }
 
+export type ToolCallHandler = (
+  message: ToolCall,
+  send: {
+    success: (content: unknown) => ToolResponse;
+    error: (e: {
+      error: string;
+      code: string;
+      level: string;
+      content: string;
+    }) => ToolError;
+  },
+) => Promise<ToolResponse | ToolError>;
+
 export const useVoiceClient = (props: {
   onAudioMessage?: (message: AudioOutputMessage) => void;
   onMessage?: (
@@ -33,7 +46,7 @@ export const useVoiceClient = (props: {
       | ToolResponse
       | ToolError,
   ) => void;
-  onToolCall?: (message: ToolCall) => Promise<ToolResponse | ToolError>;
+  onToolCall?: ToolCallHandler;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
   onClose?: VoiceEventMap['close'];
@@ -76,7 +89,7 @@ export const useVoiceClient = (props: {
         resolve(VoiceReadyState.OPEN);
       });
 
-      client.current.on('message', async (message) => {
+      client.current.on('message', (message) => {
         if (message.type === 'audio_output') {
           onAudioMessage.current?.(message);
         }
@@ -92,14 +105,41 @@ export const useVoiceClient = (props: {
           onMessage.current?.(message);
         }
 
-        if (message.type === 'tool_call') {
-          const response = await onToolCall.current?.(message);
-          if (response) {
-            const parsed = ToolResponseSchema.safeParse(response);
-            if (parsed.success) {
-              client.current?.sendToolResponse(parsed.data);
-            }
-          }
+        if (message.type === 'tool_call' && onToolCall.current) {
+          void onToolCall
+            .current(message, {
+              success: (content: unknown) => ({
+                type: 'tool_response',
+                tool_call_id: message.tool_call_id,
+                content: JSON.stringify(content),
+              }),
+              error: ({
+                error,
+                code,
+                level,
+                content,
+              }: {
+                error: string;
+                code: string;
+                level: string;
+                content: string;
+              }) => ({
+                type: 'tool_error',
+                tool_call_id: message.tool_call_id,
+                error,
+                code,
+                level,
+                content,
+              }),
+            })
+            .then((response) => {
+              const parsed = ToolResponseSchema.safeParse(response);
+              if (parsed.success) {
+                client.current?.sendToolResponse(parsed.data);
+              } else {
+                onError.current?.('Invalid response from tool call');
+              }
+            });
         }
       });
 

@@ -30,34 +30,22 @@ export const ToolResponseContentSchema = z.union([z.string(), jsonSchema]);
 
 export type ToolResponseContent = z.infer<typeof ToolResponseContentSchema>;
 
-export const ToolResponseSchema = z
-  .object({
-    type: z.literal('tool_response'),
-    tool_call_id: z.string(),
-    content: ToolResponseContentSchema,
-  })
-  .transform((obj) => {
-    return Object.assign(obj, {
-      receivedAt: new Date(),
-    });
-  });
+export const ToolResponseSchema = z.object({
+  type: z.literal('tool_response'),
+  tool_call_id: z.string(),
+  content: ToolResponseContentSchema,
+});
 
 export type ToolResponse = z.infer<typeof ToolResponseSchema>;
 
 // MARK: ToolError Message
-export const ToolErrorSchema = z
-  .object({
-    type: z.literal('tool_error'),
-    tool_call_id: z.string(),
-    content: z.string().nullish(),
-    error: z.string(),
-    code: z.string(),
-    level: z.string(),
-  })
-  .transform((obj) => {
-    return Object.assign(obj, {
-      receivedAt: new Date(),
-    });
-  });
+export const ToolErrorSchema = z.object({
+  type: z.literal('tool_error'),
+  tool_call_id: z.string(),
+  content: z.string().nullish(),
+  error: z.string(),
+  code: z.string(),
+  level: z.string(),
+});
 
 export type ToolError = z.infer<typeof ToolErrorSchema>;

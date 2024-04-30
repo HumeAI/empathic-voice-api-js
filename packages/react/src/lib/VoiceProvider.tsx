@@ -8,12 +8,11 @@ import {
   ToolCall,
   ToolError,
   ToolResponse,
-  ToolResponseContent,
   UserInterruptionMessage,
   UserTranscriptMessage,
   VoiceEventMap,
 } from '@humeai/voice';
-import {
+import React, {
   createContext,
   FC,
   PropsWithChildren,
@@ -32,7 +31,11 @@ import { useEncoding } from './useEncoding';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
-import { useVoiceClient, type VoiceReadyState } from './useVoiceClient';
+import {
+  ToolCallHandler,
+  useVoiceClient,
+  type VoiceReadyState,
+} from './useVoiceClient';
 
 type VoiceError =
   | { type: 'socket_error'; message: string; error?: Error }
@@ -96,7 +99,7 @@ export type VoiceProviderProps = PropsWithChildren<
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: VoiceEventMap['close'];
-  onToolCall?: (toolCall: ToolCall) => Promise<ToolResponse | ToolError>;
+  onToolCall?: ToolCallHandler;
   /**
    * @default true
    * @description Clear messages when the voice is disconnected.
