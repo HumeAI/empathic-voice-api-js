@@ -59,6 +59,9 @@ importers:
       ts-pattern:
         specifier: ^5.0.6
         version: 5.0.8
+      zod:
+        specifier: ^3.22.4
+        version: 3.22.4
     devDependencies:
       '@types/eslint':
         specifier: ^8.56.1

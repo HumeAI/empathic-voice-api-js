@@ -8,11 +8,12 @@ import {
   ToolCall,
   ToolError,
   ToolResponse,
+  ToolResponseContent,
   UserInterruptionMessage,
   UserTranscriptMessage,
   VoiceEventMap,
 } from '@humeai/voice';
-import React, {
+import {
   createContext,
   FC,
   PropsWithChildren,
@@ -73,17 +74,8 @@ export type VoiceContextType = {
   sendUserInput: (text: string) => void;
   sendAssistantInput: (text: string) => void;
   sendSessionSettings: (sessionSettings: SessionSettings) => void;
-  sendToolResponse: (toolResponse: {
-    toolCallId: string;
-    content: string | JSON;
-  }) => void;
-  sendToolError: (toolError: {
-    toolCallId: string;
-    content: string | JSON;
-    error: string;
-    code: string;
-    level: string;
-  }) => void;
+  sendToolResponse: (toolResponse: ToolResponse) => void;
+  sendToolError: (toolError: ToolError) => void;
   status: VoiceStatus;
   micFft: number[];
   error: VoiceError | null;

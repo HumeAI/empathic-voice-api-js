@@ -8,6 +8,7 @@ import type { SocketConfig } from './create-socket-config';
 import { createSocketUrl } from './create-url';
 import { parseMessageType } from './message';
 
+import type { ToolError, ToolResponse } from '@/index';
 import type { AudioMessage } from '@/models/audio-message';
 import type { JSONMessage } from '@/models/json-message';
 import { type SessionSettings } from '@/models/session-settings';
@@ -222,13 +223,7 @@ export class VoiceClient {
    * @description
    * Send tool response to the websocket, e.g. for function calling
    */
-  sendToolResponse({
-    toolCallId,
-    content,
-  }: {
-    toolCallId: string;
-    content: string | JSON;
-  }) {
+  sendToolResponse(toolResponse: ToolResponse) {
     if (!this.socket) {
       throw new Error('Socket is not connected.');
     }
@@ -237,28 +232,12 @@ export class VoiceClient {
       throw new Error('Socket is not open.');
     }
 
-    const json = JSON.stringify({
-      type: 'tool_response',
-      tool_call_id: toolCallId,
-      content,
-    });
+    const json = JSON.stringify(toolResponse);
 
     this.socket.send(json);
   }
 
-  sendToolError({
-    toolCallId,
-    content,
-    error,
-    code,
-    level,
-  }: {
-    toolCallId: string;
-    content: string | JSON;
-    error: string;
-    code: string;
-    level: string;
-  }) {
+  sendToolError(toolError: ToolError) {
     if (!this.socket) {
       throw new Error('Socket is not connected.');
     }
@@ -267,14 +246,7 @@ export class VoiceClient {
       throw new Error('Socket is not open.');
     }
 
-    const json = JSON.stringify({
-      type: 'tool_error',
-      tool_call_id: toolCallId,
-      error,
-      code,
-      level,
-      content,
-    });
+    const json = JSON.stringify(toolError);
 
     this.socket.send(json);
   }

@@ -18,10 +18,14 @@ export const ToolCallSchema = z.object({
 
 export type ToolCall = z.infer<typeof ToolCallSchema>;
 
+export const ToolResponseContentSchema = z.union([z.string(), jsonSchema]);
+
+export type ToolResponseContent = z.infer<typeof ToolResponseContentSchema>;
+
 export const ToolResponseSchema = z.object({
   type: z.literal('tool_response'),
   tool_call_id: z.string(),
-  content: z.union([z.string(), jsonSchema]),
+  content: ToolResponseContentSchema,
 });
 
 export type ToolResponse = z.infer<typeof ToolResponseSchema>;

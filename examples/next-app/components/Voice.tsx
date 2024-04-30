@@ -1,10 +1,10 @@
 'use client';
 import type { ToolCall, ToolError, ToolResponse } from '@humeai/voice-react';
 import { VoiceProvider } from '@humeai/voice-react';
+import { useCallback } from 'react';
 import { z } from 'zod';
 
 import { ExampleComponent } from '@/components/ExampleComponent';
-import { useCallback } from 'react';
 
 export const Voice = ({ accessToken }: { accessToken: string }) => {
   return (
@@ -33,8 +33,8 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
                 );
               }
 
-              const location = await fetch(
-                `https://geocode.maps.co/search?q=${args.data.location}&api_key=663042e9e06db354370369bhzc3ca91`,
+              const location: unknown = await fetch(
+                `https://geocode.maps.co/search?q=${String(args.data.location)}&api_key=663042e9e06db354370369bhzc3ca91`,
               ).then((res) => res.json());
 
               const locationResults = z
@@ -54,7 +54,7 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
               const { lat, lon } = locationResults.data[0];
               const pointMetadataEndpoint: string = `https://api.weather.gov/points/${parseFloat(lat).toFixed(3)},${parseFloat(lon).toFixed(3)}`;
 
-              const result = await fetch(pointMetadataEndpoint, {
+              const result: unknown = await fetch(pointMetadataEndpoint, {
                 method: 'GET',
               }).then((res) => res.json());
 
@@ -73,8 +73,8 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
               const { properties } = json.data;
               const { forecast: forecastUrl } = properties;
 
-              const forecastResult = await fetch(forecastUrl).then((res) =>
-                res.json(),
+              const forecastResult: unknown = await fetch(forecastUrl).then(
+                (res) => res.json(),
               );
 
               const forecastJson = z
