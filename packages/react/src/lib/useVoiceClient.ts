@@ -11,7 +11,7 @@ import type {
   UserTranscriptMessage,
   VoiceEventMap,
 } from '@humeai/voice';
-import { VoiceClient } from '@humeai/voice';
+import { ToolResponseSchema, VoiceClient } from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
 
 export enum VoiceReadyState {
@@ -95,10 +95,10 @@ export const useVoiceClient = (props: {
         if (message.type === 'tool_call') {
           const response = await onToolCall.current?.(message);
           if (response) {
-            client.current?.sendToolResponse({
-              toolCallId: message.tool_call_id,
-              content: response.content as string,
-            });
+            const parsed = ToolResponseSchema.safeParse(response);
+            if (parsed.success) {
+              client.current?.sendToolResponse(parsed.data);
+            }
           }
         }
       });
@@ -144,43 +144,13 @@ export const useVoiceClient = (props: {
     client.current?.sendAssistantInput(text);
   }, []);
 
-  const sendToolResponse = useCallback(
-    ({
-      toolCallId,
-      content,
-    }: {
-      toolCallId: string;
-      content: string | JSON;
-    }) => {
-      client.current?.sendToolResponse({ toolCallId, content });
-    },
-    [],
-  );
+  const sendToolResponse = useCallback((toolResponse: ToolResponse) => {
+    client.current?.sendToolResponse(toolResponse);
+  }, []);
 
-  const sendToolError = useCallback(
-    ({
-      toolCallId,
-      content,
-      error,
-      code,
-      level,
-    }: {
-      toolCallId: string;
-      content: string | JSON;
-      error: string;
-      code: string;
-      level: string;
-    }) => {
-      client.current?.sendToolError({
-        toolCallId,
-        content,
-        error,
-        code,
-        level,
-      });
-    },
-    [],
-  );
+  const sendToolError = useCallback((toolError: ToolError) => {
+    client.current?.sendToolError(toolError);
+  }, []);
 
   return {
     readyState,

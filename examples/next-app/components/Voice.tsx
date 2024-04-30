@@ -1,6 +1,8 @@
 'use client';
 import type { ToolCall, ToolError, ToolResponse } from '@humeai/voice-react';
 import { VoiceProvider } from '@humeai/voice-react';
+import { useCallback } from 'react';
+import { z } from 'zod';
 
 import { ExampleComponent } from '@/components/ExampleComponent';
 
@@ -14,79 +16,107 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
         // eslint-disable-next-line no-console
         console.log('message', message);
       }}
-      onToolCall={async (
-        toolCall: ToolCall,
-      ): Promise<ToolError | ToolResponse> => {
-        // eslint-disable-next-line no-console
-        console.log('toolCall', toolCall);
+      onToolCall={useCallback(
+        async (toolCall: ToolCall): Promise<ToolError | ToolResponse> => {
+          if (toolCall.name === 'weather_tool') {
+            try {
+              const args = z
+                .object({
+                  location: z.string(),
+                  format: z.enum(['fahrenheit', 'celsius']),
+                })
+                .safeParse(JSON.parse(toolCall.parameters));
 
-        if (toolCall.name === 'weather_tool') {
-          try {
-            const args = JSON.parse(toolCall.parameters) as {
-              location: string;
-              format: 'fahrenheit' | 'celsius';
-            };
+              if (args.success === false) {
+                throw new Error(
+                  'Tool response did not match the expected weather tool schema',
+                );
+              }
 
-            const location = await fetch(
-              `https://geocode.maps.co/search?q=${args.location}&api_key=663042e9e06db354370369bhzc3ca91`,
-            );
+              const location: unknown = await fetch(
+                `https://geocode.maps.co/search?q=${String(args.data.location)}&api_key=${process.env.NEXT_PUBLIC_GEOCODE_API_KEY}`,
+              ).then((res) => res.json());
 
-            const locationResults = (await location.json()) as {
-              lat: string;
-              lon: string;
-            }[];
+              const locationResults = z
+                .array(
+                  z.object({
+                    lat: z.string(),
+                    lon: z.string(),
+                  }),
+                )
+                .safeParse(location);
 
-            const { lat, lon } = locationResults[0];
+              if (locationResults.success === false) {
+                throw new Error(
+                  'Location results did not match the expected schema',
+                );
+              }
+              const { lat, lon } = locationResults.data[0];
+              const pointMetadataEndpoint: string = `https://api.weather.gov/points/${parseFloat(lat).toFixed(3)},${parseFloat(lon).toFixed(3)}`;
 
-            const pointMetadataEndpoint: string = `https://api.weather.gov/points/${parseFloat(lat).toFixed(3)},${parseFloat(lon).toFixed(3)}`;
+              const result: unknown = await fetch(pointMetadataEndpoint, {
+                method: 'GET',
+              }).then((res) => res.json());
 
-            const result = await fetch(pointMetadataEndpoint, {
-              method: 'GET',
-            });
+              const json = z
+                .object({
+                  properties: z.object({
+                    forecast: z.string(),
+                  }),
+                })
+                .safeParse(result);
+              if (json.success === false) {
+                throw new Error(
+                  'Point metadata did not match the expected schema',
+                );
+              }
+              const { properties } = json.data;
+              const { forecast: forecastUrl } = properties;
 
-            const json = (await result.json()) as {
-              properties: {
-                forecast: string;
+              const forecastResult: unknown = await fetch(forecastUrl).then(
+                (res) => res.json(),
+              );
+
+              const forecastJson = z
+                .object({
+                  properties: z.object({
+                    periods: z.array(z.unknown()),
+                  }),
+                })
+                .safeParse(forecastResult);
+              if (forecastJson.success === false) {
+                throw new Error('Forecast did not match the expected schema');
+              }
+              const forecast = forecastJson.data.properties.periods;
+
+              return {
+                type: 'tool_response',
+                tool_call_id: toolCall.tool_call_id,
+                content: JSON.stringify(forecast),
               };
-            };
-            const { properties } = json;
-            const { forecast: forecastUrl } = properties;
-
-            const forecastResult = await fetch(forecastUrl);
-
-            const forecastJson = (await forecastResult.json()) as {
-              properties: {
-                periods: unknown[];
+            } catch (error) {
+              return {
+                type: 'tool_error',
+                tool_call_id: toolCall.tool_call_id,
+                error: 'Weather tool error',
+                code: 'weather_tool_error',
+                level: 'error',
+                content: 'There was an error with the weather tool',
               };
-            };
-            const forecast = forecastJson.properties.periods;
-
-            return {
-              type: 'tool_response',
-              tool_call_id: toolCall.tool_call_id,
-              content: JSON.stringify(forecast),
-            };
-          } catch (error) {
+            }
+          } else {
             return {
               type: 'tool_error',
               tool_call_id: toolCall.tool_call_id,
-              error: 'Weather tool error',
-              code: 'weather_tool_error',
-              level: 'error',
-              content: 'There was an error with the weather tool',
+              error: 'Tool not found',
+              code: 'tool_not_found',
+              level: 'warning',
+              content: 'The tool you requested was not found',
             };
           }
-        } else {
-          return {
-            type: 'tool_error',
-            tool_call_id: toolCall.tool_call_id,
-            error: 'Tool not found',
-            code: 'tool_not_found',
-            level: 'warning',
-            content: 'The tool you requested was not found',
-          };
-        }
-      }}
+        },
+        [],
+      )}
       configId={process.env.NEXT_PUBLIC_HUME_VOICE_WEATHER_CONFIG_ID}
       onClose={(event) => {
         const niceClosure = 1000;

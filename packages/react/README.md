@@ -109,8 +109,8 @@ export const ExampleComponent = () => {
 | `sendSessionSettings: (text: string) => void` | Send new session settings to the assistant. This overrides any session settings that were passed as props to the VoiceProvider.                                   |
 | `sendUserInput: (text: string) => void` | Send a user input message.                                   |
 | `sendAssistantInput: (text: string) => void` | Send a text string for the assistant to read out loud.                                   |
-| `sendToolResponse: (toolResponse: { toolCallId: string; content: string | JSON; }) => void` | Send a tool response message.                                   |
-| `sendToolError: (toolError: { toolCallId: string; content: string | JSON; error: string; code: string; level: string; }) => void` | Send a tool error message.                                   |
+| `sendToolResponse: (toolResponse: ToolResponse) => void` | Send a tool response message.                                   |
+| `sendToolError: (toolError: ToolError) => void` | Send a tool error message.                                   |
 
 ### Properties
 
