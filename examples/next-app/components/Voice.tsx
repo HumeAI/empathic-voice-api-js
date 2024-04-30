@@ -1,10 +1,6 @@
 'use client';
-import {
-  ToolCall,
-  ToolError,
-  ToolResponse,
-  VoiceProvider,
-} from '@humeai/voice-react';
+import type { ToolCall, ToolError, ToolResponse } from '@humeai/voice-react';
+import { VoiceProvider } from '@humeai/voice-react';
 
 import { ExampleComponent } from '@/components/ExampleComponent';
 
@@ -26,24 +22,43 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
 
         if (toolCall.name === 'weather_tool') {
           try {
-            const args = JSON.parse(toolCall.parameters);
+            const args = JSON.parse(toolCall.parameters) as {
+              location: string;
+              format: 'fahrenheit' | 'celsius';
+            };
+
             const location = await fetch(
               `https://geocode.maps.co/search?q=${args.location}&api_key=663042e9e06db354370369bhzc3ca91`,
             );
-            const locationResults = await location.json();
+
+            const locationResults = (await location.json()) as {
+              lat: number;
+              lon: number;
+            }[];
+
             const { lat, lon } = locationResults[0];
 
-            const pointMetadataEndpoint = `https://api.weather.gov/points/${parseFloat(lat).toFixed(3)},${parseFloat(lon).toFixed(3)}`;
+            const pointMetadataEndpoint: string = `https://api.weather.gov/points/${parseFloat(lat).toFixed(3)},${parseFloat(lon).toFixed(3)}`;
 
             const result = await fetch(pointMetadataEndpoint, {
               method: 'GET',
             });
-            const json = await result.json();
+
+            const json = (await result.json()) as {
+              properties: {
+                forecast: string;
+              };
+            };
             const { properties } = json;
             const { forecast: forecastUrl } = properties;
 
             const forecastResult = await fetch(forecastUrl);
-            const forecastJson = await forecastResult.json();
+
+            const forecastJson = (await forecastResult.json()) as {
+              properties: {
+                periods: unknown[];
+              };
+            };
             const forecast = forecastJson.properties.periods;
 
             return {

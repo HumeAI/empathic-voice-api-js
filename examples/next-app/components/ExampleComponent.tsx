@@ -3,7 +3,7 @@
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
 import { SelectItem } from '@radix-ui/react-select';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { match } from 'ts-pattern';
 
 import {
@@ -38,7 +38,6 @@ export const ExampleComponent = () => {
     callDurationTimestamp,
     sendUserInput,
     sendAssistantInput,
-    sendToolResponse,
   } = useVoice();
 
   const [textValue, setTextValue] = useState('');
