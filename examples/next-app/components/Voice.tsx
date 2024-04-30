@@ -32,8 +32,8 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
             );
 
             const locationResults = (await location.json()) as {
-              lat: number;
-              lon: number;
+              lat: string;
+              lon: string;
             }[];
 
             const { lat, lon } = locationResults[0];
@@ -87,7 +87,7 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
           };
         }
       }}
-      configId="d9fa1297-7e9d-4b9f-87c3-f748b0b8ce5e"
+      configId={process.env.NEXT_PUBLIC_HUME_VOICE_WEATHER_CONFIG_ID}
       onClose={(event) => {
         const niceClosure = 1000;
         const code = event.code;
