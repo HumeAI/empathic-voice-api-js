@@ -104,6 +104,7 @@ export type VoiceProviderProps = PropsWithChildren<
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: VoiceEventMap['close'];
+  onToolCall?: (toolCall: ToolCall) => Promise<ToolResponse | ToolError>;
   /**
    * @default true
    * @description Clear messages when the voice is disconnected.
@@ -227,6 +228,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       },
       [messageStore, stopTimer],
     ),
+    onToolCall: props.onToolCall,
   });
 
   const mic = useMicrophone({
