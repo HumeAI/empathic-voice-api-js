@@ -11,8 +11,13 @@ import type {
   UserTranscriptMessage,
   VoiceEventMap,
 } from '@humeai/voice';
-import { ToolResponseSchema, VoiceClient } from '@humeai/voice';
+import {
+  ToolErrorSchema,
+  ToolResponseSchema,
+  VoiceClient,
+} from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
+import { z } from 'zod';
 
 export enum VoiceReadyState {
   IDLE = 'idle',
@@ -133,9 +138,15 @@ export const useVoiceClient = (props: {
               }),
             })
             .then((response) => {
-              const parsed = ToolResponseSchema.safeParse(response);
+              // check that response is a correctly formatted response or error payload
+              const parsed = z
+                .union([ToolResponseSchema, ToolErrorSchema])
+                .safeParse(response);
+
+              // if valid send it to the socket
+              // otherwise, report error
               if (parsed.success) {
-                client.current?.sendToolResponse(parsed.data);
+                client.current?.sendToolMessage(parsed.data);
               } else {
                 onError.current?.('Invalid response from tool call');
               }
@@ -184,13 +195,12 @@ export const useVoiceClient = (props: {
     client.current?.sendAssistantInput(text);
   }, []);
 
-  const sendToolResponse = useCallback((toolResponse: ToolResponse) => {
-    client.current?.sendToolResponse(toolResponse);
-  }, []);
-
-  const sendToolError = useCallback((toolError: ToolError) => {
-    client.current?.sendToolError(toolError);
-  }, []);
+  const sendToolMessage = useCallback(
+    (toolMessage: ToolResponse | ToolError) => {
+      client.current?.sendToolMessage(toolMessage);
+    },
+    [],
+  );
 
   return {
     readyState,
@@ -200,7 +210,6 @@ export const useVoiceClient = (props: {
     disconnect,
     sendUserInput,
     sendAssistantInput,
-    sendToolResponse,
-    sendToolError,
+    sendToolMessage,
   };
 };

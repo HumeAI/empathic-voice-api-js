@@ -10,6 +10,7 @@ import {
   ToolResponse,
   UserInterruptionMessage,
   UserTranscriptMessage,
+  VoiceClient,
   VoiceEventMap,
 } from '@humeai/voice';
 import React, {
@@ -74,11 +75,10 @@ export type VoiceContextType = {
   mute: () => void;
   unmute: () => void;
   readyState: VoiceReadyState;
-  sendUserInput: (text: string) => void;
-  sendAssistantInput: (text: string) => void;
-  sendSessionSettings: (sessionSettings: SessionSettings) => void;
-  sendToolResponse: (toolResponse: ToolResponse) => void;
-  sendToolError: (toolError: ToolError) => void;
+  sendUserInput: VoiceClient['sendUserInput'];
+  sendAssistantInput: VoiceClient['sendAssistantInput'];
+  sendSessionSettings: VoiceClient['sendSessionSettings'];
+  sendToolMessage: VoiceClient['sendToolMessage'];
   status: VoiceStatus;
   micFft: number[];
   error: VoiceError | null;
@@ -362,8 +362,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         sendUserInput: client.sendUserInput,
         sendAssistantInput: client.sendAssistantInput,
         sendSessionSettings: client.sendSessionSettings,
-        sendToolResponse: client.sendToolResponse,
-        sendToolError: client.sendToolError,
+        sendToolMessage: client.sendToolMessage,
         status,
         unmute: mic.unmute,
         error,
@@ -390,8 +389,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       client.sendUserInput,
       client.sendAssistantInput,
       client.sendSessionSettings,
-      client.sendToolResponse,
-      client.sendToolError,
+      client.sendToolMessage,
       status,
       error,
       isAudioError,

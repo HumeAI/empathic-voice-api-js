@@ -219,11 +219,11 @@ export class VoiceClient {
   }
 
   /**
-   * @name sendToolResponse
+   * @name sendToolMessage
    * @description
    * Send tool response to the websocket, e.g. for function calling
    */
-  sendToolResponse(toolResponse: ToolResponse) {
+  sendToolMessage(toolMessage: ToolResponse | ToolError) {
     if (!this.socket) {
       throw new Error('Socket is not connected.');
     }
@@ -232,21 +232,7 @@ export class VoiceClient {
       throw new Error('Socket is not open.');
     }
 
-    const json = JSON.stringify(toolResponse);
-
-    this.socket.send(json);
-  }
-
-  sendToolError(toolError: ToolError) {
-    if (!this.socket) {
-      throw new Error('Socket is not connected.');
-    }
-
-    if (this.socket.readyState !== WebSocket.OPEN) {
-      throw new Error('Socket is not open.');
-    }
-
-    const json = JSON.stringify(toolError);
+    const json = JSON.stringify(toolMessage);
 
     this.socket.send(json);
   }
