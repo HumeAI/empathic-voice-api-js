@@ -11,8 +11,13 @@ import type {
   UserTranscriptMessage,
   VoiceEventMap,
 } from '@humeai/voice';
-import { ToolResponseSchema, VoiceClient } from '@humeai/voice';
+import {
+  ToolErrorSchema,
+  ToolResponseSchema,
+  VoiceClient,
+} from '@humeai/voice';
 import { useCallback, useRef, useState } from 'react';
+import { z } from 'zod';
 
 export enum VoiceReadyState {
   IDLE = 'idle',
@@ -20,6 +25,19 @@ export enum VoiceReadyState {
   OPEN = 'open',
   CLOSED = 'closed',
 }
+
+export type ToolCallHandler = (
+  message: ToolCall,
+  send: {
+    success: (content: unknown) => ToolResponse;
+    error: (e: {
+      error: string;
+      code: string;
+      level: string;
+      content: string;
+    }) => ToolError;
+  },
+) => Promise<ToolResponse | ToolError>;
 
 export const useVoiceClient = (props: {
   onAudioMessage?: (message: AudioOutputMessage) => void;
@@ -33,7 +51,7 @@ export const useVoiceClient = (props: {
       | ToolResponse
       | ToolError,
   ) => void;
-  onToolCall?: (message: ToolCall) => Promise<ToolResponse | ToolError>;
+  onToolCall?: ToolCallHandler;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
   onClose?: VoiceEventMap['close'];
@@ -76,7 +94,7 @@ export const useVoiceClient = (props: {
         resolve(VoiceReadyState.OPEN);
       });
 
-      client.current.on('message', async (message) => {
+      client.current.on('message', (message) => {
         if (message.type === 'audio_output') {
           onAudioMessage.current?.(message);
         }
@@ -92,14 +110,47 @@ export const useVoiceClient = (props: {
           onMessage.current?.(message);
         }
 
-        if (message.type === 'tool_call') {
-          const response = await onToolCall.current?.(message);
-          if (response) {
-            const parsed = ToolResponseSchema.safeParse(response);
-            if (parsed.success) {
-              client.current?.sendToolResponse(parsed.data);
-            }
-          }
+        if (message.type === 'tool_call' && onToolCall.current) {
+          void onToolCall
+            .current(message, {
+              success: (content: unknown) => ({
+                type: 'tool_response',
+                tool_call_id: message.tool_call_id,
+                content: JSON.stringify(content),
+              }),
+              error: ({
+                error,
+                code,
+                level,
+                content,
+              }: {
+                error: string;
+                code: string;
+                level: string;
+                content: string;
+              }) => ({
+                type: 'tool_error',
+                tool_call_id: message.tool_call_id,
+                error,
+                code,
+                level,
+                content,
+              }),
+            })
+            .then((response) => {
+              // check that response is a correctly formatted response or error payload
+              const parsed = z
+                .union([ToolResponseSchema, ToolErrorSchema])
+                .safeParse(response);
+
+              // if valid send it to the socket
+              // otherwise, report error
+              if (parsed.success) {
+                client.current?.sendToolMessage(parsed.data);
+              } else {
+                onError.current?.('Invalid response from tool call');
+              }
+            });
         }
       });
 
@@ -144,13 +195,12 @@ export const useVoiceClient = (props: {
     client.current?.sendAssistantInput(text);
   }, []);
 
-  const sendToolResponse = useCallback((toolResponse: ToolResponse) => {
-    client.current?.sendToolResponse(toolResponse);
-  }, []);
-
-  const sendToolError = useCallback((toolError: ToolError) => {
-    client.current?.sendToolError(toolError);
-  }, []);
+  const sendToolMessage = useCallback(
+    (toolMessage: ToolResponse | ToolError) => {
+      client.current?.sendToolMessage(toolMessage);
+    },
+    [],
+  );
 
   return {
     readyState,
@@ -160,7 +210,6 @@ export const useVoiceClient = (props: {
     disconnect,
     sendUserInput,
     sendAssistantInput,
-    sendToolResponse,
-    sendToolError,
+    sendToolMessage,
   };
 };
