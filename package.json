@@ -9,6 +9,7 @@
     "dev:iframe": "turbo run dev --filter='./packages/**' --filter=example-vite-app-embed",
     "lint": "turbo lint",
     "test": "turbo test",
+    "test-watch": "turbo test-watch",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "release": "pnpm install && pnpm build:packages && pnpm publish -r --access public --no-git-checks"
   },

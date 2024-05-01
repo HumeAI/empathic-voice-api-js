@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "test": "vitest",
+    "test-watch": "vitest --watch",
     "build": "tsup",
     "dev": "tsup --watch",
     "lint": "eslint ./src",
