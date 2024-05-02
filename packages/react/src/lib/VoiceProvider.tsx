@@ -32,6 +32,7 @@ import { useEncoding } from './useEncoding';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
+import { useToolStatus } from './useToolStatus';
 import {
   ToolCallHandler,
   useVoiceClient,
@@ -87,6 +88,7 @@ export type VoiceContextType = {
   isMicrophoneError: boolean;
   isSocketError: boolean;
   callDurationTimestamp: string | null;
+  toolStatusStore: ReturnType<typeof useToolStatus>['store'];
 };
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
@@ -150,6 +152,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const onClose = useRef(props.onClose ?? noop);
   onClose.current = props.onClose ?? noop;
 
+  const toolStatus = useToolStatus();
+
   const messageStore = useMessages({
     sendMessageToParent: props.onMessage,
     messageHistoryLimit,
@@ -205,6 +209,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
         if (message.type === 'user_interruption') {
           player.clearQueue();
+        }
+
+        if (
+          message.type === 'tool_call' ||
+          message.type === 'tool_response' ||
+          message.type === 'tool_error'
+        ) {
+          toolStatus.addToStore(message);
         }
       },
       [player],
@@ -371,6 +383,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         isMicrophoneError,
         isSocketError,
         callDurationTimestamp,
+        toolStatusStore: toolStatus.store,
       }) satisfies VoiceContextType,
     [
       connect,
@@ -397,6 +410,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isMicrophoneError,
       isSocketError,
       callDurationTimestamp,
+      toolStatus,
     ],
   );
 
