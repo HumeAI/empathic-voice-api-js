@@ -179,26 +179,46 @@ export const useVoiceClient = (props: {
 
   const sendSessionSettings = useCallback(
     (sessionSettings: SessionSettings) => {
-      client.current?.sendSessionSettings(sessionSettings);
+      try {
+        client.current?.sendSessionSettings(sessionSettings);
+      } catch (e) {
+        void true;
+      }
     },
     [],
   );
 
   const sendAudio = useCallback((arrayBuffer: ArrayBufferLike) => {
-    client.current?.sendAudio(arrayBuffer);
+    try {
+      client.current?.sendAudio(arrayBuffer);
+    } catch (e) {
+      void true;
+    }
   }, []);
 
   const sendUserInput = useCallback((text: string) => {
-    client.current?.sendUserInput(text);
+    try {
+      client.current?.sendUserInput(text);
+    } catch (e) {
+      void true;
+    }
   }, []);
 
   const sendAssistantInput = useCallback((text: string) => {
-    client.current?.sendAssistantInput(text);
+    try {
+      client.current?.sendAssistantInput(text);
+    } catch (e) {
+      void true;
+    }
   }, []);
 
   const sendToolMessage = useCallback(
     (toolMessage: ToolResponse | ToolError) => {
-      client.current?.sendToolMessage(toolMessage);
+      try {
+        client.current?.sendToolMessage(toolMessage);
+      } catch (e) {
+        void true;
+      }
     },
     [],
   );

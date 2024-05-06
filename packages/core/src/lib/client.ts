@@ -144,6 +144,7 @@ export class VoiceClient {
    * @name sendAudio
    * @description
    * Send audio data to the websocket.
+   * @throws
    */
   sendAudio(audioBuffer: ArrayBufferLike) {
     if (!this.socket) {
@@ -161,6 +162,7 @@ export class VoiceClient {
    * @name sendUserInput
    * @description
    * Send text data to the websocket.
+   * @throws
    */
   sendUserInput(text: string) {
     if (!this.socket) {
@@ -180,6 +182,7 @@ export class VoiceClient {
    * @name sendAssistantInput
    * @description
    * Send text data to the websocket for TTS.
+   * @throws
    */
   sendAssistantInput(text: string) {
     if (!this.socket) {
@@ -199,6 +202,7 @@ export class VoiceClient {
    * @name sendSessionSettings
    * @description
    * Send session settings to the websocket
+   * @throws
    */
   sendSessionSettings(sessionSettings: SessionSettings) {
     if (!this.socket) {
@@ -222,6 +226,7 @@ export class VoiceClient {
    * @name sendToolMessage
    * @description
    * Send tool response to the websocket, e.g. for function calling
+   * @throws
    */
   sendToolMessage(toolMessage: ToolResponse | ToolError) {
     if (!this.socket) {
