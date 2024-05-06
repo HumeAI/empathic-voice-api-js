@@ -1,6 +1,7 @@
 import {
   AssistantTranscriptMessage,
   AudioOutputMessage,
+  ChatMetadataMessage,
   createSocketConfig,
   JSONErrorMessage,
   JSONMessage,
@@ -69,6 +70,7 @@ export type VoiceContextType = {
     | ToolCall
     | ToolResponse
     | ToolError
+    | ChatMetadataMessage
   )[];
   lastVoiceMessage: AssistantTranscriptMessage | null;
   lastUserMessage: UserTranscriptMessage | null;
@@ -202,7 +204,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           | JSONErrorMessage
           | ToolCall
           | ToolResponse
-          | ToolError,
+          | ToolError
+          | ChatMetadataMessage,
       ) => {
         // store message
         messageStore.onMessage(message);

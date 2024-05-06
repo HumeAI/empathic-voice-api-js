@@ -21,6 +21,7 @@ export type {
   ToolCall,
   ToolResponse,
   ToolError,
+  ChatMetadataMessage,
 } from '@humeai/voice';
 
 export { LanguageModelOption } from '@humeai/voice';

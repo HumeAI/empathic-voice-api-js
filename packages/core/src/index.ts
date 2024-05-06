@@ -13,6 +13,7 @@ export * from './models/assistant-message';
 export * from './models/audio-message';
 export * from './models/audio-output-message';
 export * from './models/auth';
+export * from './models/chat-metadata-message';
 export * from './models/error-message';
 export * from './models/json-message';
 export * from './models/session-settings';

@@ -1,6 +1,7 @@
 import type {
   AssistantTranscriptMessage,
   AudioOutputMessage,
+  ChatMetadataMessage,
   JSONErrorMessage,
   SessionSettings,
   SocketConfig,
@@ -49,7 +50,8 @@ export const useVoiceClient = (props: {
       | JSONErrorMessage
       | ToolCall
       | ToolResponse
-      | ToolError,
+      | ToolError
+      | ChatMetadataMessage,
   ) => void;
   onToolCall?: ToolCallHandler;
   onError?: (message: string, error?: Error) => void;
@@ -105,7 +107,8 @@ export const useVoiceClient = (props: {
           message.type === 'user_interruption' ||
           message.type === 'error' ||
           message.type === 'tool_response' ||
-          message.type === 'tool_error'
+          message.type === 'tool_error' ||
+          message.type === 'chat_metadata'
         ) {
           onMessage.current?.(message);
         }

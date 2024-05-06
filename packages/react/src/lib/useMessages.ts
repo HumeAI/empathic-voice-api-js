@@ -1,4 +1,5 @@
 import type {
+  ChatMetadataMessage,
   JSONErrorMessage,
   ToolCall,
   ToolError,
@@ -27,7 +28,8 @@ export const useMessages = ({
       | JSONErrorMessage
       | ToolCall
       | ToolResponse
-      | ToolError,
+      | ToolError
+      | ChatMetadataMessage,
   ) => void;
   messageHistoryLimit: number;
 }) => {
@@ -45,6 +47,7 @@ export const useMessages = ({
       | ToolCall
       | ToolResponse
       | ToolError
+      | ChatMetadataMessage
     >
   >([]);
 
@@ -101,30 +104,11 @@ export const useMessages = ({
         });
         break;
       case 'user_interruption':
-        sendMessageToParent?.(message);
-        setMessages((prev) => {
-          return keepLastN(messageHistoryLimit, prev.concat([message]));
-        });
-        break;
       case 'error':
-        sendMessageToParent?.(message);
-        setMessages((prev) => {
-          return keepLastN(messageHistoryLimit, prev.concat([message]));
-        });
-        break;
       case 'tool_call':
-        sendMessageToParent?.(message);
-        setMessages((prev) => {
-          return keepLastN(messageHistoryLimit, prev.concat([message]));
-        });
-        break;
       case 'tool_response':
-        sendMessageToParent?.(message);
-        setMessages((prev) => {
-          return keepLastN(messageHistoryLimit, prev.concat([message]));
-        });
-        break;
       case 'tool_error':
+      case 'chat_metadata':
         sendMessageToParent?.(message);
         setMessages((prev) => {
           return keepLastN(messageHistoryLimit, prev.concat([message]));
