@@ -87,12 +87,10 @@ export class VoiceClient {
     this.eventHandlers.open?.();
   };
 
-  private handleMessage = (event: MessageEvent) => {
+  handleMessage = (event: MessageEvent) => {
     void parseMessageType(event).then((result) => {
       if (result.success) {
         this.eventHandlers.message?.(result.message);
-      } else {
-        this.eventHandlers.error?.(result.error);
       }
     });
   };
