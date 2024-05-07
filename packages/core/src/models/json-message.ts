@@ -3,6 +3,7 @@ import z from 'zod';
 import { AssistantEndMessageSchema } from './assistant-end-message';
 import { AssistantTranscriptMessageSchema } from './assistant-message';
 import { AudioOutputMessageSchema } from './audio-output-message';
+import { ChatMetadataMessageSchema } from './chat-metadata-message';
 import { JSONErrorMessageSchema } from './error-message';
 import {
   ToolCallSchema,
@@ -22,6 +23,7 @@ export const JSONMessageSchema = z.union([
   ToolCallSchema,
   ToolErrorSchema,
   ToolResponseSchema,
+  ChatMetadataMessageSchema,
 ]);
 
 export type JSONMessage = z.infer<typeof JSONMessageSchema>;

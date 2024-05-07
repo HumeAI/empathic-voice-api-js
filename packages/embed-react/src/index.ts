@@ -22,4 +22,5 @@ export type {
   ToolCall,
   ToolResponse,
   ToolError,
+  ChatMetadataMessage,
 } from '@humeai/voice-embed';
