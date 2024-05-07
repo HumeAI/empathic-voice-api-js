@@ -31,12 +31,18 @@ const ContextConfigurationSchema = z.object({
   type: z.enum(['editable', 'persistent', 'temporary']).optional(),
 });
 
+export const WebSearchToolSchema = z.object({
+  name: z.literal('web_search'),
+  fallback_content: z.string().nullish().catch(null),
+});
+
 export const SessionSettingsSchema = z.object({
   audio: AudioConfigurationSchema.optional(),
   context: ContextConfigurationSchema.optional(),
   languageModelApiKey: z.string().optional(),
   customSessionId: z.string().optional(),
   systemPrompt: z.string().optional(),
+  builtin_tools: z.array(z.union([WebSearchToolSchema, z.null()])).optional(),
 });
 
 export type SessionSettings = z.infer<typeof SessionSettingsSchema>;
