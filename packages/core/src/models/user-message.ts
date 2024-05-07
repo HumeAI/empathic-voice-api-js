@@ -10,6 +10,7 @@ export const UserTranscriptMessageSchema = z
       content: z.string(),
     }),
     models: TranscriptModelsSchema,
+    from_text: z.boolean().nullish().catch(false),
   })
   .transform((obj) => {
     return Object.assign(obj, {
