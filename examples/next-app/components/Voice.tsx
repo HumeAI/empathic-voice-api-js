@@ -116,6 +116,9 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
           console.error('close event was not nice', event);
         }
       }}
+      sessionSettings={{
+        builtin_tools: [{ name: 'web_search' }],
+      }}
     >
       <ExampleComponent />
     </VoiceProvider>
