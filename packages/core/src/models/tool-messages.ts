@@ -34,6 +34,8 @@ export const ToolResponseSchema = z.object({
   type: z.literal('tool_response'),
   tool_call_id: z.string(),
   content: ToolResponseContentSchema,
+  tool_name: z.string().optional(),
+  tool_type: z.enum(['builtin', 'function']).optional(),
 });
 
 export type ToolResponse = z.infer<typeof ToolResponseSchema>;
