@@ -326,6 +326,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     if (clearMessagesOnDisconnect) {
       messageStore.clearMessages();
     }
+    toolStatus.clearStore();
   }, [client, player, mic]);
 
   const disconnect = useCallback(

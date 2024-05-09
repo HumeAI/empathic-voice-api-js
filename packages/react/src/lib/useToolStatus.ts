@@ -30,8 +30,13 @@ export const useToolStatus = () => {
     [],
   );
 
+  const clearStore = useCallback(() => {
+    setStore({});
+  }, []);
+
   return {
     store,
     addToStore,
+    clearStore,
   };
 };
