@@ -82,6 +82,8 @@ export type VoiceContextType = {
   sendAssistantInput: VoiceClient['sendAssistantInput'];
   sendSessionSettings: VoiceClient['sendSessionSettings'];
   sendToolMessage: VoiceClient['sendToolMessage'];
+  sendPauseAssistantMessage: VoiceClient['sendPauseAssistantMessage'];
+  sendResumeAssistantMessage: VoiceClient['sendResumeAssistantMessage'];
   status: VoiceStatus;
   micFft: number[];
   error: VoiceError | null;
@@ -379,6 +381,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         sendAssistantInput: client.sendAssistantInput,
         sendSessionSettings: client.sendSessionSettings,
         sendToolMessage: client.sendToolMessage,
+        sendPauseAssistantMessage: client.sendPauseAssistantMessage,
+        sendResumeAssistantMessage: client.sendResumeAssistantMessage,
         status,
         unmute: mic.unmute,
         error,
@@ -407,6 +411,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       client.sendAssistantInput,
       client.sendSessionSettings,
       client.sendToolMessage,
+      client.sendPauseAssistantMessage,
+      client.sendResumeAssistantMessage,
       status,
       error,
       isAudioError,
