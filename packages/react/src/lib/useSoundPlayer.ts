@@ -60,20 +60,25 @@ export const useSoundPlayer = (props: {
     currentlyPlayingAudioBuffer.current = bufferSource;
 
     const updateFrequencyData = () => {
-      const bufferSampleRate = bufferSource.buffer?.sampleRate;
+      try {
+        const bufferSampleRate = bufferSource.buffer?.sampleRate;
 
-      if (!analyserNode.current || typeof bufferSampleRate === 'undefined')
-        return;
+        if (!analyserNode.current || typeof bufferSampleRate === 'undefined')
+          return;
 
-      const dataArray = new Uint8Array(analyserNode.current.frequencyBinCount); // frequencyBinCount is 1/2 of fftSize
-      analyserNode.current.getByteFrequencyData(dataArray); // Using getByteFrequencyData for performance
+        const dataArray = new Uint8Array(
+          analyserNode.current.frequencyBinCount,
+        ); // frequencyBinCount is 1/2 of fftSize
+        analyserNode.current.getByteFrequencyData(dataArray); // Using getByteFrequencyData for performance
 
-      const barkFrequencies = convertLinearFrequenciesToBark(
-        dataArray,
-        bufferSampleRate,
-      );
-
-      setFft(() => barkFrequencies);
+        const barkFrequencies = convertLinearFrequenciesToBark(
+          dataArray,
+          bufferSampleRate,
+        );
+        setFft(() => barkFrequencies);
+      } catch (e) {
+        setFft(generateEmptyFft());
+      }
     };
 
     frequencyDataIntervalId.current = window.setInterval(
