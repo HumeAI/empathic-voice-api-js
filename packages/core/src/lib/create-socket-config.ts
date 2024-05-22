@@ -32,6 +32,11 @@ export const SocketConfigSchema = z.object({
       description: 'The version of the configuration to use.',
     })
     .optional(),
+  resumedChatGroupId: z
+    .string({
+      description: 'The ID of the chat group to resume.',
+    })
+    .optional(),
 });
 
 export type SocketConfig = z.infer<typeof SocketConfigSchema>;

@@ -31,5 +31,14 @@ export const createSocketUrl = (config: SocketConfig): string => {
     url.searchParams.set('config_version', String(config.configVersion));
   }
 
+  if (config.resumedChatGroupId) {
+    url.searchParams.set(
+      'resumed_chat_group_id',
+      String(config.resumedChatGroupId),
+    );
+  }
+
+  url.searchParams.set('enable_chat_metadata', String(true));
+
   return url.href;
 };

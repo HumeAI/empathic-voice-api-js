@@ -21,7 +21,7 @@ describe('create-url', () => {
     const config = createSocketConfig(cfg);
 
     expect(createSocketUrl(config)).toBe(
-      `wss://api.hume.ai/v0/evi/chat?${config.auth.type}=${config.auth.value}`,
+      `wss://api.hume.ai/v0/evi/chat?${config.auth.type}=${config.auth.value}&enable_chat_metadata=true`,
     );
   });
 
@@ -33,9 +33,10 @@ describe('create-url', () => {
       },
       configId: 'test-config-id',
       configVersion: 1,
+      resumedChatGroupId: 'test-chat-group-id',
     });
     expect(createSocketUrl(config)).toBe(
-      `wss://api.hume.ai/v0/evi/chat?${config.auth.type}=${config.auth.value}&config_id=${config.configId}&config_version=${config.configVersion}`,
+      `wss://api.hume.ai/v0/evi/chat?${config.auth.type}=${config.auth.value}&config_id=${config.configId}&config_version=${config.configVersion}&resumed_chat_group_id=${config.resumedChatGroupId}&enable_chat_metadata=true`,
     );
   });
 });
