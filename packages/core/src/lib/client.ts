@@ -243,4 +243,42 @@ export class VoiceClient {
   get readyState() {
     return this.socket.readyState;
   }
+
+  /**
+   * @name sendPauseAssistantMessage
+   * @description
+   * Send pause assistant message to the websocket. This pauses responses from EVI. Chat history is still saved and sent after resuming.
+   */
+  sendPauseAssistantMessage() {
+    if (!this.socket) {
+      throw new Error('Socket is not connected.');
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('Socket is not open.');
+    }
+
+    const json = JSON.stringify({ type: 'pause_assistant_message' });
+
+    this.socket.send(json);
+  }
+
+  /**
+   * @name sendResumeAssistantMessage
+   * @description
+   * Send resume assistant message to the websocket. This resumes responses from EVI. Chat history sent while paused will now be sent.
+   */
+  sendResumeAssistantMessage() {
+    if (!this.socket) {
+      throw new Error('Socket is not connected.');
+    }
+
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      throw new Error('Socket is not open.');
+    }
+
+    const json = JSON.stringify({ type: 'resume_assistant_message' });
+
+    this.socket.send(json);
+  }
 }

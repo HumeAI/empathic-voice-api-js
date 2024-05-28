@@ -3,7 +3,7 @@
 import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
 import { SelectItem } from '@radix-ui/react-select';
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { match } from 'ts-pattern';
 
 import {
@@ -38,12 +38,26 @@ export const ExampleComponent = () => {
     callDurationTimestamp,
     sendUserInput,
     sendAssistantInput,
+    sendResumeAssistantMessage,
+    sendPauseAssistantMessage,
   } = useVoice();
 
   const [textValue, setTextValue] = useState('');
   const [textInputType, setTextInputType] = useState<'user' | 'assistant'>(
     'user',
   );
+  const [paused, setPaused] = useState(false);
+
+  const togglePaused = useCallback(() => {
+    if (paused) {
+      sendResumeAssistantMessage();
+      setPaused(false);
+    } else {
+      sendPauseAssistantMessage();
+      setPaused(true);
+    }
+  }, [paused]);
+  const pausedText = paused ? 'Resume' : 'Pause';
 
   const assistantMessages = useMemo(() => {
     return messages
@@ -164,6 +178,13 @@ export const ExampleComponent = () => {
                     }}
                   >
                     Send text input message
+                  </button>
+
+                  <button
+                    className="border border-black p-2"
+                    onClick={togglePaused}
+                  >
+                    {pausedText}
                   </button>
                 </div>
 

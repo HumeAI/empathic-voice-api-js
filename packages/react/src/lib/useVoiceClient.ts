@@ -205,6 +205,12 @@ export const useVoiceClient = (props: {
     },
     [],
   );
+  const sendPauseAssistantMessage = useCallback(() => {
+    client.current?.sendPauseAssistantMessage();
+  }, []);
+  const sendResumeAssistantMessage = useCallback(() => {
+    client.current?.sendResumeAssistantMessage();
+  }, []);
 
   return {
     readyState,
@@ -215,5 +221,7 @@ export const useVoiceClient = (props: {
     sendUserInput,
     sendAssistantInput,
     sendToolMessage,
+    sendPauseAssistantMessage,
+    sendResumeAssistantMessage,
   };
 };
