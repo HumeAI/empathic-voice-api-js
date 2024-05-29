@@ -38,7 +38,5 @@ export const createSocketUrl = (config: SocketConfig): string => {
     );
   }
 
-  url.searchParams.set('enable_chat_metadata', String(true));
-
   return url.href;
 };
