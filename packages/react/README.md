@@ -83,6 +83,7 @@ The table below outlines the props accepted by `VoiceProvider`:
 | clearMessagesOnDisconnect           | no       | Boolean which indicates whether you want to clear message history when the call ends.                                                                                                                                                                                                               |
 | messageHistoryLimit           | no       | Set the number of messages that you wish to keep over the course of the conversation. The default value is 100.                                                                                                                                                                                                               |
 | sessionSettings           | no       | Optional settings where you can set custom values for the session.                                                                                                                                                                                                               |
+| resumedGroupChatId           | no       | Include a chat group ID, which enables the chat to continue from a previous chat group.                                                                                                                                                                                                               |
 
 ## Using the Voice
 
@@ -110,6 +111,8 @@ export const ExampleComponent = () => {
 | `sendUserInput: (text: string) => void` | Send a user input message.                                   |
 | `sendAssistantInput: (text: string) => void` | Send a text string for the assistant to read out loud.                                   |
 | `sendToolMessage: (toolMessage: ToolResponse | ToolError) => void` | Send a tool response or tool error message to the EVI backend.                                   |
+| `sendPauseAssistantMessage: () => void` | Send pause assistant message to the websocket. This pauses responses from EVI. Chat history is still saved and sent after resuming.                                   |
+| `sendResumeAssistantMessage: () => void` | Send resume assistant message to the websocket. This resumes responses from EVI. Chat history sent while paused will now be sent.                                   |
 
 ### Properties
 
