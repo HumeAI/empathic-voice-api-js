@@ -20,7 +20,7 @@ function base64Encode(str: string): string {
 }
 
 /**
- * Fetches a new access token from the Hume API using the provided API key and client secret.
+ * Fetches a new access token from the Hume API using the provided API key and Secret key.
  *
  * @param args - The arguments for the request.
  * @returns Promise that resolves to the new access token.
@@ -31,7 +31,7 @@ function base64Encode(str: string): string {
  * async function getToken() {
  *   const accessToken = await fetchAccessToken({
  *     apiKey: 'test',
- *     clientSecret: 'test',
+ *     secretKey: 'test',
  *   });
  *   console.log(accessToken); // Outputs the access token
  * }
@@ -39,12 +39,12 @@ function base64Encode(str: string): string {
  */
 export const fetchAccessToken = async (args: {
   apiKey: string;
-  clientSecret: string;
+  secretKey: string;
   host?: string;
 }): Promise<string> => {
-  const { apiKey, clientSecret, host = 'api.hume.ai' } = args;
+  const { apiKey, secretKey, host = 'api.hume.ai' } = args;
 
-  const authString = `${apiKey}:${clientSecret}`;
+  const authString = `${apiKey}:${secretKey}`;
   const encoded = base64Encode(authString);
 
   const res = await fetch(`https://${host}/oauth2-cc/token`, {

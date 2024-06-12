@@ -16,7 +16,7 @@ const NoSSR = dynamic(
 export default async function Home() {
   const accessToken = await fetchAccessToken({
     apiKey: process.env.HUME_API_KEY || '',
-    clientSecret: process.env.HUME_CLIENT_SECRET || '',
+    secretKey: process.env.HUME_SECRET_KEY || '',
   });
 
   return (
