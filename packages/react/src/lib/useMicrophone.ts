@@ -33,11 +33,6 @@ export const useMicrophone = (props: MicrophoneProps) => {
   sendAudio.current = onAudioCaptured;
 
   const dataHandler = useCallback((event: BlobEvent) => {
-    if (isMutedRef.current) {
-      // Do not send audio if the microphone is muted
-      return;
-    }
-
     const blob = event.data;
 
     blob
