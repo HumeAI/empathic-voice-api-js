@@ -30,6 +30,8 @@ export const ExampleComponent = () => {
     status,
     isMuted,
     isPlaying,
+    startPlaying,
+    stopPlaying,
     mute,
     readyState,
     unmute,
@@ -93,7 +95,21 @@ export const ExampleComponent = () => {
                     <div className={'text-sm font-medium uppercase'}>
                       Playing
                     </div>
-                    <div>{isPlaying ? 'true' : 'false'}</div>
+                    <div>{isPlaying ? (
+                      <button
+                        className="rounded border border-neutral-500 p-2"
+                        onClick={() => stopPlaying()}
+                      >
+                        Stop Playing
+                      </button>
+                    ) : (
+                      <button
+                        className="rounded border border-neutral-500 p-2"
+                        onClick={() => startPlaying()}
+                      >
+                        Start Playing
+                      </button>
+                    )}</div>
                   </div>
                   <div>
                     <div className={'text-sm font-medium uppercase'}>
