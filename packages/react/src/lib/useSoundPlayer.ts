@@ -195,11 +195,25 @@ export const useSoundPlayer = (props: {
     setFft(generateEmptyFft());
   }, []);
 
+  const startPlaying = useCallback(() => {
+    setIsPlaying(true);
+    if (clipQueue.current.length > 0) {
+      playNextClip();
+    }
+  }, [playNextClip]);
+
+  const stopPlaying = useCallback(() => {
+    clearQueue();
+    setIsPlaying(false);
+  }, [clearQueue]);
+
   return {
     addToQueue,
     fft,
     initPlayer,
     isPlaying,
+    startPlaying,
+    stopPlaying,
     stopAll,
     clearQueue,
   };

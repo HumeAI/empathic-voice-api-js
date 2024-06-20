@@ -77,6 +77,8 @@ export type VoiceContextType = {
   clearMessages: () => void;
   mute: () => void;
   unmute: () => void;
+  startPlaying: () => void;
+  stopPlaying: () => void;
   readyState: VoiceReadyState;
   sendUserInput: VoiceClient['sendUserInput'];
   sendAssistantInput: VoiceClient['sendAssistantInput'];
@@ -371,6 +373,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         micFft: mic.fft,
         isMuted: mic.isMuted,
         isPlaying: player.isPlaying,
+        startPlaying: player.startPlaying,
+        stopPlaying: player.stopPlaying,
         messages: messageStore.messages,
         lastVoiceMessage: messageStore.lastVoiceMessage,
         lastUserMessage: messageStore.lastUserMessage,
@@ -397,15 +401,16 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       connect,
       disconnect,
       player.fft,
-      player.isPlaying,
       mic.fft,
       mic.isMuted,
-      mic.mute,
-      mic.unmute,
+      player.isPlaying,
+      player.startPlaying,
+      player.stopAll,
       messageStore.messages,
       messageStore.lastVoiceMessage,
       messageStore.lastUserMessage,
       messageStore.clearMessages,
+      mic.mute,
       client.readyState,
       client.sendUserInput,
       client.sendAssistantInput,
@@ -414,6 +419,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       client.sendPauseAssistantMessage,
       client.sendResumeAssistantMessage,
       status,
+      mic.unmute,
       error,
       isAudioError,
       isError,
