@@ -61,6 +61,7 @@ export type VoiceContextType = {
   fft: number[];
   isMuted: boolean;
   isPlaying: boolean;
+  isSpeakerMuted: boolean;
   messages: (
     | UserTranscriptMessage
     | AssistantTranscriptMessage
@@ -77,8 +78,8 @@ export type VoiceContextType = {
   clearMessages: () => void;
   mute: () => void;
   unmute: () => void;
-  startPlaying: () => void;
-  stopPlaying: () => void;
+  muteSpeaker: () => void;
+  unmuteSpeaker: () => void;
   readyState: VoiceReadyState;
   sendUserInput: VoiceClient['sendUserInput'];
   sendAssistantInput: VoiceClient['sendAssistantInput'];
@@ -197,7 +198,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
-      player.addToQueue(message);
+      if(!player.isSpeakerMuted){
+        player.addToQueue(message);
+      }
     },
     onMessage: useCallback(
       (
@@ -373,8 +376,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         micFft: mic.fft,
         isMuted: mic.isMuted,
         isPlaying: player.isPlaying,
-        startPlaying: player.startPlaying,
-        stopPlaying: player.stopPlaying,
+        isSpeakerMuted: player.isSpeakerMuted,
+        muteSpeaker: player.muteSpeaker,
+        unmuteSpeaker: player.unmuteSpeaker,
         messages: messageStore.messages,
         lastVoiceMessage: messageStore.lastVoiceMessage,
         lastUserMessage: messageStore.lastUserMessage,
@@ -402,8 +406,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       disconnect,
       player.fft,
       player.isPlaying,
-      player.startPlaying,
-      player.stopPlaying,
+      player.isSpeakerMuted,
+      player.muteSpeaker,
+      player.unmuteSpeaker,
       mic.fft,
       mic.isMuted,
       mic.mute,

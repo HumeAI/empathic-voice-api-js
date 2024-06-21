@@ -9,6 +9,7 @@ export const useSoundPlayer = (props: {
   onPlayAudio: (id: string) => void;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isSpeakerMuted, setIsSpeakerMuted] = useState(false);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
   const audioContext = useRef<AudioContext | null>(null);
@@ -28,7 +29,11 @@ export const useSoundPlayer = (props: {
   const frequencyDataIntervalId = useRef<number | null>(null);
 
   const onPlayAudio = useRef<typeof props.onPlayAudio>(props.onPlayAudio);
-  onPlayAudio.current = props.onPlayAudio;
+ onPlayAudio.current = (id: string) => {
+   if (!isSpeakerMuted) {
+     props.onPlayAudio(id);
+   }
+ };
 
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
@@ -39,7 +44,7 @@ export const useSoundPlayer = (props: {
       return;
     }
 
-    if (clipQueue.current.length === 0 || isProcessing.current) {
+    if (clipQueue.current.length === 0 || isProcessing.current || isSpeakerMuted) {
       return;
     }
 
@@ -98,7 +103,9 @@ export const useSoundPlayer = (props: {
       isProcessing.current = false;
       setIsPlaying(false);
       currentlyPlayingAudioBuffer.current = null;
-      playNextClip();
+      if (!isSpeakerMuted) {
+        playNextClip();
+      }
     };
   }, []);
 
@@ -121,6 +128,9 @@ export const useSoundPlayer = (props: {
         onError.current('Audio player has not been initialized');
         return;
       }
+      if (isSpeakerMuted){
+        return;
+      }
 
       try {
         const blob = base64ToBlob(message.data, 'audio/mp3');
@@ -135,7 +145,7 @@ export const useSoundPlayer = (props: {
 
         // playNextClip will iterate the clipQueue upon finishing the playback of the current audio clip, so we can
         // just call playNextClip here if it's the only one in the queue
-        if (clipQueue.current.length === 1) {
+        if (!isSpeakerMuted && clipQueue.current.length === 1) {
           playNextClip();
         }
       } catch (e) {
@@ -143,7 +153,7 @@ export const useSoundPlayer = (props: {
         onError.current(`Failed to add clip to queue: ${eMessage}`);
       }
     },
-    [playNextClip],
+    [playNextClip, isSpeakerMuted],
   );
 
   const stopAll = useCallback(() => {
@@ -195,16 +205,21 @@ export const useSoundPlayer = (props: {
     setFft(generateEmptyFft());
   }, []);
 
-  const startPlaying = useCallback(() => {
-    setIsPlaying(true);
+  const unmuteSpeaker = useCallback(() => {
+    setIsSpeakerMuted(false);
     if (clipQueue.current.length > 0) {
       playNextClip();
     }
   }, [playNextClip]);
 
-  const stopPlaying = useCallback(() => {
+  const muteSpeaker = useCallback(() => {
+    setIsSpeakerMuted(true);
+    if (currentlyPlayingAudioBuffer.current) {
+      currentlyPlayingAudioBuffer.current.stop();
+      currentlyPlayingAudioBuffer.current.disconnect();
+      currentlyPlayingAudioBuffer.current = null;
+    }
     clearQueue();
-    setIsPlaying(false);
   }, [clearQueue]);
 
   return {
@@ -212,8 +227,9 @@ export const useSoundPlayer = (props: {
     fft,
     initPlayer,
     isPlaying,
-    startPlaying,
-    stopPlaying,
+    isSpeakerMuted,
+    unmuteSpeaker,
+    muteSpeaker,
     stopAll,
     clearQueue,
   };
