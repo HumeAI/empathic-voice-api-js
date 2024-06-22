@@ -9,6 +9,7 @@ export const useSoundPlayer = (props: {
   onPlayAudio: (id: string) => void;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isEVIMuted, setIsEVIMuted] = useState(false);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
   const audioContext = useRef<AudioContext | null>(null);
@@ -45,6 +46,16 @@ export const useSoundPlayer = (props: {
 
     const nextClip = clipQueue.current.shift();
     if (!nextClip) return;
+
+    // If EVI is muted, skip audio playback and only handle necessary updates
+    if (isEVIMuted) {
+      // Notify that the audio clip is being played by calling onPlayAudio
+      // This will ensure that the transcript is sent to the parent and processed
+      onPlayAudio.current(nextClip.id);
+      // Recursively call playNextClip to handle the next clip in the queue
+      playNextClip();
+      return;
+    }
 
     isProcessing.current = true;
     setIsPlaying(true);
@@ -100,7 +111,7 @@ export const useSoundPlayer = (props: {
       currentlyPlayingAudioBuffer.current = null;
       playNextClip();
     };
-  }, []);
+  }, [isEVIMuted]);
 
   const initPlayer = useCallback(() => {
     const initAudioContext = new AudioContext();
@@ -195,11 +206,24 @@ export const useSoundPlayer = (props: {
     setFft(generateEmptyFft());
   }, []);
 
+  const muteEVI = useCallback(() => {
+    clearQueue();
+    setIsEVIMuted(true);
+  }, []);
+
+  const unmuteEVI = useCallback(() => {
+    initPlayer();
+    setIsEVIMuted(false);
+  }, []);
+
   return {
     addToQueue,
     fft,
     initPlayer,
     isPlaying,
+    isEVIMuted,
+    muteEVI,
+    unmuteEVI,
     stopAll,
     clearQueue,
   };
