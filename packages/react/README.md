@@ -107,6 +107,8 @@ export const ExampleComponent = () => {
 | `clearMessages: () => void` | Clear transcript messages from history.                                   |
 | `mute: () => void` | Mute the microphone                                   |
 | `unmute: () => void` | Unmute the microphone                                   |
+| `muteEVI: () => void` | Mute EVI                                   |
+| `unmuteEVI: () => void` | Unmute EVI                                   |
 | `sendSessionSettings: (text: string) => void` | Send new session settings to the assistant. This overrides any session settings that were passed as props to the VoiceProvider.                                   |
 | `sendUserInput: (text: string) => void` | Send a user input message.                                   |
 | `sendAssistantInput: (text: string) => void` | Send a text string for the assistant to read out loud.                                   |
@@ -119,6 +121,7 @@ export const ExampleComponent = () => {
 | Property                      | Type                                          | Description                                            |
 |-----------------------------|-----------------------------------------------|--------------------------------------------------------|
 | `isMuted`                   | `boolean`                                       | Boolean that describes whether the microphone is muted |
+| `isEVIMuted`                   | `boolean`                                       | Boolean that describes whether EVI is muted |
 | `isPlaying`    | `boolean` |   Describes whether the assistant audio is currently playing.                                                     |
 | `fft` | `number[]` |            Audio FFT values for the assistant audio output.              |                                     |
 | `micFft` | `number[]` |           Audio FFT values for microphone input.              |                                     |
