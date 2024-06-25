@@ -9,11 +9,12 @@ export const useSoundPlayer = (props: {
   onPlayAudio: (id: string) => void;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isEVIMuted, setIsEVIMuted] = useState(false);
+  const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
   const audioContext = useRef<AudioContext | null>(null);
   const analyserNode = useRef<AnalyserNode | null>(null);
+  const gainNode = useRef<GainNode | null>(null);
   const isInitialized = useRef(false);
 
   const clipQueue = useRef<
@@ -119,9 +120,15 @@ export const useSoundPlayer = (props: {
 
     // Use AnalyserNode to get fft frequency data for visualizations
     const analyser = initAudioContext.createAnalyser();
-    analyser.connect(initAudioContext.destination);
+    // Use GainNode to adjust volume
+    const gain = initAudioContext.createGain();
+
     analyser.fftSize = 2048; // Must be a power of 2
+    analyser.connect(gain);
+    gain.connect(initAudioContext.destination);
+
     analyserNode.current = analyser;
+    gainNode.current = gain;
 
     isInitialized.current = true;
   }, []);
@@ -206,14 +213,18 @@ export const useSoundPlayer = (props: {
     setFft(generateEmptyFft());
   }, []);
 
-  const muteEVI = useCallback(() => {
-    clearQueue();
-    setIsEVIMuted(true);
+  const muteAudio = useCallback(() => {
+    if (gainNode.current && audioContext.current) {
+      gainNode.current.gain.setValueAtTime(0, audioContext.current.currentTime);
+      setIsAudioMuted(true);
+    }
   }, []);
 
-  const unmuteEVI = useCallback(() => {
-    initPlayer();
-    setIsEVIMuted(false);
+  const unmuteAudio = useCallback(() => {
+    if (gainNode.current && audioContext.current) {
+      gainNode.current.gain.setValueAtTime(1, audioContext.current.currentTime);
+      setIsAudioMuted(false);
+    }
   }, []);
 
   return {
@@ -221,9 +232,9 @@ export const useSoundPlayer = (props: {
     fft,
     initPlayer,
     isPlaying,
-    isEVIMuted,
-    muteEVI,
-    unmuteEVI,
+    isAudioMuted,
+    muteAudio,
+    unmuteAudio,
     stopAll,
     clearQueue,
   };
