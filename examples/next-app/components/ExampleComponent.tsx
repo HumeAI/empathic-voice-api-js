@@ -43,6 +43,7 @@ export const ExampleComponent = () => {
     sendAssistantInput,
     sendResumeAssistantMessage,
     sendPauseAssistantMessage,
+    chatMetadata,
   } = useVoice();
 
   const [textValue, setTextValue] = useState('');
@@ -59,7 +60,7 @@ export const ExampleComponent = () => {
       sendPauseAssistantMessage();
       setPaused(true);
     }
-  }, [paused]);
+  }, [paused, sendPauseAssistantMessage, sendResumeAssistantMessage]);
   const pausedText = paused ? 'Resume' : 'Pause';
 
   const assistantMessages = useMemo(() => {
@@ -103,6 +104,12 @@ export const ExampleComponent = () => {
                       Ready state
                     </div>
                     <div>{readyState}</div>
+                  </div>
+                  <div>
+                    <div className={'text-sm font-medium uppercase'}>
+                      Request ID
+                    </div>
+                    <div>{chatMetadata?.request_id}</div>
                   </div>
                 </div>
 
