@@ -56,6 +56,10 @@ export const useMessages = ({
   const [lastUserMessage, setLastUserMessage] =
     useState<UserTranscriptMessage | null>(null);
 
+  const [chatMetadata, setChatMetadata] = useState<ChatMetadataMessage | null>(
+    null,
+  );
+
   const createConnectMessage = useCallback(() => {
     setMessages((prev) =>
       prev.concat([
@@ -108,11 +112,17 @@ export const useMessages = ({
       case 'tool_call':
       case 'tool_response':
       case 'tool_error':
+        sendMessageToParent?.(message);
+        setMessages((prev) => {
+          return keepLastN(messageHistoryLimit, prev.concat([message]));
+        });
+        break;
       case 'chat_metadata':
         sendMessageToParent?.(message);
         setMessages((prev) => {
           return keepLastN(messageHistoryLimit, prev.concat([message]));
         });
+        setChatMetadata(message);
         break;
       default:
         break;
@@ -159,5 +169,6 @@ export const useMessages = ({
     messages,
     lastVoiceMessage,
     lastUserMessage,
+    chatMetadata,
   };
 };

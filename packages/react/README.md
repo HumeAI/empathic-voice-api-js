@@ -138,6 +138,7 @@ export const ExampleComponent = () => {
 | `isSocketError` | `boolean` | If true, there was an error connecting to the websocket.      |          
 | `callDurationTimestamp` | `string` or `null` | The length of a call. This value persists after the conversation has ended.      |          
 | `toolStatusStore` | `Record<string, { call?: ToolCall; resolved?: ToolResponse | ToolError }>` | A map of tool call IDs to their associated tool messages.     |          
+| `chatMetadata` | `ChatMetadataMessage` or `null` | Metadata about the current chat, including chat ID, chat group ID, and request ID.    |          
 
 
 

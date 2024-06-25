@@ -96,6 +96,7 @@ export type VoiceContextType = {
   isSocketError: boolean;
   callDurationTimestamp: string | null;
   toolStatusStore: ReturnType<typeof useToolStatus>['store'];
+  chatMetadata: ChatMetadataMessage | null;
 };
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
@@ -180,7 +181,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       stopTimer();
       updateError({ type: 'socket_error', message, error: err });
     },
-    [updateError],
+    [stopTimer, updateError],
   );
 
   const config = createSocketConfig(props);
@@ -227,7 +228,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           toolStatus.addToStore(message);
         }
       },
-      [player],
+      [messageStore, player, toolStatus],
     ),
     onError: onClientError,
     onOpen: useCallback(() => {
@@ -322,7 +323,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       };
       updateError(error);
     }
-  }, [client, config, getStream, mic, player, updateError]);
+  }, [client, config, getStream, mic, player, sessionSettings, updateError]);
 
   const disconnectFromVoice = useCallback(() => {
     client.disconnect();
@@ -332,7 +333,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       messageStore.clearMessages();
     }
     toolStatus.clearStore();
-  }, [client, player, mic]);
+  }, [
+    client,
+    player,
+    mic,
+    clearMessagesOnDisconnect,
+    toolStatus,
+    messageStore,
+  ]);
 
   const disconnect = useCallback(
     (disconnectOnError?: boolean) => {
@@ -398,6 +406,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         isSocketError,
         callDurationTimestamp,
         toolStatusStore: toolStatus.store,
+        chatMetadata: messageStore.chatMetadata,
       }) satisfies VoiceContextType,
     [
       connect,
@@ -430,6 +439,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isSocketError,
       callDurationTimestamp,
       toolStatus,
+      messageStore.chatMetadata,
     ],
   );
 
