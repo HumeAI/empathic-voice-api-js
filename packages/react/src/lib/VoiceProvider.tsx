@@ -60,7 +60,7 @@ export type VoiceContextType = {
   disconnect: () => void;
   fft: number[];
   isMuted: boolean;
-  isEVIMuted: boolean;
+  isAudioMuted: boolean;
   isPlaying: boolean;
   messages: (
     | UserTranscriptMessage
@@ -78,8 +78,8 @@ export type VoiceContextType = {
   clearMessages: () => void;
   mute: () => void;
   unmute: () => void;
-  muteEVI: () => void;
-  unmuteEVI: () => void;
+  muteAudio: () => void;
+  unmuteAudio: () => void;
   readyState: VoiceReadyState;
   sendUserInput: VoiceClient['sendUserInput'];
   sendAssistantInput: VoiceClient['sendAssistantInput'];
@@ -373,14 +373,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         fft: player.fft,
         micFft: mic.fft,
         isMuted: mic.isMuted,
-        isEVIMuted: player.isAudioMuted,
+        isAudioMuted: player.isAudioMuted,
         isPlaying: player.isPlaying,
         messages: messageStore.messages,
         lastVoiceMessage: messageStore.lastVoiceMessage,
         lastUserMessage: messageStore.lastUserMessage,
         clearMessages: messageStore.clearMessages,
         mute: mic.mute,
-        muteEVI: player.muteAudio,
+        muteAudio: player.muteAudio,
         readyState: client.readyState,
         sendUserInput: client.sendUserInput,
         sendAssistantInput: client.sendAssistantInput,
@@ -390,7 +390,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         sendResumeAssistantMessage: client.sendResumeAssistantMessage,
         status,
         unmute: mic.unmute,
-        unmuteEVI: player.unmuteAudio,
+        unmuteAudio: player.unmuteAudio,
         error,
         isAudioError,
         isError,

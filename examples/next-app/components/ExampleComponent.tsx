@@ -29,13 +29,13 @@ export const ExampleComponent = () => {
     fft: audioFft,
     status,
     isMuted,
-    isEVIMuted,
+    isAudioMuted,
     isPlaying,
     mute,
-    muteEVI,
+    muteAudio,
     readyState,
     unmute,
-    unmuteEVI,
+    unmuteAudio,
     messages,
     micFft,
     callDurationTimestamp,
@@ -131,9 +131,9 @@ export const ExampleComponent = () => {
                 )}
                 <button
                   className="rounded border border-neutral-500 p-2"
-                  onClick={() => (isEVIMuted ? unmuteEVI() : muteEVI())}
+                  onClick={() => (isAudioMuted ? unmuteAudio() : muteAudio())}
                 >
-                  {isEVIMuted ? 'Unmute EVI' : 'Mute EVI'}
+                  {isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
                 </button>
 
                 <div className="flex gap-10">

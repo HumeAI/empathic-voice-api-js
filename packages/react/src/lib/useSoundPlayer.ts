@@ -48,16 +48,6 @@ export const useSoundPlayer = (props: {
     const nextClip = clipQueue.current.shift();
     if (!nextClip) return;
 
-    // If EVI is muted, skip audio playback and only handle necessary updates
-    if (isEVIMuted) {
-      // Notify that the audio clip is being played by calling onPlayAudio
-      // This will ensure that the transcript is sent to the parent and processed
-      onPlayAudio.current(nextClip.id);
-      // Recursively call playNextClip to handle the next clip in the queue
-      playNextClip();
-      return;
-    }
-
     isProcessing.current = true;
     setIsPlaying(true);
 
@@ -112,7 +102,7 @@ export const useSoundPlayer = (props: {
       currentlyPlayingAudioBuffer.current = null;
       playNextClip();
     };
-  }, [isEVIMuted]);
+  }, []);
 
   const initPlayer = useCallback(() => {
     const initAudioContext = new AudioContext();
