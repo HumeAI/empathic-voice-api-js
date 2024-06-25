@@ -29,10 +29,13 @@ export const ExampleComponent = () => {
     fft: audioFft,
     status,
     isMuted,
+    isAudioMuted,
     isPlaying,
     mute,
+    muteAudio,
     readyState,
     unmute,
+    unmuteAudio,
     messages,
     micFft,
     callDurationTimestamp,
@@ -126,6 +129,12 @@ export const ExampleComponent = () => {
                     Mute mic
                   </button>
                 )}
+                <button
+                  className="rounded border border-neutral-500 p-2"
+                  onClick={() => (isAudioMuted ? unmuteAudio() : muteAudio())}
+                >
+                  {isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
+                </button>
 
                 <div className="flex gap-10">
                   <Waveform fft={audioFft} />
