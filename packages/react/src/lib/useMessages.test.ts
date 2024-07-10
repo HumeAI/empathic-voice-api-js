@@ -1,7 +1,4 @@
-import type {
-  AssistantTranscriptMessage,
-  UserTranscriptMessage,
-} from '@humeai/voice';
+import type { Hume } from 'hume';
 import type { RenderHookResult } from '@testing-library/react-hooks';
 import { act, renderHook } from '@testing-library/react-hooks';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,8 +7,8 @@ import { useMessages } from './useMessages'; // adjust the import path as needed
 
 describe('useMessages hook', () => {
   let hook: RenderHookResult<unknown, ReturnType<typeof useMessages>>;
-  let userMessage: UserTranscriptMessage;
-  let agentMessage: AssistantTranscriptMessage;
+  let userMessage: Hume.empathicVoice.UserMessage;
+  let agentMessage: Hume.empathicVoice.AssistantMessage;
 
   const sendMessageToParent = vi.fn();
 

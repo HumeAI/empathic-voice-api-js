@@ -1,6 +1,6 @@
 // cspell:ignore dataavailable
-import type { MimeType } from '@humeai/voice';
-import { getSupportedMimeType } from '@humeai/voice';
+import type { MimeType } from 'hume';
+import { getSupportedMimeType } from 'hume';
 import Meyda from 'meyda';
 import type { MeydaFeaturesObject } from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
