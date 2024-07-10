@@ -30,16 +30,8 @@
  │      unmount iframe       │ ───────────▶                              
  └───────────────────────────┘                                           
                                                                        */
-import type {
-  AssistantTranscriptMessage,
-  SocketConfig,
-  UserTranscriptMessage,
-} from '@humeai/voice';
-import {
-  AssistantTranscriptMessageSchema,
-  SocketConfigSchema,
-  UserTranscriptMessageSchema,
-} from '@humeai/voice';
+import { Hume } from 'hume';
+import * as serializers from 'hume/serialization';
 import { z } from 'zod';
 
 const WindowDimensionsSchema = z.object({
@@ -121,10 +113,21 @@ export const FrameToClientActionSchema = z.union([
   }),
   z.object({
     type: z.literal('transcript_message'),
-    payload: z.union([
-      UserTranscriptMessageSchema,
-      AssistantTranscriptMessageSchema,
-    ]),
+    payload: z.custom<
+      Hume.empathicVoice.UserMessage | Hume.empathicVoice.AssistantMessage
+    >((val) => {
+      const userMessageParseResponse =
+        serializers.empathicVoice.UserMessage.parse(val);
+      if (userMessageParseResponse.ok) {
+        return true;
+      }
+      const assistantMessageParseResponse =
+        serializers.empathicVoice.AssistantMessage.parse(val);
+      if (assistantMessageParseResponse.ok) {
+        return true;
+      }
+      return false;
+    }),
   }),
   z.object({
     type: z.literal('resize_frame'),
@@ -154,7 +157,7 @@ export const WIDGET_IFRAME_IS_READY_ACTION = {
 } satisfies FrameToClientAction;
 
 export const TRANSCRIPT_MESSAGE_ACTION = (
-  message: UserTranscriptMessage | AssistantTranscriptMessage,
+  message: Hume.empathicVoice.UserMessage | Hume.empathicVoice.AssistantMessage,
 ) => {
   return {
     type: 'transcript_message',

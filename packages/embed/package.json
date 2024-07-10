@@ -35,7 +35,7 @@
     "vitest": "^1.4.0"
   },
   "dependencies": {
-    "@humeai/voice": "workspace:*",
+    "hume": "0.8.1-beta0",
     "zod": "^3.22.4"
   },
   "browserslist": [

@@ -13,15 +13,24 @@ export {
 } from './lib/embed-messages';
 
 export type {
-  AssistantTranscriptMessage,
-  SocketConfig,
-  JSONMessage,
-  UserTranscriptMessage,
+  SubscribeEvent,
+  AssistantMessage,
+  UserMessage,
+  ToolCallMessage,
+  ToolResponseMessage,
+  ToolErrorMessage,
+  ChatMetadata,
+} from 'hume/api/resources/empathicVoice';
+
+export type {
+  AssistantMessage as AssistantTranscriptMessage,
+  SubscribeEvent as JSONMessage,
+  UserMessage as UserTranscriptMessage,
   EmotionScores,
-  ToolCall,
-  ToolResponse,
-  ToolError,
-  ChatMetadataMessage,
-} from '@humeai/voice';
+  ToolCallMessage as ToolCall,
+  ToolResponseMessage as ToolResponse,
+  ToolErrorMessage as ToolError,
+  ChatMetadata as ChatMetadataMessage,
+} from 'hume/api/resources/empathicVoice';
 
 export { LanguageModelOption } from '@humeai/voice';
