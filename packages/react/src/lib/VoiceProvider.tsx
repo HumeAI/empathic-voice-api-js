@@ -220,7 +220,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           message.type === 'user_interruption' ||
           message.type === 'user_message'
         ) {
-          player.stopAll();
+          player.clearQueue();
         }
 
         if (
