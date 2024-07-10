@@ -216,8 +216,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         // store message
         messageStore.onMessage(message);
 
-        if (message.type === 'user_interruption') {
-          player.clearQueue();
+        if (
+          message.type === 'user_interruption' ||
+          message.type === 'user_message'
+        ) {
+          player.stopAll();
         }
 
         if (
