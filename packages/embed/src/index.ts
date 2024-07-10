@@ -33,4 +33,4 @@ export type {
   ChatMetadata as ChatMetadataMessage,
 } from 'hume/api/resources/empathicVoice';
 
-export { LanguageModelOption } from '@humeai/voice';
+export { LanguageModelOption } from './types';

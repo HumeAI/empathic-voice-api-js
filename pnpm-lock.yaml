@@ -39,8 +39,8 @@ importers:
         specifier: ^11.0.28
         version: 11.2.13(react-dom@18.3.1)(react@18.3.1)
       hume:
-        specifier: 0.8.1-beta0
-        version: 0.8.1-beta0
+        specifier: 0.8.1-beta2
+        version: 0.8.1-beta2
       lucide-react:
         specifier: ^0.372.0
         version: 0.372.0(react@18.3.1)
@@ -192,8 +192,8 @@ importers:
   packages/embed:
     dependencies:
       hume:
-        specifier: 0.8.1-beta0
-        version: 0.8.1-beta0
+        specifier: 0.8.1-beta2
+        version: 0.8.1-beta2
       zod:
         specifier: ^3.22.4
         version: 3.23.8
@@ -290,8 +290,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       hume:
-        specifier: 0.8.1-beta0
-        version: 0.8.1-beta0
+        specifier: 0.8.1-beta2
+        version: 0.8.1-beta2
       meyda:
         specifier: ^5.6.2
         version: 5.6.3
@@ -3872,6 +3872,23 @@ packages:
 
   /hume@0.8.1-beta0:
     resolution: {integrity: sha512-S6ItAzAaS59JaRtHfPBdztZvoha4UagvgHZo/YxYrd0n60nM5I9c2DR6qI/3GnMEKS8h0gyCoCeRRKThI7uKuA==}
+    dependencies:
+      form-data: 4.0.0
+      form-data-encoder: 4.0.2
+      formdata-node: 6.0.3
+      node-fetch: 2.7.0
+      qs: 6.11.2
+      url-join: 4.0.1
+      uuid: 9.0.1
+      ws: 8.18.0
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - utf-8-validate
+    dev: false
+
+  /hume@0.8.1-beta2:
+    resolution: {integrity: sha512-3ldeUSEmMFc21Br60mG2A93gMoFYhYmDMq2yT/5rAPlu/bJB6OhI6JsswOUs0FXisR0+xXRznxBrRsKnFINFpA==}
     dependencies:
       form-data: 4.0.0
       form-data-encoder: 4.0.2
