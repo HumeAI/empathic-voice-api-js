@@ -7,22 +7,11 @@ export * from './lib/connection-message';
 export {
   type SocketConfig,
   Channels,
-  TTSService,
   AudioEncoding,
-  type AssistantEndMessage,
-  type AssistantTranscriptMessage,
-  type AudioMessage,
-  type AudioOutputMessage,
-  type JSONMessage,
+  TTSService,
   type TimeSlice,
-  type UserInterruptionMessage,
-  type UserTranscriptMessage,
-  type ToolCall,
-  type ToolResponse,
-  type ToolError,
-  type ChatMetadataMessage,
   LanguageModelOption,
-} from '@humeai/voice';
+} from './types';
 
 export type {
   AssistantEnd as AssistantEndMessage,
@@ -39,15 +28,15 @@ export type {
 } from 'hume/api/resources/empathicVoice';
 
 export type {
-  AssistantEnd
-  AudioInput
-  AudioOutput
-  UserInterruption
-  AssistantMessage
-  SubscribeEvent
-  UserMessage
-  ToolCallMessage
-  ToolResponseMessage
-  ToolErrorMessage
-  ChatMetadata
+  AssistantEnd,
+  AudioInput,
+  AudioOutput,
+  UserInterruption,
+  AssistantMessage,
+  SubscribeEvent,
+  UserMessage,
+  ToolCallMessage,
+  ToolResponseMessage,
+  ToolErrorMessage,
+  ChatMetadata,
 } from 'hume/api/resources/empathicVoice';
