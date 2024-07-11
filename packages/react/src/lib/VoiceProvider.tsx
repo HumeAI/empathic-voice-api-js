@@ -24,6 +24,7 @@ import {
   useVoiceClient,
   type VoiceReadyState,
 } from './useVoiceClient';
+import { SocketConfig } from '..';
 
 type VoiceError =
   | { type: 'socket_error'; message: string; error?: Error }
@@ -66,11 +67,14 @@ export type VoiceContextType = {
   muteAudio: () => void;
   unmuteAudio: () => void;
   readyState: VoiceReadyState;
-  sendUserInput: Hume.empathicVoice.chat.ChatSocket['sendUserInput'];
-  sendAssistantInput: Hume.empathicVoice.chat.ChatSocket['sendAssistantInput'];
+  sendUserInput: (text: string) => void;
+  sendAssistantInput: (text: string) => void;
   sendSessionSettings: Hume.empathicVoice.chat.ChatSocket['sendSessionSettings'];
-  sendToolResponseMessage: Hume.empathicVoice.chat.ChatSocket['sendToolResponseMessage'];
-  sendToolErrorMessage: Hume.empathicVoice.chat.ChatSocket['sendToolErrorMessage'];
+  sendToolMessage: (
+    type:
+      | Hume.empathicVoice.ToolResponseMessage
+      | Hume.empathicVoice.ToolErrorMessage,
+  ) => void;
   sendPauseAssistantMessage: Hume.empathicVoice.chat.ChatSocket['pauseAssistant'];
   sendResumeAssistantMessage: Hume.empathicVoice.chat.ChatSocket['resumeAssistant'];
   status: VoiceStatus;
@@ -87,26 +91,25 @@ export type VoiceContextType = {
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
 
-export type VoiceProviderProps = PropsWithChildren<
-  Parameters<typeof createSocketConfig>[0]
-> & {
-  sessionSettings?: Hume.empathicVoice.SessionSettings;
-  onMessage?: (message: Hume.empathicVoice.SubscribeEvent) => void;
-  onError?: (err: VoiceError) => void;
-  onOpen?: () => void;
-  onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
-  onToolCall?: ToolCallHandler;
-  /**
-   * @default true
-   * @description Clear messages when the voice is disconnected.
-   */
-  clearMessagesOnDisconnect?: boolean;
-  /**
-   * @default 100
-   * @description The maximum number of messages to keep in memory.
-   */
-  messageHistoryLimit?: number;
-};
+export type VoiceProviderProps =
+  PropsWithChildren<Hume.empathicVoice.chat.Chat.ConnectArgs> & {
+    sessionSettings?: Hume.empathicVoice.SessionSettings;
+    onMessage?: (message: Hume.empathicVoice.SubscribeEvent) => void;
+    onError?: (err: VoiceError) => void;
+    onOpen?: () => void;
+    onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
+    onToolCall?: ToolCallHandler;
+    /**
+     * @default true
+     * @description Clear messages when the voice is disconnected.
+     */
+    clearMessagesOnDisconnect?: boolean;
+    /**
+     * @default 100
+     * @description The maximum number of messages to keep in memory.
+     */
+    messageHistoryLimit?: number;
+  };
 
 export const useVoice = () => {
   const ctx = useContext(VoiceContext);
@@ -170,7 +173,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [stopTimer, updateError],
   );
 
-  const config = createSocketConfig(props);
+  const config = props;
 
   const player = useSoundPlayer({
     onError: (message) => {
@@ -384,9 +387,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         sendUserInput: client.sendUserInput,
         sendAssistantInput: client.sendAssistantInput,
         sendSessionSettings: client.sendSessionSettings,
-        sendToolMessage: client.sendToolMessage,
         sendPauseAssistantMessage: client.sendPauseAssistantMessage,
         sendResumeAssistantMessage: client.sendResumeAssistantMessage,
+        sendToolMessage: client.sendToolMessage,
         status,
         unmute: mic.unmute,
         unmuteAudio: player.unmuteAudio,

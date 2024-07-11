@@ -1,6 +1,6 @@
 'use client';
 
-import type { EmotionScores } from '@humeai/voice';
+import type { Hume } from 'hume';
 import { useVoice } from '@humeai/voice-react';
 import { SelectItem } from '@radix-ui/react-select';
 import { useCallback, useMemo, useState } from 'react';
@@ -15,11 +15,13 @@ import {
 } from '@/components/Select';
 import { Waveform } from '@/components/Waveform';
 
-function getTop3Expressions(expressionOutputs: EmotionScores) {
+function getTop3Expressions(
+  expressionOutputs: Hume.empathicVoice.EmotionScores,
+) {
   return Object.entries(expressionOutputs)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
-    .map(([key, value]) => ({ name: key, score: value }));
+    .map(([key, value]) => ({ name: key, score: value as number }));
 }
 
 export const ExampleComponent = () => {

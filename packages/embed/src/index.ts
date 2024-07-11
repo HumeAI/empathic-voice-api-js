@@ -1,3 +1,5 @@
+import { type Hume } from 'hume';
+
 export * from './lib/embed';
 
 export {
@@ -32,5 +34,8 @@ export type {
   ToolErrorMessage as ToolError,
   ChatMetadata as ChatMetadataMessage,
 } from 'hume/api/resources/empathicVoice';
+
+export type SocketConfig = Hume.empathicVoice.chat.Chat.ConnectArgs &
+  Hume.empathicVoice.chat.Chat.Options;
 
 export { LanguageModelOption } from './types';

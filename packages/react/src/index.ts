@@ -1,3 +1,5 @@
+import { type Hume } from 'hume';
+
 export * from './lib/useSoundPlayer';
 export * from './lib/useMicrophone';
 export * from './lib/VoiceProvider';
@@ -5,13 +7,15 @@ export * from './lib/useVoiceClient';
 export * from './lib/connection-message';
 
 export {
-  type SocketConfig,
   Channels,
   AudioEncoding,
   TTSService,
   type TimeSlice,
   LanguageModelOption,
 } from './types';
+
+export type SocketConfig = Hume.empathicVoice.chat.Chat.ConnectArgs &
+  Hume.empathicVoice.chat.Chat.Options;
 
 export type {
   AssistantEnd as AssistantEndMessage,

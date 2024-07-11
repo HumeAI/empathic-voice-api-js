@@ -1,4 +1,4 @@
-import { fetchAccessToken } from '@humeai/voice';
+import { fetchAccessToken } from 'hume';
 import dynamic from 'next/dynamic';
 import type { FC, PropsWithChildren } from 'react';
 

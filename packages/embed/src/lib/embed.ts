@@ -1,11 +1,4 @@
-import type {
-  AssistantTranscriptMessage,
-  SocketConfig,
-  UserTranscriptMessage,
-} from '@humeai/voice';
-import { createSocketConfig } from '@humeai/voice';
-
-import { }
+import type { Hume } from 'hume';
 
 import type { ClientToFrameAction } from './embed-messages';
 import {
@@ -19,10 +12,10 @@ import {
 export type EmbeddedVoiceConfig = {
   rendererUrl: string;
   iframeTitle?: string;
-} & SocketConfig;
+} & Hume.empathicVoice.chat.Chat.ConnectArgs;
 
 export type TranscriptMessageHandler = (
-  message: UserTranscriptMessage | AssistantTranscriptMessage,
+  message: Hume.empathicVoice.UserMessage | Hume.empathicVoice.AssistantMessage,
 ) => void;
 
 export type CloseHandler = () => void;
@@ -71,15 +64,13 @@ export class EmbeddedVoice {
     onMessage?: TranscriptMessageHandler;
     onClose?: CloseHandler;
     openOnMount?: boolean;
-  } & NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>>): EmbeddedVoice {
-    const parsedConfig = createSocketConfig(config);
-
+  }): EmbeddedVoice {
     return new EmbeddedVoice({
       rendererUrl: rendererUrl ?? 'https://voice-widget.hume.ai',
       onMessage,
       onClose,
       openOnMount,
-      ...parsedConfig,
+      ...config,
     });
   }
 

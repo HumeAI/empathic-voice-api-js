@@ -5,18 +5,20 @@ import {
   UPDATE_CONFIG_ACTION,
 } from './embed-messages';
 
+export enum TTSService {
+  /** Hume's Text-To-Speech */
+  DEFAULT = 'hume_ai',
+  /** ElevenLab's Text-To-Speech */
+  ELEVEN_LABS = 'eleven_labs',
+  /** Play HT's Text-To-Speech */
+  PLAY_HT = 'play_ht',
+}
+
 describe('parseEmbedMessage', () => {
   it('should parse embed message', async () => {
     const test = () => {
       const action = UPDATE_CONFIG_ACTION({
-        auth: {
-          type: 'apiKey',
-          value: '',
-        },
-        hostname: '',
-        reconnectAttempts: 0,
-        debug: false,
-        tts: TTSService.DEFAULT,
+        apiKey: '',
       });
       return parseClientToFrameAction(action);
     };

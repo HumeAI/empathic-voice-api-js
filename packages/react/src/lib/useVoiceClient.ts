@@ -42,7 +42,7 @@ export const useVoiceClient = (props: {
   onToolCall?: ToolCallHandler;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
-  onClose?: () => void;
+  onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
 }) => {
   const client = useRef<Hume.empathicVoice.chat.ChatSocket | null>(null);
 
@@ -149,8 +149,8 @@ export const useVoiceClient = (props: {
         }
       });
 
-      client.current.on('close', () => {
-        onClose.current?.();
+      client.current.on('close', (event) => {
+        onClose.current?.(event);
         setReadyState(VoiceReadyState.CLOSED);
       });
 
