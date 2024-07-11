@@ -85,7 +85,7 @@ export const useMessages = ({
           // in order to line up the transcript event with the correct audio clip
           setVoiceMessageMap((prev) => ({
             ...prev,
-            [message.id]: message,
+            [`${message.id}`]: message,
           }));
           break;
         case 'user_message':

@@ -1,6 +1,6 @@
 // cspell:ignore dataavailable
 import type { MimeType } from 'hume';
-import { getSupportedMimeType } from 'hume';
+import { getBrowserSupportedMimeType } from 'hume';
 import Meyda from 'meyda';
 import type { MeydaFeaturesObject } from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -168,7 +168,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
   }, [dataHandler, streamRef]);
 
   useEffect(() => {
-    const mimeTypeResult = getSupportedMimeType();
+    const mimeTypeResult = getBrowserSupportedMimeType();
     if (mimeTypeResult.success) {
       mimeTypeRef.current = mimeTypeResult.mimeType;
     } else {

@@ -1,19 +1,4 @@
-import {
-  AssistantTranscriptMessage,
-  AudioOutputMessage,
-  ChatMetadataMessage,
-  createSocketConfig,
-  JSONErrorMessage,
-  JSONMessage,
-  SessionSettings,
-  ToolCall,
-  ToolError,
-  ToolResponse,
-  UserInterruptionMessage,
-  UserTranscriptMessage,
-  VoiceClient,
-  VoiceEventMap,
-} from '@humeai/voice';
+import { type Hume } from 'hume';
 import React, {
   createContext,
   FC,
@@ -63,30 +48,31 @@ export type VoiceContextType = {
   isAudioMuted: boolean;
   isPlaying: boolean;
   messages: (
-    | UserTranscriptMessage
-    | AssistantTranscriptMessage
+    | Hume.empathicVoice.UserMessage
+    | Hume.empathicVoice.AssistantMessage
     | ConnectionMessage
-    | UserInterruptionMessage
-    | JSONErrorMessage
-    | ToolCall
-    | ToolResponse
-    | ToolError
-    | ChatMetadataMessage
+    | Hume.empathicVoice.UserInterruption
+    | Hume.empathicVoice.WebSocketError
+    | Hume.empathicVoice.ToolCallMessage
+    | Hume.empathicVoice.ToolResponseMessage
+    | Hume.empathicVoice.ToolErrorMessage
+    | Hume.empathicVoice.ChatMetadata
   )[];
-  lastVoiceMessage: AssistantTranscriptMessage | null;
-  lastUserMessage: UserTranscriptMessage | null;
+  lastVoiceMessage: Hume.empathicVoice.AssistantMessage | null;
+  lastUserMessage: Hume.empathicVoice.UserMessage | null;
   clearMessages: () => void;
   mute: () => void;
   unmute: () => void;
   muteAudio: () => void;
   unmuteAudio: () => void;
   readyState: VoiceReadyState;
-  sendUserInput: VoiceClient['sendUserInput'];
-  sendAssistantInput: VoiceClient['sendAssistantInput'];
-  sendSessionSettings: VoiceClient['sendSessionSettings'];
-  sendToolMessage: VoiceClient['sendToolMessage'];
-  sendPauseAssistantMessage: VoiceClient['sendPauseAssistantMessage'];
-  sendResumeAssistantMessage: VoiceClient['sendResumeAssistantMessage'];
+  sendUserInput: Hume.empathicVoice.chat.ChatSocket['sendUserInput'];
+  sendAssistantInput: Hume.empathicVoice.chat.ChatSocket['sendAssistantInput'];
+  sendSessionSettings: Hume.empathicVoice.chat.ChatSocket['sendSessionSettings'];
+  sendToolResponseMessage: Hume.empathicVoice.chat.ChatSocket['sendToolResponseMessage'];
+  sendToolErrorMessage: Hume.empathicVoice.chat.ChatSocket['sendToolErrorMessage'];
+  sendPauseAssistantMessage: Hume.empathicVoice.chat.ChatSocket['pauseAssistant'];
+  sendResumeAssistantMessage: Hume.empathicVoice.chat.ChatSocket['resumeAssistant'];
   status: VoiceStatus;
   micFft: number[];
   error: VoiceError | null;
@@ -96,7 +82,7 @@ export type VoiceContextType = {
   isSocketError: boolean;
   callDurationTimestamp: string | null;
   toolStatusStore: ReturnType<typeof useToolStatus>['store'];
-  chatMetadata: ChatMetadataMessage | null;
+  chatMetadata: Hume.empathicVoice.ChatMetadata | null;
 };
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
@@ -104,11 +90,11 @@ const VoiceContext = createContext<VoiceContextType | null>(null);
 export type VoiceProviderProps = PropsWithChildren<
   Parameters<typeof createSocketConfig>[0]
 > & {
-  sessionSettings?: SessionSettings;
-  onMessage?: (message: JSONMessage) => void;
+  sessionSettings?: Hume.empathicVoice.SessionSettings;
+  onMessage?: (message: Hume.empathicVoice.SubscribeEvent) => void;
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
-  onClose?: VoiceEventMap['close'];
+  onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
   onToolCall?: ToolCallHandler;
   /**
    * @default true
@@ -198,20 +184,20 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
   const client = useVoiceClient({
-    onAudioMessage: (message: AudioOutputMessage) => {
+    onAudioMessage: (message: Hume.empathicVoice.AudioOutput) => {
       player.addToQueue(message);
     },
     onMessage: useCallback(
       (
         message:
-          | UserTranscriptMessage
-          | AssistantTranscriptMessage
-          | UserInterruptionMessage
-          | JSONErrorMessage
-          | ToolCall
-          | ToolResponse
-          | ToolError
-          | ChatMetadataMessage,
+          | Hume.empathicVoice.UserMessage
+          | Hume.empathicVoice.AssistantMessage
+          | Hume.empathicVoice.UserInterruption
+          | Hume.empathicVoice.WebSocketError
+          | Hume.empathicVoice.ToolCallMessage
+          | Hume.empathicVoice.ToolResponseMessage
+          | Hume.empathicVoice.ToolErrorMessage
+          | Hume.empathicVoice.ChatMetadata,
       ) => {
         // store message
         messageStore.onMessage(message);
@@ -239,7 +225,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       messageStore.createConnectMessage();
       props.onOpen?.();
     }, [messageStore, props, startTimer]),
-    onClose: useCallback<NonNullable<VoiceEventMap['close']>>(
+    onClose: useCallback<
+      NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
+    >(
       (event) => {
         stopTimer();
         messageStore.createDisconnectMessage();
