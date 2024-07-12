@@ -94,6 +94,7 @@ export const useMessages = ({
       default:
         break;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onPlayAudio = useCallback(
