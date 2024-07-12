@@ -75,26 +75,20 @@ export const useVoiceClient = (props: {
 
   const connect = useCallback((config: SockeConfig) => {
     return new Promise((resolve, reject) => {
-      console.log(`Connecting with apiKey ${JSON.stringify(config.apiKey)}`);
-
       const hume = new HumeClient({
         apiKey: config.apiKey,
         accessToken: config.accessToken,
       });
 
-      console.log(`Connecting with config ${JSON.stringify(config)}`);
       client.current = hume.empathicVoice.chat.connect(config);
 
       client.current.on('open', () => {
-        console.log('WS opened');
         onOpen.current?.();
         setReadyState(VoiceReadyState.OPEN);
         resolve(VoiceReadyState.OPEN);
       });
 
       client.current.on('message', (message) => {
-        console.log('WS message received');
-
         if (message.type === 'audio_output') {
           onAudioMessage.current?.(message);
         }
@@ -160,13 +154,11 @@ export const useVoiceClient = (props: {
       });
 
       client.current.on('close', (event) => {
-        console.log('WS message closed');
         onClose.current?.(event);
         setReadyState(VoiceReadyState.CLOSED);
       });
 
       client.current.on('error', (e) => {
-        console.log('WS message error');
         const message = e instanceof Error ? e.message : 'Unknown error';
         onError.current?.(message, e instanceof Error ? e : undefined);
         reject(e);
