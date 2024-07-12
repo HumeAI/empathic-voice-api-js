@@ -7,7 +7,7 @@ import {
 import { useEffect, useRef } from 'react';
 
 type EmbeddedVoiceProps = Partial<EmbeddedVoiceConfig> &
-  NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>> & {
+  NonNullable<Pick<EmbeddedVoiceConfig, 'apiKey' | 'accessToken'>> & {
     onMessage?: TranscriptMessageHandler;
     onClose?: CloseHandler;
     isEmbedOpen: boolean;
@@ -31,7 +31,7 @@ export const EmbeddedVoice = (props: EmbeddedVoiceProps) => {
 
   const stableConfig = useRef<
     Partial<EmbeddedVoiceConfig> &
-      NonNullable<Pick<EmbeddedVoiceConfig, 'auth'>>
+      NonNullable<Pick<EmbeddedVoiceConfig, 'apiKey' | 'accessToken'>>
   >();
   stableConfig.current = config;
 

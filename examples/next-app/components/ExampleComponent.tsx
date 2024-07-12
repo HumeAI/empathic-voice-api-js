@@ -1,8 +1,8 @@
 'use client';
 
-import type { Hume } from 'hume';
 import { useVoice } from '@humeai/voice-react';
 import { SelectItem } from '@radix-ui/react-select';
+import type { Hume } from 'hume';
 import { useCallback, useMemo, useState } from 'react';
 import { match } from 'ts-pattern';
 
@@ -56,10 +56,10 @@ export const ExampleComponent = () => {
 
   const togglePaused = useCallback(() => {
     if (paused) {
-      sendResumeAssistantMessage();
+      sendResumeAssistantMessage({});
       setPaused(false);
     } else {
-      sendPauseAssistantMessage();
+      sendPauseAssistantMessage({});
       setPaused(true);
     }
   }, [paused, sendPauseAssistantMessage, sendResumeAssistantMessage]);
@@ -71,7 +71,10 @@ export const ExampleComponent = () => {
         if (message.type === 'assistant_message') {
           return {
             message: message.message,
-            top3: getTop3Expressions(message.models.prosody?.scores ?? {}),
+            top3:
+              message.models.prosody?.scores !== undefined
+                ? getTop3Expressions(message.models.prosody?.scores)
+                : {},
           };
         }
         return null;
@@ -111,7 +114,7 @@ export const ExampleComponent = () => {
                     <div className={'text-sm font-medium uppercase'}>
                       Request ID
                     </div>
-                    <div>{chatMetadata?.request_id}</div>
+                    <div>{chatMetadata?.requestId}</div>
                   </div>
                 </div>
 

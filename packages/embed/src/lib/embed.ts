@@ -12,7 +12,8 @@ import {
 export type EmbeddedVoiceConfig = {
   rendererUrl: string;
   iframeTitle?: string;
-} & Hume.empathicVoice.chat.Chat.ConnectArgs;
+} & Hume.empathicVoice.chat.Chat.ConnectArgs &
+  Hume.empathicVoice.chat.Chat.Options;
 
 export type TranscriptMessageHandler = (
   message: Hume.empathicVoice.UserMessage | Hume.empathicVoice.AssistantMessage,
