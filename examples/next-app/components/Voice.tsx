@@ -9,8 +9,8 @@ import { ExampleComponent } from '@/components/ExampleComponent';
 export const Voice = ({ accessToken }: { accessToken: string }) => {
   return (
     <VoiceProvider
-      auth={{ type: 'accessToken', value: accessToken }}
-      hostname={process.env.NEXT_PUBLIC_HUME_VOICE_HOSTNAME || 'api.hume.ai'}
+      accessToken={accessToken}
+      // base={process.env.NEXT_PUBLIC_HUME_VOICE_HOSTNAME || 'api.hume.ai'}
       messageHistoryLimit={10}
       onMessage={(message) => {
         // eslint-disable-next-line no-console

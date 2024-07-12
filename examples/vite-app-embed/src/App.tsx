@@ -21,10 +21,8 @@ function App() {
       <div>Demo of embedding voice as an iframe</div>
       <button onClick={() => setIsEmbedOpen(true)}>Open widget</button>
       <EmbeddedVoice
-        auth={{
-          type: 'apiKey',
-          value: apiKey,
-        }}
+        apiKey={apiKey}
+        debug={true}
         rendererUrl={
           import.meta.env.PROD
             ? 'https://voice-widget.hume.ai/'
@@ -37,9 +35,9 @@ function App() {
           setIsEmbedOpen(false);
         }}
         isEmbedOpen={isEmbedOpen}
-        hostname={String(
-          import.meta.env['VITE_PUBLIC_HOSTNAME'] ?? 'api.hume.ai',
-        )}
+        // hostname={String(
+        //   import.meta.env['VITE_PUBLIC_HOSTNAME'] ?? 'api.hume.ai',
+        // )}
         openOnMount={openOnMount}
       />
     </>
