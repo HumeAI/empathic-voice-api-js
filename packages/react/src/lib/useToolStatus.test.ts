@@ -20,6 +20,7 @@ describe('useToolStatus', () => {
     };
 
     act(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       hook.result.current.addToStore(toolCall);
     });
 
@@ -33,6 +34,7 @@ describe('useToolStatus', () => {
     };
 
     act(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       hook.result.current.addToStore(toolResponse);
     });
 
