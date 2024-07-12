@@ -2,7 +2,8 @@ import { type Hume, HumeClient } from 'hume';
 import * as serializers from 'hume/serialization';
 import { useCallback, useRef, useState } from 'react';
 
-export type SockeConfig = Hume.empathicVoice.chat.Chat.ConnectArgs;
+export type SockeConfig = Hume.empathicVoice.chat.Chat.ConnectArgs &
+  Hume.empathicVoice.chat.Chat.Options;
 
 export enum VoiceReadyState {
   IDLE = 'idle',
@@ -74,7 +75,9 @@ export const useVoiceClient = (props: {
 
   const connect = useCallback((config: SockeConfig) => {
     return new Promise((resolve, reject) => {
-      const hume = new HumeClient();
+      const hume = new HumeClient({
+        apiKey: config.apiKey,
+      });
 
       client.current = hume.empathicVoice.chat.connect(config);
 

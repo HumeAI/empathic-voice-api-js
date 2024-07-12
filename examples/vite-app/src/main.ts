@@ -43,4 +43,4 @@ client.on('close', () => {
   connectionState.innerHTML = 'Connection State: disconnected';
 });
 
-// client.connect();
+client.connect();
