@@ -180,7 +180,7 @@ export const ExampleComponent = () => {
                     <label className="flex grow flex-col gap-2">
                       <span className="sr-only">Text input content</span>
                       <input
-                        className="border px-2 py-1"
+                        className="border px-2 py-1 text-black"
                         placeholder="Write an input message here"
                         value={textValue}
                         onChange={(e) => setTextValue(e.target.value)}
