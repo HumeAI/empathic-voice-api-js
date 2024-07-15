@@ -92,25 +92,24 @@ export type VoiceContextType = {
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
 
-export type VoiceProviderProps =
-  PropsWithChildren<SockeConfig> & {
-      sessionSettings?: Hume.empathicVoice.SessionSettings;
-      onMessage?: (message: Hume.empathicVoice.SubscribeEvent) => void;
-      onError?: (err: VoiceError) => void;
-      onOpen?: () => void;
-      onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
-      onToolCall?: ToolCallHandler;
-      /**
-       * @default true
-       * @description Clear messages when the voice is disconnected.
-       */
-      clearMessagesOnDisconnect?: boolean;
-      /**
-       * @default 100
-       * @description The maximum number of messages to keep in memory.
-       */
-      messageHistoryLimit?: number;
-    };
+export type VoiceProviderProps = PropsWithChildren<SockeConfig> & {
+  sessionSettings?: Hume.empathicVoice.SessionSettings;
+  onMessage?: (message: Hume.empathicVoice.SubscribeEvent) => void;
+  onError?: (err: VoiceError) => void;
+  onOpen?: () => void;
+  onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
+  onToolCall?: ToolCallHandler;
+  /**
+   * @default true
+   * @description Clear messages when the voice is disconnected.
+   */
+  clearMessagesOnDisconnect?: boolean;
+  /**
+   * @default 100
+   * @description The maximum number of messages to keep in memory.
+   */
+  messageHistoryLimit?: number;
+};
 
 export const useVoice = () => {
   const ctx = useContext(VoiceContext);

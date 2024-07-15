@@ -34,6 +34,8 @@ import { type Hume } from 'hume';
 import * as serializers from 'hume/serialization';
 import { z } from 'zod';
 
+import { AuthStrategySchema } from './auth';
+
 const WindowDimensionsSchema = z.object({
   width: z.number(),
   height: z.number(),
@@ -41,13 +43,24 @@ const WindowDimensionsSchema = z.object({
 
 export type WindowDimensions = z.infer<typeof WindowDimensionsSchema>;
 
+export const SocketConnect =
+  z.custom<Hume.empathicVoice.chat.Chat.ConnectArgs>();
+export type SocketConnectSchema = z.infer<typeof SocketConnect>;
+
+export const SocketAuth = z.object({
+  auth: AuthStrategySchema,
+});
+export type SocketAuthSchema = z.infer<typeof SocketAuth>;
+
+export type SockeConfig = SocketAuthSchema & SocketConnectSchema;
+
 // ---------------------------------------------------------------------------
 // Client to frame actions
 // ---------------------------------------------------------------------------
 export const ClientToFrameActionSchema = z.union([
   z.object({
     type: z.literal('update_config'),
-    payload: z.custom(() => true), // satisfy the linter for now
+    payload: z.custom<SocketConfig>(),
   }),
   z.object({
     type: z.literal('cancel'),
