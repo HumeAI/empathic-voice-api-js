@@ -25,7 +25,6 @@ import {
   useVoiceClient,
   type VoiceReadyState,
 } from './useVoiceClient';
-import { SocketConfig } from '..';
 
 type VoiceError =
   | { type: 'socket_error'; message: string; error?: Error }

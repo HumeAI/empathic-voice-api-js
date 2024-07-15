@@ -6,6 +6,7 @@ import { type AuthStrategy } from './auth';
 
 export type SockeConfig = {
   auth: AuthStrategy;
+  hostname: string;
 } & Hume.empathicVoice.chat.Chat.ConnectArgs;
 
 export enum VoiceReadyState {
@@ -82,9 +83,11 @@ export const useVoiceClient = (props: {
         config.auth.type === 'apiKey'
           ? {
               apiKey: config.auth.value,
+              environment: config.hostname,
             }
           : {
               accessToken: config.auth.value,
+              environment: config.hostname,
             },
       );
 

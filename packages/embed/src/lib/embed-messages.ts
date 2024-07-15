@@ -47,10 +47,11 @@ export const SocketConnect =
   z.custom<Hume.empathicVoice.chat.Chat.ConnectArgs>();
 export type SocketConnectSchema = z.infer<typeof SocketConnect>;
 
-export const SocketAuth = z.object({
+export const BaseSocketConfig = z.object({
   auth: AuthStrategySchema,
+  hostname: z.string(),
 });
-export type SocketAuthSchema = z.infer<typeof SocketAuth>;
+export type SocketAuthSchema = z.infer<typeof BaseSocketConfig>;
 
 export type SockeConfig = SocketAuthSchema & SocketConnectSchema;
 
