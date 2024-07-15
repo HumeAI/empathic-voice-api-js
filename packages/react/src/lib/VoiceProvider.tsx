@@ -20,6 +20,7 @@ import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
 import { useToolStatus } from './useToolStatus';
 import {
+  SockeConfig,
   ToolCallHandler,
   useVoiceClient,
   type VoiceReadyState,
@@ -92,8 +93,7 @@ export type VoiceContextType = {
 const VoiceContext = createContext<VoiceContextType | null>(null);
 
 export type VoiceProviderProps =
-  PropsWithChildren<Hume.empathicVoice.chat.Chat.ConnectArgs> &
-    PropsWithChildren<Hume.empathicVoice.chat.Chat.Options> & {
+  PropsWithChildren<SockeConfig> & {
       sessionSettings?: Hume.empathicVoice.SessionSettings;
       onMessage?: (message: Hume.empathicVoice.SubscribeEvent) => void;
       onError?: (err: VoiceError) => void;
