@@ -56,6 +56,7 @@ module.exports = {
   ],
   rules: {
     'arrow-body-style': 'off',
+    eqeqeq: 'error',
     'no-console': 'warn',
     'no-debugger': 'error',
     'no-nested-ternary': 'error',
