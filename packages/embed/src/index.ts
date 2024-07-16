@@ -1,5 +1,3 @@
-import { type Hume } from 'hume';
-
 export * from './lib/embed';
 
 export {
@@ -35,7 +33,5 @@ export type {
   ChatMetadata as ChatMetadataMessage,
 } from 'hume/api/resources/empathicVoice';
 
-export type SocketConfig = Hume.empathicVoice.chat.Chat.ConnectArgs &
-  Hume.empathicVoice.chat.Chat.Options;
-
 export { LanguageModelOption } from './types';
+export { type SocketConfig } from './lib/embed-messages';

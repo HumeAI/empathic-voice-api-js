@@ -49,11 +49,11 @@ export type SocketConnectSchema = z.infer<typeof SocketConnect>;
 
 export const BaseSocketConfig = z.object({
   auth: AuthStrategySchema,
-  hostname: z.string(),
+  hostname: z.string().optional(),
 });
 export type SocketAuthSchema = z.infer<typeof BaseSocketConfig>;
 
-export type SockeConfig = SocketAuthSchema & SocketConnectSchema;
+export type SocketConfig = SocketAuthSchema & SocketConnectSchema;
 
 // ---------------------------------------------------------------------------
 // Client to frame actions
@@ -78,13 +78,7 @@ export const ClientToFrameActionSchema = z.union([
 
 export type ClientToFrameAction = z.infer<typeof ClientToFrameActionSchema>;
 
-export type SocketConfig = Hume.empathicVoice.chat.Chat.ConnectArgs &
-  Hume.empathicVoice.chat.Chat.Options;
-
-export const UPDATE_CONFIG_ACTION = (
-  config: Hume.empathicVoice.chat.Chat.ConnectArgs &
-    Hume.empathicVoice.chat.Chat.Options,
-) =>
+export const UPDATE_CONFIG_ACTION = (config: SocketConfig) =>
   ({
     type: 'update_config',
     payload: config,

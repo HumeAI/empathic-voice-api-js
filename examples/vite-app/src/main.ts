@@ -16,8 +16,8 @@ const appendMessage = (message: Hume.empathicVoice.SubscribeEvent) => {
   const timestamp = new Date().toLocaleTimeString();
 
   const messageContainer = document.createElement('div');
-  if (message.type === 'assistant_message') {
-    messageContainer.innerHTML = `[${timestamp}] ${message.type}: ${message.message.content}`;
+  if (message.type === 'assistant_message' || message.type === 'user_message') {
+    messageContainer.innerHTML = `[${timestamp}] ${message.message.role}: ${message.message.content}`;
   } else {
     messageContainer.innerHTML = `[${timestamp}] <Audio Blob>`;
   }

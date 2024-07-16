@@ -1,6 +1,6 @@
 import type { Hume } from 'hume';
 
-import type { ClientToFrameAction } from './embed-messages';
+import type { ClientToFrameAction, SocketConfig } from './embed-messages';
 import {
   EXPAND_FROM_CLIENT_ACTION,
   FrameToClientActionSchema,
@@ -10,10 +10,9 @@ import {
 } from './embed-messages';
 
 export type EmbeddedVoiceConfig = {
-  rendererUrl: string;
+  rendererUrl?: string;
   iframeTitle?: string;
-} & Hume.empathicVoice.chat.Chat.ConnectArgs &
-  Hume.empathicVoice.chat.Chat.Options;
+} & SocketConfig;
 
 export type TranscriptMessageHandler = (
   message: Hume.empathicVoice.UserMessage | Hume.empathicVoice.AssistantMessage,
@@ -61,7 +60,7 @@ export class EmbeddedVoice {
     onClose,
     openOnMount,
     ...config
-  }: Partial<EmbeddedVoiceConfig> & {
+  }: EmbeddedVoiceConfig & {
     onMessage?: TranscriptMessageHandler;
     onClose?: CloseHandler;
     openOnMount?: boolean;
