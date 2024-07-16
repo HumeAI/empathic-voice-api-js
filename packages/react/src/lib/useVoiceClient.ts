@@ -140,7 +140,7 @@ export const useVoiceClient = (props: {
                 toolCallId: message.toolCallId,
                 error,
                 code,
-                level: level != null ? 'warn' : undefined, // level can only be warn
+                level: level !== null ? 'warn' : undefined, // level can only be warn
                 content,
               }),
             })
