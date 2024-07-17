@@ -1,17 +1,17 @@
 import { type Hume } from 'hume';
 
-export * from './lib/useSoundPlayer';
-export * from './lib/useMicrophone';
-export * from './lib/VoiceProvider';
-export * from './lib/useVoiceClient';
 export * from './lib/connection-message';
+export * from './lib/useMicrophone';
+export * from './lib/useSoundPlayer';
+export * from './lib/useVoiceClient';
+export * from './lib/VoiceProvider';
 
 export {
-  Channels,
   AudioEncoding,
+  Channels,
+  LanguageModelOption,
   TTSService,
   type TimeSlice,
-  LanguageModelOption,
 } from './types';
 
 export type SocketConfig = Hume.empathicVoice.chat.Chat.ConnectArgs &
@@ -19,28 +19,29 @@ export type SocketConfig = Hume.empathicVoice.chat.Chat.ConnectArgs &
 
 export type {
   AssistantEnd as AssistantEndMessage,
+  AssistantMessage as AssistantTranscriptMessage,
   AudioInput as AudioMessage,
   AudioOutput as AudioOutputMessage,
-  UserInterruption as UserInterruptionMessage,
-  AssistantMessage as AssistantTranscriptMessage,
-  SubscribeEvent as JSONMessage,
-  UserMessage as UserTranscriptMessage,
-  ToolCallMessage as ToolCall,
-  ToolResponseMessage as ToolResponse,
-  ToolErrorMessage as ToolError,
   ChatMetadata as ChatMetadataMessage,
+  WebSocketError as JSONErrorMessage,
+  SubscribeEvent as JSONMessage,
+  ToolCallMessage as ToolCall,
+  ToolErrorMessage as ToolError,
+  ToolResponseMessage as ToolResponse,
+  UserInterruption as UserInterruptionMessage,
+  UserMessage as UserTranscriptMessage,
 } from 'hume/api/resources/empathicVoice';
 
 export type {
   AssistantEnd,
+  AssistantMessage,
   AudioInput,
   AudioOutput,
-  UserInterruption,
-  AssistantMessage,
-  SubscribeEvent,
-  UserMessage,
-  ToolCallMessage,
-  ToolResponseMessage,
-  ToolErrorMessage,
   ChatMetadata,
+  SubscribeEvent,
+  ToolCallMessage,
+  ToolErrorMessage,
+  ToolResponseMessage,
+  UserInterruption,
+  UserMessage,
 } from 'hume/api/resources/empathicVoice';
