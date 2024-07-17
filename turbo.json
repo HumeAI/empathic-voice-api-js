@@ -20,7 +20,7 @@
       "dependsOn": ["^build", "^test-watch"]
     },
     "pack": {
-      "dependsOn": ["@humeai/voice#build", "@humeai/voice-react#build"]
+      "dependsOn": ["@humeai/voice-react#build"]
     }
   }
 }
