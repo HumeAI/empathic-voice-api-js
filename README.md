@@ -11,20 +11,21 @@
 This repository contains several Typescript SDKs for the Hume Empathic Voice Interface.
 
 EVI API
-* [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/core](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/core)
-* [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react)
+
+- [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/core](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/core)
+- [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react)
 
 Embedded Widget
-* [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react)
-* [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed)
+
+- [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react)
+- [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed)
 
 Aside from the Typescript SDKs, you may visit [our documentation page](https://dev.hume.ai/docs/empathic-voice-interface-evi/overview) for guides on how to use the EVI API.
 
-
 ## Example applications
 
-* [Next.js example](https://github.com/HumeAI/empathic-voice-api-js/tree/main/examples/next-app)
-* [Embedded widget parent page example](https://github.com/HumeAI/empathic-voice-api-js/tree/main/examples/vite-app-embed)
+- [Next.js example](https://github.com/HumeAI/empathic-voice-api-js/tree/main/examples/next-app)
+- [Embedded widget parent page example](https://github.com/HumeAI/empathic-voice-api-js/tree/main/examples/vite-app-embed)
 
 ## Local development
 

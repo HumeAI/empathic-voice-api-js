@@ -1,5 +1,5 @@
-import type { ToolCall, ToolResponse } from '@humeai/voice';
 import { act, renderHook } from '@testing-library/react';
+import type { Hume } from 'Hume';
 import { describe, expect, it } from 'vitest';
 
 import { useToolStatus } from './useToolStatus';
@@ -10,30 +10,31 @@ describe('useToolStatus', () => {
 
     const toolId = 'tool-id-abc-123';
 
-    const toolCall: ToolCall = {
+    const toolCall: Hume.empathicVoice.ToolCallMessage = {
       type: 'tool_call',
-      tool_call_id: toolId,
+      toolCallId: toolId,
       name: 'tool_name',
       parameters: '{}',
-      receivedAt: new Date(),
-      tool_type: 'function',
-      response_required: true,
-    } satisfies ToolCall;
+      toolType: 'function',
+      responseRequired: true,
+    };
 
     act(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       hook.result.current.addToStore(toolCall);
     });
 
     expect(hook.result.current.store[toolId]?.call).toMatchObject(toolCall);
     expect(hook.result.current.store[toolId]?.resolved).toBeUndefined();
 
-    const toolResponse: ToolResponse = {
+    const toolResponse: Hume.empathicVoice.ToolResponseMessage = {
       type: 'tool_response',
-      tool_call_id: toolId,
+      toolCallId: toolId,
       content: '',
     };
 
     act(() => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       hook.result.current.addToStore(toolResponse);
     });
 

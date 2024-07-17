@@ -117,7 +117,8 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
         }
       }}
       sessionSettings={{
-        builtin_tools: [{ name: 'web_search' }],
+        type: 'session_settings',
+        builtinTools: [{ name: 'web_search' }],
       }}
     >
       <ExampleComponent />

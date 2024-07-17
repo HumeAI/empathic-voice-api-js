@@ -1,16 +1,4 @@
-import type {
-  ChatMetadataMessage,
-  JSONErrorMessage,
-  ToolCall,
-  ToolError,
-  ToolResponse,
-  UserInterruptionMessage,
-} from '@humeai/voice';
-import {
-  type AssistantTranscriptMessage,
-  type JSONMessage,
-  type UserTranscriptMessage,
-} from '@humeai/voice';
+import { type Hume } from 'hume';
 import { useCallback, useState } from 'react';
 
 import type { ConnectionMessage } from './connection-message';
@@ -20,45 +8,24 @@ export const useMessages = ({
   sendMessageToParent,
   messageHistoryLimit,
 }: {
-  sendMessageToParent?: (
-    message:
-      | UserTranscriptMessage
-      | AssistantTranscriptMessage
-      | UserInterruptionMessage
-      | JSONErrorMessage
-      | ToolCall
-      | ToolResponse
-      | ToolError
-      | ChatMetadataMessage,
-  ) => void;
+  sendMessageToParent?: (message: Hume.empathicVoice.JsonMessage) => void;
   messageHistoryLimit: number;
 }) => {
   const [voiceMessageMap, setVoiceMessageMap] = useState<
-    Record<string, AssistantTranscriptMessage>
+    Record<string, Hume.empathicVoice.AssistantMessage>
   >({});
 
   const [messages, setMessages] = useState<
-    Array<
-      | AssistantTranscriptMessage
-      | UserTranscriptMessage
-      | ConnectionMessage
-      | UserInterruptionMessage
-      | JSONErrorMessage
-      | ToolCall
-      | ToolResponse
-      | ToolError
-      | ChatMetadataMessage
-    >
+    Array<Hume.empathicVoice.JsonMessage | ConnectionMessage>
   >([]);
 
   const [lastVoiceMessage, setLastVoiceMessage] =
-    useState<AssistantTranscriptMessage | null>(null);
+    useState<Hume.empathicVoice.AssistantMessage | null>(null);
   const [lastUserMessage, setLastUserMessage] =
-    useState<UserTranscriptMessage | null>(null);
+    useState<Hume.empathicVoice.UserMessage | null>(null);
 
-  const [chatMetadata, setChatMetadata] = useState<ChatMetadataMessage | null>(
-    null,
-  );
+  const [chatMetadata, setChatMetadata] =
+    useState<Hume.empathicVoice.ChatMetadata | null>(null);
 
   const createConnectMessage = useCallback(() => {
     setMessages((prev) =>
@@ -82,7 +49,7 @@ export const useMessages = ({
     );
   }, []);
 
-  const onMessage = useCallback((message: JSONMessage) => {
+  const onMessage = useCallback((message: Hume.empathicVoice.JsonMessage) => {
     /* 
       1. message comes in from the backend
         - if the message IS NOT AssistantTranscriptMessage, store in `messages` immediately  
@@ -97,7 +64,7 @@ export const useMessages = ({
         // in order to line up the transcript event with the correct audio clip
         setVoiceMessageMap((prev) => ({
           ...prev,
-          [message.id]: message,
+          [`${message.id}`]: message,
         }));
         break;
       case 'user_message':
@@ -127,6 +94,7 @@ export const useMessages = ({
       default:
         break;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onPlayAudio = useCallback(

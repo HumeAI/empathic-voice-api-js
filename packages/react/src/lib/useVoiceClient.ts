@@ -1,24 +1,13 @@
-import type {
-  AssistantTranscriptMessage,
-  AudioOutputMessage,
-  ChatMetadataMessage,
-  JSONErrorMessage,
-  SessionSettings,
-  SocketConfig,
-  ToolCall,
-  ToolError,
-  ToolResponse,
-  UserInterruptionMessage,
-  UserTranscriptMessage,
-  VoiceEventMap,
-} from '@humeai/voice';
-import {
-  ToolErrorSchema,
-  ToolResponseSchema,
-  VoiceClient,
-} from '@humeai/voice';
+import { type Hume, HumeClient } from 'hume';
+import * as serializers from 'hume/serialization';
 import { useCallback, useRef, useState } from 'react';
-import { z } from 'zod';
+
+import { type AuthStrategy } from './auth';
+
+export type SockeConfig = {
+  auth: AuthStrategy;
+  hostname: string;
+} & Hume.empathicVoice.chat.Chat.ConnectArgs;
 
 export enum VoiceReadyState {
   IDLE = 'idle',
@@ -28,37 +17,39 @@ export enum VoiceReadyState {
 }
 
 export type ToolCallHandler = (
-  message: ToolCall,
+  message: Hume.empathicVoice.ToolCallMessage,
   send: {
-    success: (content: unknown) => ToolResponse;
+    success: (content: unknown) => Hume.empathicVoice.ToolResponseMessage;
     error: (e: {
       error: string;
       code: string;
       level: string;
       content: string;
-    }) => ToolError;
+    }) => Hume.empathicVoice.ToolErrorMessage;
   },
-) => Promise<ToolResponse | ToolError>;
+) => Promise<
+  Hume.empathicVoice.ToolResponseMessage | Hume.empathicVoice.ToolErrorMessage
+>;
 
 export const useVoiceClient = (props: {
-  onAudioMessage?: (message: AudioOutputMessage) => void;
+  onAudioMessage?: (message: Hume.empathicVoice.AudioOutput) => void;
   onMessage?: (
     message:
-      | UserTranscriptMessage
-      | AssistantTranscriptMessage
-      | UserInterruptionMessage
-      | JSONErrorMessage
-      | ToolCall
-      | ToolResponse
-      | ToolError
-      | ChatMetadataMessage,
+      | Hume.empathicVoice.UserMessage
+      | Hume.empathicVoice.AssistantMessage
+      | Hume.empathicVoice.UserInterruption
+      | Hume.empathicVoice.WebSocketError
+      | Hume.empathicVoice.ToolCallMessage
+      | Hume.empathicVoice.ToolResponseMessage
+      | Hume.empathicVoice.ToolErrorMessage
+      | Hume.empathicVoice.ChatMetadata,
   ) => void;
   onToolCall?: ToolCallHandler;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
-  onClose?: VoiceEventMap['close'];
+  onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
 }) => {
-  const client = useRef<VoiceClient | null>(null);
+  const client = useRef<Hume.empathicVoice.chat.ChatSocket | null>(null);
 
   const [readyState, setReadyState] = useState<VoiceReadyState>(
     VoiceReadyState.IDLE,
@@ -86,9 +77,21 @@ export const useVoiceClient = (props: {
   const onClose = useRef<typeof props.onClose>(props.onClose);
   onClose.current = props.onClose;
 
-  const connect = useCallback((config: SocketConfig) => {
+  const connect = useCallback((config: SockeConfig) => {
     return new Promise((resolve, reject) => {
-      client.current = VoiceClient.create(config);
+      const hume = new HumeClient(
+        config.auth.type === 'apiKey'
+          ? {
+              apiKey: config.auth.value,
+              environment: config.hostname,
+            }
+          : {
+              accessToken: config.auth.value,
+              environment: config.hostname,
+            },
+      );
+
+      client.current = hume.empathicVoice.chat.connect(config);
 
       client.current.on('open', () => {
         onOpen.current?.();
@@ -119,7 +122,7 @@ export const useVoiceClient = (props: {
             .current?.(message, {
               success: (content: unknown) => ({
                 type: 'tool_response',
-                tool_call_id: message.tool_call_id,
+                toolCallId: message.toolCallId,
                 content: JSON.stringify(content),
               }),
               error: ({
@@ -134,23 +137,26 @@ export const useVoiceClient = (props: {
                 content: string;
               }) => ({
                 type: 'tool_error',
-                tool_call_id: message.tool_call_id,
+                toolCallId: message.toolCallId,
                 error,
                 code,
-                level,
+                level: level !== null ? 'warn' : undefined, // level can only be warn
                 content,
               }),
             })
             .then((response) => {
               // check that response is a correctly formatted response or error payload
-              const parsed = z
-                .union([ToolResponseSchema, ToolErrorSchema])
-                .safeParse(response);
+              const parsedResponse =
+                serializers.empathicVoice.ToolResponseMessage.parse(response);
+              const parsedError =
+                serializers.empathicVoice.ToolErrorMessage.parse(response);
 
               // if valid send it to the socket
               // otherwise, report error
-              if (parsed.success) {
-                client.current?.sendToolMessage(parsed.data);
+              if (response.type === 'tool_response' && parsedResponse.ok) {
+                client.current?.sendToolResponseMessage(response);
+              } else if (response.type === 'tool_error' && parsedError.ok) {
+                client.current?.sendToolErrorMessage(response);
               } else {
                 onError.current?.('Invalid response from tool call');
               }
@@ -170,25 +176,23 @@ export const useVoiceClient = (props: {
       });
 
       setReadyState(VoiceReadyState.CONNECTING);
-
-      client.current.connect();
     });
   }, []);
 
   const disconnect = useCallback(() => {
     setReadyState(VoiceReadyState.IDLE);
-    client.current?.disconnect();
+    client.current?.close();
   }, []);
 
   const sendSessionSettings = useCallback(
-    (sessionSettings: SessionSettings) => {
+    (sessionSettings: Hume.empathicVoice.SessionSettings) => {
       client.current?.sendSessionSettings(sessionSettings);
     },
     [],
   );
 
   const sendAudio = useCallback((arrayBuffer: ArrayBufferLike) => {
-    client.current?.sendAudio(arrayBuffer);
+    client.current?.socket?.send(arrayBuffer);
   }, []);
 
   const sendUserInput = useCallback((text: string) => {
@@ -196,20 +200,31 @@ export const useVoiceClient = (props: {
   }, []);
 
   const sendAssistantInput = useCallback((text: string) => {
-    client.current?.sendAssistantInput(text);
+    client.current?.sendAssistantInput({
+      text,
+    });
   }, []);
 
   const sendToolMessage = useCallback(
-    (toolMessage: ToolResponse | ToolError) => {
-      client.current?.sendToolMessage(toolMessage);
+    (
+      toolMessage:
+        | Hume.empathicVoice.ToolResponseMessage
+        | Hume.empathicVoice.ToolErrorMessage,
+    ) => {
+      if (toolMessage.type === 'tool_error') {
+        client.current?.sendToolErrorMessage(toolMessage);
+      } else {
+        client.current?.sendToolResponseMessage(toolMessage);
+      }
     },
     [],
   );
+
   const sendPauseAssistantMessage = useCallback(() => {
-    client.current?.sendPauseAssistantMessage();
+    client.current?.pauseAssistant({});
   }, []);
   const sendResumeAssistantMessage = useCallback(() => {
-    client.current?.sendResumeAssistantMessage();
+    client.current?.resumeAssistant({});
   }, []);
 
   return {

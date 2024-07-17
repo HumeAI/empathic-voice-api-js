@@ -1,5 +1,5 @@
 // cspell:ignore dataavailable
-import { checkForAudioTracks, getAudioStream } from '@humeai/voice';
+import { checkForAudioTracks, getAudioStream } from 'hume';
 import { useCallback, useRef, useState } from 'react';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';

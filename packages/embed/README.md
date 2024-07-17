@@ -8,9 +8,9 @@
 
 ## Overview
 
-This package enables you to integrate a widget that runs Hume's Empathic Voice Interface any Javascript application. It abstracts away the complexities of managing websocket connections, capturing user audio via the client's microphone, and handling the playback of the interface's audio responses. The widget is embedded into your web page through an iframe. 
+This package enables you to integrate a widget that runs Hume's Empathic Voice Interface any Javascript application. It abstracts away the complexities of managing websocket connections, capturing user audio via the client's microphone, and handling the playback of the interface's audio responses. The widget is embedded into your web page through an iframe.
 
-There are two packages needed to embed your own widget. Install this package to embed the widget to your application. Code for the widget itself can be found at [https://github.com/HumeAI/empathic-voice-embed-renderer](https://github.com/HumeAI/empathic-voice-embed-renderer). 
+There are two packages needed to embed your own widget. Install this package to embed the widget to your application. Code for the widget itself can be found at [https://github.com/HumeAI/empathic-voice-embed-renderer](https://github.com/HumeAI/empathic-voice-embed-renderer).
 
 ## Prerequisites
 
@@ -40,7 +40,7 @@ This will download and include the package in your project, making it ready for 
 import { EmbeddedVoice } from '@humeai/voice-embed';
 ```
 
-__NOTE:__ If you are building a React application, you can use our React voice embed SDK instead of this one. [Documentation can be found here](https://github.com/HumeAI/empathic-voice-api-js/blob/main/packages/embed-react).
+**NOTE:** If you are building a React application, you can use our React voice embed SDK instead of this one. [Documentation can be found here](https://github.com/HumeAI/empathic-voice-api-js/blob/main/packages/embed-react).
 
 ## Usage
 
@@ -57,7 +57,7 @@ import {
 } from '@humeai/voice-embed';
 
 const embeddedVoice = EA.create({
-    // Configuration options
+  // Configuration options
 });
 ```
 
@@ -69,13 +69,13 @@ Configuration options for the embedded voice include all props that are accepted
 
 In addition, it accepts a few other configurations specific to creating a widget:
 
-| Option              | Required | Description                                                                                                                                                                                                                                                                                                                         |
-| ----------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isEmbedOpen`       | yes      | Determines the initial visibility of the widget. Assign `true` to render the widget as open on initial load, and `false` to start with the widget closed. While the widget's UI provides a trigger to toggle its visibility, this prop also enables external control over the widget's visibility state through a parent component. |
-| rendererUrl       | no       | URL where the widget itself is hosted. If blank, this defaults the Hume AI widget, https://voice-widget.hume.ai. An example of this widget can be found at [http://hume.ai](http://hume.ai).                                                                                                                                                                                                                                      |
-| `onMessage`         | no       | Callback function to invoke upon receiving a message through the web socket.                                                                                                                                                                                                                                                        |
-| `onClose`           | no       | Callback function to invoke upon the web socket connection being closed.                                                                                                                                                                                                                                                            |
-| `openOnMount`           | no       | Boolean which indicates whether the widget should be initialized in an open or closed state. Set as `true` if you want it to be open. The default value is `false`.                                                                                                                                                                                                                                                             |
+| Option        | Required | Description                                                                                                                                                                                                                                                                                                                         |
+| ------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `isEmbedOpen` | yes      | Determines the initial visibility of the widget. Assign `true` to render the widget as open on initial load, and `false` to start with the widget closed. While the widget's UI provides a trigger to toggle its visibility, this prop also enables external control over the widget's visibility state through a parent component. |
+| rendererUrl   | no       | URL where the widget itself is hosted. If blank, this defaults the Hume AI widget, https://voice-widget.hume.ai. An example of this widget can be found at [http://hume.ai](http://hume.ai).                                                                                                                                        |
+| `onMessage`   | no       | Callback function to invoke upon receiving a message through the web socket.                                                                                                                                                                                                                                                        |
+| `onClose`     | no       | Callback function to invoke upon the web socket connection being closed.                                                                                                                                                                                                                                                            |
+| `openOnMount` | no       | Boolean which indicates whether the widget should be initialized in an open or closed state. Set as `true` if you want it to be open. The default value is `false`.                                                                                                                                                                 |
 
 ## Support
 

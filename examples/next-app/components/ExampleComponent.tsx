@@ -1,8 +1,8 @@
 'use client';
 
-import type { EmotionScores } from '@humeai/voice';
 import { useVoice } from '@humeai/voice-react';
 import { SelectItem } from '@radix-ui/react-select';
+import type { Hume } from 'hume';
 import { useCallback, useMemo, useState } from 'react';
 import { match } from 'ts-pattern';
 
@@ -15,11 +15,13 @@ import {
 } from '@/components/Select';
 import { Waveform } from '@/components/Waveform';
 
-function getTop3Expressions(expressionOutputs: EmotionScores) {
+function getTop3Expressions(
+  expressionOutputs: Hume.empathicVoice.EmotionScores,
+) {
   return Object.entries(expressionOutputs)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
-    .map(([key, value]) => ({ name: key, score: value }));
+    .map(([key, value]) => ({ name: key, score: value as number }));
 }
 
 export const ExampleComponent = () => {
@@ -54,10 +56,10 @@ export const ExampleComponent = () => {
 
   const togglePaused = useCallback(() => {
     if (paused) {
-      sendResumeAssistantMessage();
+      sendResumeAssistantMessage({});
       setPaused(false);
     } else {
-      sendPauseAssistantMessage();
+      sendPauseAssistantMessage({});
       setPaused(true);
     }
   }, [paused, sendPauseAssistantMessage, sendResumeAssistantMessage]);
@@ -69,7 +71,10 @@ export const ExampleComponent = () => {
         if (message.type === 'assistant_message') {
           return {
             message: message.message,
-            top3: getTop3Expressions(message.models.prosody?.scores ?? {}),
+            top3:
+              message.models.prosody?.scores !== undefined
+                ? getTop3Expressions(message.models.prosody?.scores)
+                : {},
           };
         }
         return null;
@@ -109,7 +114,7 @@ export const ExampleComponent = () => {
                     <div className={'text-sm font-medium uppercase'}>
                       Request ID
                     </div>
-                    <div>{chatMetadata?.request_id}</div>
+                    <div>{chatMetadata?.requestId}</div>
                   </div>
                 </div>
 
@@ -175,7 +180,7 @@ export const ExampleComponent = () => {
                     <label className="flex grow flex-col gap-2">
                       <span className="sr-only">Text input content</span>
                       <input
-                        className="border px-2 py-1"
+                        className="border px-2 py-1 text-black"
                         placeholder="Write an input message here"
                         value={textValue}
                         onChange={(e) => setTextValue(e.target.value)}

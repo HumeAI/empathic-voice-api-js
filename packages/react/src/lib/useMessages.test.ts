@@ -1,17 +1,69 @@
-import type {
-  AssistantTranscriptMessage,
-  UserTranscriptMessage,
-} from '@humeai/voice';
 import type { RenderHookResult } from '@testing-library/react-hooks';
 import { act, renderHook } from '@testing-library/react-hooks';
+import type { Hume } from 'hume';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMessages } from './useMessages'; // adjust the import path as needed
 
+const MODEL_CONFIG: Hume.empathicVoice.Inference = {
+  prosody: {
+    scores: {
+      amusement: 0.95,
+      admiration: 0.0,
+      adoration: 0.0,
+      aestheticAppreciation: 0.0,
+      anger: 0.0,
+      anxiety: 0.0,
+      awe: 0.0,
+      awkwardness: 0.0,
+      boredom: 0.0,
+      calmness: 0.0,
+      concentration: 0.0,
+      contemplation: 0.0,
+      confusion: 0.0,
+      contempt: 0.0,
+      contentment: 0.0,
+      craving: 0.0,
+      determination: 0.0,
+      disappointment: 0.0,
+      disgust: 0.0,
+      distress: 0.0,
+      doubt: 0.0,
+      ecstasy: 0.0,
+      embarrassment: 0.0,
+      empathicPain: 0.0,
+      entrancement: 0.0,
+      envy: 0.0,
+      excitement: 0.0,
+      fear: 0.0,
+      guilt: 0.0,
+      horror: 0.0,
+      interest: 0.0,
+      joy: 0.0,
+      love: 0.0,
+      nostalgia: 0.0,
+      pain: 0.0,
+      pride: 0.0,
+      realization: 0.0,
+      relief: 0.0,
+      romance: 0.0,
+      sadness: 0.0,
+      satisfaction: 0.0,
+      desire: 0.0,
+      shame: 0.0,
+      surpriseNegative: 0.0,
+      surprisePositive: 0.0,
+      sympathy: 0.0,
+      tiredness: 0.0,
+      triumph: 0.0,
+    },
+  },
+};
+
 describe('useMessages hook', () => {
   let hook: RenderHookResult<unknown, ReturnType<typeof useMessages>>;
-  let userMessage: UserTranscriptMessage;
-  let agentMessage: AssistantTranscriptMessage;
+  let userMessage: Hume.empathicVoice.UserMessage;
+  let agentMessage: Hume.empathicVoice.AssistantMessage;
 
   const sendMessageToParent = vi.fn();
 
@@ -24,22 +76,12 @@ describe('useMessages hook', () => {
         role: 'user',
         content: 'How is the weather today?',
       },
-      models: [
-        {
-          model: 'prosody',
-          entries: [
-            {
-              name: 'Amusement',
-              score: 0.95,
-            },
-          ],
-          time: {
-            begin: 1633035600,
-            end: 1633035620,
-          },
-        },
-      ],
-      receivedAt: new Date(),
+      models: MODEL_CONFIG,
+      time: {
+        begin: 1633035625,
+        end: 1633035635,
+      },
+      fromText: false,
     };
     agentMessage = {
       type: 'assistant_message' as const,
@@ -48,22 +90,8 @@ describe('useMessages hook', () => {
         role: 'assistant' as const,
         content: 'Hey',
       },
-      models: [
-        {
-          model: 'prosody',
-          entries: [
-            {
-              name: 'Amusement',
-              score: 0.98,
-            },
-          ],
-          time: {
-            begin: 1633035625,
-            end: 1633035635,
-          },
-        },
-      ],
-      receivedAt: new Date(),
+      fromText: false,
+      models: MODEL_CONFIG,
     };
   });
 
@@ -117,9 +145,7 @@ describe('useMessages hook', () => {
 
     // simulate playing audio
     act(() => {
-      hook.result.current.onPlayAudio(
-        'id' in agentMessage ? agentMessage.id : '',
-      );
+      hook.result.current.onPlayAudio(agentMessage.id ?? '');
     });
 
     expect(hook.result.current.lastVoiceMessage).toEqual(agentMessage);
@@ -132,9 +158,7 @@ describe('useMessages hook', () => {
     });
 
     act(() => {
-      hook.result.current.onPlayAudio(
-        'id' in agentMessage ? agentMessage.id : '',
-      );
+      hook.result.current.onPlayAudio(agentMessage.id ?? '');
     });
 
     expect(hook.result.current.lastVoiceMessage).toEqual(agentMessage);
@@ -147,18 +171,14 @@ describe('useMessages hook', () => {
     });
 
     act(() => {
-      hook.result.current.onPlayAudio(
-        'id' in agentMessage ? agentMessage.id : '',
-      );
+      hook.result.current.onPlayAudio(agentMessage.id ?? '');
     });
 
     expect(hook.result.current.messages).toHaveLength(1);
 
     // play audio clip with the same ID as before
     act(() => {
-      hook.result.current.onPlayAudio(
-        'id' in agentMessage ? agentMessage.id : '',
-      );
+      hook.result.current.onPlayAudio(agentMessage.id ?? '');
     });
 
     expect(hook.result.current.messages).toHaveLength(1);
@@ -170,9 +190,7 @@ describe('useMessages hook', () => {
     });
 
     act(() => {
-      hook.result.current.onPlayAudio(
-        'id' in agentMessage ? agentMessage.id : '',
-      );
+      hook.result.current.onPlayAudio(agentMessage.id ?? '');
     });
 
     expect(sendMessageToParent).toHaveBeenCalledWith(agentMessage);
