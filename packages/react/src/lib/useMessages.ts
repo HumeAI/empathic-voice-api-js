@@ -8,15 +8,20 @@ export const useMessages = ({
   sendMessageToParent,
   messageHistoryLimit,
 }: {
-  sendMessageToParent?: (message: Hume.empathicVoice.JsonMessage) => void;
+  sendMessageToParent?: (
+    message: Hume.empathicVoice.JsonMessage & { receivedAt: number },
+  ) => void;
   messageHistoryLimit: number;
 }) => {
   const [voiceMessageMap, setVoiceMessageMap] = useState<
-    Record<string, Hume.empathicVoice.AssistantMessage>
+    Record<string, Hume.empathicVoice.AssistantMessage & { receivedAt: number }>
   >({});
 
   const [messages, setMessages] = useState<
-    Array<Hume.empathicVoice.JsonMessage | ConnectionMessage>
+    Array<
+      | (Hume.empathicVoice.JsonMessage & { receivedAt: number })
+      | ConnectionMessage
+    >
   >([]);
 
   const [lastVoiceMessage, setLastVoiceMessage] =
@@ -49,8 +54,9 @@ export const useMessages = ({
     );
   }, []);
 
-  const onMessage = useCallback((message: Hume.empathicVoice.JsonMessage) => {
-    /* 
+  const onMessage = useCallback(
+    (message: Hume.empathicVoice.JsonMessage & { receivedAt: number }) => {
+      /* 
       1. message comes in from the backend
         - if the message IS NOT AssistantTranscriptMessage, store in `messages` immediately  
         - if the message is an AssistantTranscriptMessage, stored in `voiceMessageMap`
@@ -58,44 +64,46 @@ export const useMessages = ({
         - find the AssistantTranscriptMessage with a matching ID, and store it in `messages`
         - remove the AssistantTranscriptMessage from `voiceMessageMap`
     */
-    switch (message.type) {
-      case 'assistant_message':
-        // for assistant messages, `sendMessageToParent` is called in `onPlayAudio`
-        // in order to line up the transcript event with the correct audio clip
-        setVoiceMessageMap((prev) => ({
-          ...prev,
-          [`${message.id}`]: message,
-        }));
-        break;
-      case 'user_message':
-        sendMessageToParent?.(message);
-        setLastUserMessage(message);
-        setMessages((prev) => {
-          return keepLastN(messageHistoryLimit, prev.concat([message]));
-        });
-        break;
-      case 'user_interruption':
-      case 'error':
-      case 'tool_call':
-      case 'tool_response':
-      case 'tool_error':
-        sendMessageToParent?.(message);
-        setMessages((prev) => {
-          return keepLastN(messageHistoryLimit, prev.concat([message]));
-        });
-        break;
-      case 'chat_metadata':
-        sendMessageToParent?.(message);
-        setMessages((prev) => {
-          return keepLastN(messageHistoryLimit, prev.concat([message]));
-        });
-        setChatMetadata(message);
-        break;
-      default:
-        break;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      switch (message.type) {
+        case 'assistant_message':
+          // for assistant messages, `sendMessageToParent` is called in `onPlayAudio`
+          // in order to line up the transcript event with the correct audio clip
+          setVoiceMessageMap((prev) => ({
+            ...prev,
+            [`${message.id}`]: message,
+          }));
+          break;
+        case 'user_message':
+          sendMessageToParent?.(message);
+          setLastUserMessage(message);
+          setMessages((prev) => {
+            return keepLastN(messageHistoryLimit, prev.concat([message]));
+          });
+          break;
+        case 'user_interruption':
+        case 'error':
+        case 'tool_call':
+        case 'tool_response':
+        case 'tool_error':
+          sendMessageToParent?.(message);
+          setMessages((prev) => {
+            return keepLastN(messageHistoryLimit, prev.concat([message]));
+          });
+          break;
+        case 'chat_metadata':
+          sendMessageToParent?.(message);
+          setMessages((prev) => {
+            return keepLastN(messageHistoryLimit, prev.concat([message]));
+          });
+          setChatMetadata(message);
+          break;
+        default:
+          break;
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [],
+  );
 
   const onPlayAudio = useCallback(
     (id: string) => {

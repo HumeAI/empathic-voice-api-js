@@ -34,15 +34,7 @@ export type ToolCallHandler = (
 export const useVoiceClient = (props: {
   onAudioMessage?: (message: Hume.empathicVoice.AudioOutput) => void;
   onMessage?: (
-    message:
-      | Hume.empathicVoice.UserMessage
-      | Hume.empathicVoice.AssistantMessage
-      | Hume.empathicVoice.UserInterruption
-      | Hume.empathicVoice.WebSocketError
-      | Hume.empathicVoice.ToolCallMessage
-      | Hume.empathicVoice.ToolResponseMessage
-      | Hume.empathicVoice.ToolErrorMessage
-      | Hume.empathicVoice.ChatMetadata,
+    message: Hume.empathicVoice.JsonMessage & { receivedAt: number },
   ) => void;
   onToolCall?: ToolCallHandler;
   onError?: (message: string, error?: Error) => void;
