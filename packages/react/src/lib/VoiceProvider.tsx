@@ -49,15 +49,8 @@ export type VoiceContextType = {
   isAudioMuted: boolean;
   isPlaying: boolean;
   messages: (
-    | Hume.empathicVoice.UserMessage
-    | Hume.empathicVoice.AssistantMessage
+    | (Hume.empathicVoice.JsonMessage & { receivedAt: Date })
     | ConnectionMessage
-    | Hume.empathicVoice.UserInterruption
-    | Hume.empathicVoice.WebSocketError
-    | Hume.empathicVoice.ToolCallMessage
-    | Hume.empathicVoice.ToolResponseMessage
-    | Hume.empathicVoice.ToolErrorMessage
-    | Hume.empathicVoice.ChatMetadata
   )[];
   lastVoiceMessage: Hume.empathicVoice.AssistantMessage | null;
   lastUserMessage: Hume.empathicVoice.UserMessage | null;
@@ -190,17 +183,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       player.addToQueue(message);
     },
     onMessage: useCallback(
-      (
-        message:
-          | Hume.empathicVoice.UserMessage
-          | Hume.empathicVoice.AssistantMessage
-          | Hume.empathicVoice.UserInterruption
-          | Hume.empathicVoice.WebSocketError
-          | Hume.empathicVoice.ToolCallMessage
-          | Hume.empathicVoice.ToolResponseMessage
-          | Hume.empathicVoice.ToolErrorMessage
-          | Hume.empathicVoice.ChatMetadata,
-      ) => {
+      (message: Hume.empathicVoice.JsonMessage & { receivedAt: Date }) => {
         // store message
         messageStore.onMessage(message);
 
