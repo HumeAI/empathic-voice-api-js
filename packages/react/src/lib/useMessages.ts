@@ -9,17 +9,17 @@ export const useMessages = ({
   messageHistoryLimit,
 }: {
   sendMessageToParent?: (
-    message: Hume.empathicVoice.JsonMessage & { receivedAt: number },
+    message: Hume.empathicVoice.JsonMessage & { receivedAt: Date },
   ) => void;
   messageHistoryLimit: number;
 }) => {
   const [voiceMessageMap, setVoiceMessageMap] = useState<
-    Record<string, Hume.empathicVoice.AssistantMessage & { receivedAt: number }>
+    Record<string, Hume.empathicVoice.AssistantMessage & { receivedAt: Date }>
   >({});
 
   const [messages, setMessages] = useState<
     Array<
-      | (Hume.empathicVoice.JsonMessage & { receivedAt: number })
+      | (Hume.empathicVoice.JsonMessage & { receivedAt: Date })
       | ConnectionMessage
     >
   >([]);
@@ -55,7 +55,7 @@ export const useMessages = ({
   }, []);
 
   const onMessage = useCallback(
-    (message: Hume.empathicVoice.JsonMessage & { receivedAt: number }) => {
+    (message: Hume.empathicVoice.JsonMessage & { receivedAt: Date }) => {
       /* 
       1. message comes in from the backend
         - if the message IS NOT AssistantTranscriptMessage, store in `messages` immediately  

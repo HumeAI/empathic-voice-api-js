@@ -41,8 +41,8 @@ importers:
         specifier: ^11.0.28
         version: 11.0.28(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       hume:
-        specifier: 0.8.1-beta10
-        version: 0.8.1-beta10
+        specifier: 0.8.3
+        version: 0.8.3
       lucide-react:
         specifier: ^0.372.0
         version: 0.372.0(react@18.2.0)
@@ -138,8 +138,8 @@ importers:
   examples/vite-app:
     dependencies:
       hume:
-        specifier: 0.8.1-beta10
-        version: 0.8.1-beta10
+        specifier: 0.8.3
+        version: 0.8.3
     devDependencies:
       typescript:
         specifier: ^5.2.2
@@ -194,8 +194,8 @@ importers:
   packages/embed:
     dependencies:
       hume:
-        specifier: 0.8.1-beta10
-        version: 0.8.1-beta10
+        specifier: 0.8.3
+        version: 0.8.3
       zod:
         specifier: ^3.22.4
         version: 3.22.4
@@ -292,8 +292,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       hume:
-        specifier: 0.8.1-beta10
-        version: 0.8.1-beta10
+        specifier: 0.8.3
+        version: 0.8.3
       meyda:
         specifier: ^5.6.2
         version: 5.6.2
@@ -2442,8 +2442,8 @@ packages:
     resolution: {integrity: sha512-AXcZb6vzzrFAUE61HnN4mpLqd/cSIwNQjtNWR0euPm6y0iqx3G4gOXaIDdtdDwZmhwe82LA6+zinmW4UBWVePQ==}
     engines: {node: '>=16.17.0'}
 
-  hume@0.8.1-beta10:
-    resolution: {integrity: sha512-tPs1bIyss8TJoNfRe9AhUvZhIGWsyK2f2nagisHu/0hW5I4CMPhZ6l7kL/qOrQiJmv1zfWBn0XKypbbvXZKbAA==}
+  hume@0.8.3:
+    resolution: {integrity: sha512-9uh6+nnx7nlElJ7Tzvq/zgkyRjr0MowhH5i5I4XAhzU0GUldpYYYzXpx8A7KuNJCBE872vJX2D63pN7myoDeXw==}
 
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
@@ -3860,6 +3860,9 @@ packages:
 
   zod@3.22.4:
     resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
+
+  zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
 
 snapshots:
 
@@ -6222,7 +6225,7 @@ snapshots:
 
   human-signals@5.0.0: {}
 
-  hume@0.8.1-beta10:
+  hume@0.8.3:
     dependencies:
       form-data: 4.0.0
       form-data-encoder: 4.0.2
@@ -6232,6 +6235,7 @@ snapshots:
       url-join: 4.0.1
       uuid: 9.0.1
       ws: 8.16.0
+      zod: 3.23.8
     transitivePeerDependencies:
       - bufferutil
       - encoding
@@ -7762,3 +7766,5 @@ snapshots:
   yocto-queue@1.0.0: {}
 
   zod@3.22.4: {}
+
+  zod@3.23.8: {}

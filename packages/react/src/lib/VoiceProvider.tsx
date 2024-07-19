@@ -49,7 +49,7 @@ export type VoiceContextType = {
   isAudioMuted: boolean;
   isPlaying: boolean;
   messages: (
-    | (Hume.empathicVoice.JsonMessage & { receivedAt: number })
+    | (Hume.empathicVoice.JsonMessage & { receivedAt: Date })
     | ConnectionMessage
   )[];
   lastVoiceMessage: Hume.empathicVoice.AssistantMessage | null;
@@ -183,7 +183,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       player.addToQueue(message);
     },
     onMessage: useCallback(
-      (message: Hume.empathicVoice.JsonMessage & { receivedAt: number }) => {
+      (message: Hume.empathicVoice.JsonMessage & { receivedAt: Date }) => {
         // store message
         messageStore.onMessage(message);
 
