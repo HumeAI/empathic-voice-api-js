@@ -27,6 +27,8 @@ export type {
   UserMessage as UserTranscriptMessage,
 } from 'hume/api/resources/empathicVoice';
 
+export type { SocketConfig } from './lib/useVoiceClient';
+
 export type {
   AssistantEnd,
   AssistantMessage,
