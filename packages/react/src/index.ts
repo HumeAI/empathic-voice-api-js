@@ -1,5 +1,3 @@
-import { type Hume } from 'hume';
-
 export * from './lib/connection-message';
 export * from './lib/useMicrophone';
 export * from './lib/useSoundPlayer';
@@ -13,9 +11,6 @@ export {
   TTSService,
   type TimeSlice,
 } from './types';
-
-export type SocketConfig = Hume.empathicVoice.chat.Chat.ConnectArgs &
-  Hume.empathicVoice.chat.Chat.Options;
 
 export type {
   AssistantEnd as AssistantEndMessage,
