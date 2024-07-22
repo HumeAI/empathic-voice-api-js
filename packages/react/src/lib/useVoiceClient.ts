@@ -4,9 +4,9 @@ import { useCallback, useRef, useState } from 'react';
 
 import { type AuthStrategy } from './auth';
 
-export type SockeConfig = {
+export type SocketConfig = {
   auth: AuthStrategy;
-  hostname: string;
+  hostname?: string;
 } & Hume.empathicVoice.chat.Chat.ConnectArgs;
 
 export enum VoiceReadyState {
@@ -69,7 +69,7 @@ export const useVoiceClient = (props: {
   const onClose = useRef<typeof props.onClose>(props.onClose);
   onClose.current = props.onClose;
 
-  const connect = useCallback((config: SockeConfig) => {
+  const connect = useCallback((config: SocketConfig) => {
     return new Promise((resolve, reject) => {
       const hume = new HumeClient(
         config.auth.type === 'apiKey'
