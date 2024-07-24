@@ -92,8 +92,10 @@ export const useVoiceClient = (props: {
       });
 
       client.current.on('message', (message) => {
+        const messageWithReceivedAt = { ...message, receivedAt: new Date() };
+
         if (message.type === 'audio_output') {
-          onAudioMessage.current?.(message);
+          onAudioMessage.current?.(messageWithReceivedAt);
         }
 
         if (
@@ -105,16 +107,16 @@ export const useVoiceClient = (props: {
           message.type === 'tool_error' ||
           message.type === 'chat_metadata'
         ) {
-          onMessage.current?.(message);
+          onMessage.current?.(messageWithReceivedAt);
         }
 
         if (message.type === 'tool_call') {
-          onMessage.current?.(message);
+          onMessage.current?.(messageWithReceivedAt);
           void onToolCall
-            .current?.(message, {
+            .current?.(messageWithReceivedAt, {
               success: (content: unknown) => ({
                 type: 'tool_response',
-                toolCallId: message.toolCallId,
+                toolCallId: messageWithReceivedAt.toolCallId,
                 content: JSON.stringify(content),
               }),
               error: ({
@@ -129,7 +131,7 @@ export const useVoiceClient = (props: {
                 content: string;
               }) => ({
                 type: 'tool_error',
-                toolCallId: message.toolCallId,
+                toolCallId: messageWithReceivedAt.toolCallId,
                 error,
                 code,
                 level: level !== null ? 'warn' : undefined, // level can only be warn
