@@ -12,47 +12,32 @@ export {
   type TimeSlice,
 } from './types';
 
-export type {
-  AssistantEnd as AssistantEndMessage,
-  AssistantMessage as AssistantTranscriptMessage,
-  AudioInput as AudioMessage,
-  AudioOutput as AudioOutputMessage,
-  ChatMetadata as ChatMetadataMessage,
-  WebSocketError as JSONErrorMessage,
-  SubscribeEvent as JSONMessage,
-  ToolCallMessage as ToolCall,
-  ToolErrorMessage as ToolError,
-  ToolResponseMessage as ToolResponse,
-  UserInterruption as UserInterruptionMessage,
-  UserMessage as UserTranscriptMessage,
-} from 'hume/api/resources/empathicVoice';
-
 export type { SocketConfig } from './lib/useVoiceClient';
 
 import {
-  AssistantEnd as OriginalAssistantEnd,
-  AssistantMessage as OriginalAssistantMessage,
-  AudioInput as OriginalAudioInput,
-  AudioOutput as OriginalAudioOutput,
-  ChatMetadata as OriginalChatMetadata,
-  SubscribeEvent as OriginalSubscribeEvent,
-  ToolCallMessage as OriginalToolCallMessage,
-  ToolErrorMessage as OriginalToolErrorMessage,
-  ToolResponseMessage as OriginalToolResponseMessage,
-  UserInterruption as OriginalUserInterruption,
-  UserMessage as OriginalUserMessage,
+  AssistantEnd,
+  AssistantMessage,
+  AudioInput,
+  AudioOutput,
+  ChatMetadata,
+  SubscribeEvent,
+  ToolCallMessage,
+  ToolErrorMessage,
+  ToolResponseMessage,
+  UserInterruption,
+  UserMessage,
 } from 'hume/api/resources/empathicVoice';
 
 type WithReceivedAt<T> = T & { receivedAt: Date };
 
-export type AssistantEnd = WithReceivedAt<OriginalAssistantEnd>;
-export type AssistantMessage = WithReceivedAt<OriginalAssistantMessage>;
-export type AudioInput = WithReceivedAt<OriginalAudioInput>;
-export type AudioOutput = WithReceivedAt<OriginalAudioOutput>;
-export type ChatMetadata = WithReceivedAt<OriginalChatMetadata>;
-export type SubscribeEvent = WithReceivedAt<OriginalSubscribeEvent>;
-export type ToolCallMessage = WithReceivedAt<OriginalToolCallMessage>;
-export type ToolErrorMessage = WithReceivedAt<OriginalToolErrorMessage>;
-export type ToolResponseMessage = WithReceivedAt<OriginalToolResponseMessage>;
-export type UserInterruption = WithReceivedAt<OriginalUserInterruption>;
-export type UserMessage = WithReceivedAt<OriginalUserMessage>;
+export type AssistantEndMessage = WithReceivedAt<AssistantEnd>;
+export type AssistantTranscriptMessage = WithReceivedAt<AssistantMessage>;
+export type AudioMessage = WithReceivedAt<AudioInput>;
+export type AudioOutputMessage = WithReceivedAt<AudioOutput>;
+export type ChatMetadataMessage = WithReceivedAt<ChatMetadata>;
+export type JSONMessage = WithReceivedAt<SubscribeEvent>;
+export type ToolCall = WithReceivedAt<ToolCallMessage>;
+export type ToolError = WithReceivedAt<ToolErrorMessage>;
+export type ToolResponse = WithReceivedAt<ToolResponseMessage>;
+export type UserInterruptionMessage = WithReceivedAt<UserInterruption>;
+export type UserTranscriptMessage = WithReceivedAt<UserMessage>;
