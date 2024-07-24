@@ -12,24 +12,9 @@ export {
   type TimeSlice,
 } from './types';
 
-export type {
-  AssistantEnd as AssistantEndMessage,
-  AssistantMessage as AssistantTranscriptMessage,
-  AudioInput as AudioMessage,
-  AudioOutput as AudioOutputMessage,
-  ChatMetadata as ChatMetadataMessage,
-  WebSocketError as JSONErrorMessage,
-  SubscribeEvent as JSONMessage,
-  ToolCallMessage as ToolCall,
-  ToolErrorMessage as ToolError,
-  ToolResponseMessage as ToolResponse,
-  UserInterruption as UserInterruptionMessage,
-  UserMessage as UserTranscriptMessage,
-} from 'hume/api/resources/empathicVoice';
-
 export type { SocketConfig } from './lib/useVoiceClient';
 
-export type {
+import type {
   AssistantEnd,
   AssistantMessage,
   AudioInput,
@@ -41,4 +26,20 @@ export type {
   ToolResponseMessage,
   UserInterruption,
   UserMessage,
+  WebSocketError,
 } from 'hume/api/resources/empathicVoice';
+
+type WithReceivedAt<T> = T & { receivedAt: Date };
+
+export type AssistantEndMessage = WithReceivedAt<AssistantEnd>;
+export type AssistantTranscriptMessage = WithReceivedAt<AssistantMessage>;
+export type AudioMessage = WithReceivedAt<AudioInput>;
+export type AudioOutputMessage = WithReceivedAt<AudioOutput>;
+export type ChatMetadataMessage = WithReceivedAt<ChatMetadata>;
+export type JSONErrorMessage = WithReceivedAt<WebSocketError>;
+export type JSONMessage = WithReceivedAt<SubscribeEvent>;
+export type ToolCall = WithReceivedAt<ToolCallMessage>;
+export type ToolError = WithReceivedAt<ToolErrorMessage>;
+export type ToolResponse = WithReceivedAt<ToolResponseMessage>;
+export type UserInterruptionMessage = WithReceivedAt<UserInterruption>;
+export type UserTranscriptMessage = WithReceivedAt<UserMessage>;
