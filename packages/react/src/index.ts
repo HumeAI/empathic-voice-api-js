@@ -14,7 +14,7 @@ export {
 
 export type { SocketConfig } from './lib/useVoiceClient';
 
-import {
+import type {
   AssistantEnd,
   AssistantMessage,
   AudioInput,
@@ -26,6 +26,7 @@ import {
   ToolResponseMessage,
   UserInterruption,
   UserMessage,
+  WebSocketError,
 } from 'hume/api/resources/empathicVoice';
 
 type WithReceivedAt<T> = T & { receivedAt: Date };
@@ -35,6 +36,7 @@ export type AssistantTranscriptMessage = WithReceivedAt<AssistantMessage>;
 export type AudioMessage = WithReceivedAt<AudioInput>;
 export type AudioOutputMessage = WithReceivedAt<AudioOutput>;
 export type ChatMetadataMessage = WithReceivedAt<ChatMetadata>;
+export type JSONErrorMessage = WithReceivedAt<WebSocketError>;
 export type JSONMessage = WithReceivedAt<SubscribeEvent>;
 export type ToolCall = WithReceivedAt<ToolCallMessage>;
 export type ToolError = WithReceivedAt<ToolErrorMessage>;
