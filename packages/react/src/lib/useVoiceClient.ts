@@ -92,9 +92,8 @@ export const useVoiceClient = (props: {
       });
 
       client.current.on('message', (message) => {
-        const messageWithReceivedAt = { ...message, receivedAt: new Date() };
-
         if (message.type === 'audio_output') {
+          const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onAudioMessage.current?.(messageWithReceivedAt);
         }
 
@@ -107,10 +106,12 @@ export const useVoiceClient = (props: {
           message.type === 'tool_error' ||
           message.type === 'chat_metadata'
         ) {
+          const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onMessage.current?.(messageWithReceivedAt);
         }
 
         if (message.type === 'tool_call') {
+          const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onMessage.current?.(messageWithReceivedAt);
           void onToolCall
             .current?.(messageWithReceivedAt, {
