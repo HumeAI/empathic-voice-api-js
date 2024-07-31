@@ -19,7 +19,7 @@
     "test-watch": "vitest --watch",
     "build": "tsup",
     "dev": "tsup --watch",
-    "lint": "eslint ./src",
+    "lint": "eslint ./src && tsc --noEmit -p .",
     "pack": "npm pack"
   },
   "keywords": [],

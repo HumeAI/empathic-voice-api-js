@@ -9,7 +9,11 @@ describe('useVoice', () => {
   it('should in', async () => {
     const hook = renderHook(() => useVoice(), {
       wrapper: ({ children }) => {
-        return <VoiceProvider apiKey={'abc'}>{children}</VoiceProvider>;
+        return (
+          <VoiceProvider auth={{ type: 'apiKey', value: 'abc' }}>
+            {children}
+          </VoiceProvider>
+        );
       },
     });
 
