@@ -1,5 +1,5 @@
 import { act, renderHook } from '@testing-library/react';
-import type { Hume } from 'Hume';
+import type { Hume } from 'hume';
 import { describe, expect, it } from 'vitest';
 
 import { useToolStatus } from './useToolStatus';
