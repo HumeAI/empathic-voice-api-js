@@ -134,9 +134,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const isMicrophoneError = error?.type === 'mic_error';
   const isSocketError = error?.type === 'socket_error';
   const isAudioError = error?.type === 'audio_error';
-  const isSocketUnknownMessageError =
-    error?.type === 'socket_error' &&
-    error?.message === `Received unknown message type`;
 
   const onError = useRef(props.onError ?? noop);
   onError.current = props.onError ?? noop;
@@ -162,6 +159,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     Parameters<typeof useVoiceClient>[0]['onError']
   > = useCallback(
     (message, err) => {
+      if (message === 'Received unknown message type') {
+        // Fail silently if we receive an unknown message
+        return;
+      }
       stopTimer();
       updateError({ type: 'socket_error', message, error: err });
     },
@@ -416,7 +417,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isError,
       isMicrophoneError,
       isSocketError,
-      isSocketUnknownMessageError,
       callDurationTimestamp,
       toolStatus,
       messageStore.chatMetadata,
