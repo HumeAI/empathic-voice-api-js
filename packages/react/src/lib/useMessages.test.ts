@@ -69,7 +69,9 @@ describe('useMessages hook', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    hook = renderHook(() => useMessages({ sendMessageToParent }));
+    hook = renderHook(() =>
+      useMessages({ messageHistoryLimit: 100, sendMessageToParent }),
+    );
     userMessage = {
       type: 'user_message',
       message: {
@@ -121,26 +123,39 @@ describe('useMessages hook', () => {
 
   it('should add user messages to `messages` immediately', () => {
     act(() => {
-      hook.result.current.onMessage(userMessage);
+      hook.result.current.onMessage({
+        ...userMessage,
+        receivedAt: new Date(),
+      });
     });
 
-    expect(hook.result.current.lastUserMessage).toEqual(userMessage);
-    expect(hook.result.current.messages).toContainEqual(userMessage);
+    expect(hook.result.current.lastUserMessage).toMatchObject(
+      expect.objectContaining(userMessage),
+    );
+    expect(hook.result.current.messages).toMatchObject(
+      expect.arrayContaining([expect.objectContaining(userMessage)]),
+    );
   });
 
   it('should add voice messages to the voice message map', () => {
     act(() => {
-      hook.result.current.onMessage(agentMessage);
+      hook.result.current.onMessage({
+        ...agentMessage,
+        receivedAt: new Date(),
+      });
     });
 
     expect(hook.result.current.lastVoiceMessage).toBeNull();
-    expect(hook.result.current.messages).not.toContainEqual(agentMessage);
+    expect(hook.result.current.messages).toMatchObject([]);
   });
 
   it('should expose the voice message after the associated audio clip is played', () => {
     // add the message
     act(() => {
-      hook.result.current.onMessage(agentMessage);
+      hook.result.current.onMessage({
+        ...agentMessage,
+        receivedAt: new Date(),
+      });
     });
 
     // simulate playing audio
@@ -148,26 +163,42 @@ describe('useMessages hook', () => {
       hook.result.current.onPlayAudio(agentMessage.id ?? '');
     });
 
-    expect(hook.result.current.lastVoiceMessage).toEqual(agentMessage);
-    expect(hook.result.current.messages).toContainEqual(agentMessage);
+    expect(hook.result.current.lastVoiceMessage).toMatchObject(
+      expect.objectContaining(agentMessage),
+    );
+    expect(hook.result.current.messages).toMatchObject(
+      expect.arrayContaining([expect.objectContaining(agentMessage)]),
+    );
   });
 
   it('should expose the voice message after the associated audio clip is played', () => {
     act(() => {
-      hook.result.current.onMessage(agentMessage); // First, add the message
+      // First, add the message
+      hook.result.current.onMessage({
+        ...agentMessage,
+        receivedAt: new Date(),
+      });
     });
 
     act(() => {
       hook.result.current.onPlayAudio(agentMessage.id ?? '');
     });
 
-    expect(hook.result.current.lastVoiceMessage).toEqual(agentMessage);
-    expect(hook.result.current.messages).toContainEqual(agentMessage);
+    expect(hook.result.current.lastVoiceMessage).toMatchObject(
+      expect.objectContaining(agentMessage),
+    );
+    expect(hook.result.current.messages).toMatchObject(
+      expect.arrayContaining([expect.objectContaining(agentMessage)]),
+    );
   });
 
   it('should only add voice messages once', () => {
     act(() => {
-      hook.result.current.onMessage(agentMessage); // First, add the message
+      // First, add the message
+      hook.result.current.onMessage({
+        ...agentMessage,
+        receivedAt: new Date(),
+      });
     });
 
     act(() => {
@@ -186,14 +217,19 @@ describe('useMessages hook', () => {
 
   it('should call the sendMessageToParent callback when the associated audio clip plays', () => {
     act(() => {
-      hook.result.current.onMessage(agentMessage);
+      hook.result.current.onMessage({
+        ...agentMessage,
+        receivedAt: new Date(),
+      });
     });
 
     act(() => {
       hook.result.current.onPlayAudio(agentMessage.id ?? '');
     });
 
-    expect(sendMessageToParent).toHaveBeenCalledWith(agentMessage);
+    expect(sendMessageToParent).toHaveBeenCalledWith(
+      expect.objectContaining(agentMessage),
+    );
   });
 
   it('should clear all messages and states on disconnect', () => {
