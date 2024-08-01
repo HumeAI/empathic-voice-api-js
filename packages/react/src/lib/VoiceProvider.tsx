@@ -29,7 +29,8 @@ import {
 type VoiceError =
   | { type: 'socket_error'; message: string; error?: Error }
   | { type: 'audio_error'; message: string; error?: Error }
-  | { type: 'mic_error'; message: string; error?: Error };
+  | { type: 'mic_error'; message: string; error?: Error }
+  | { type: 'socket_unknown_message'; message: string; error?: Error };
 
 type VoiceStatus =
   | {
@@ -345,7 +346,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   useEffect(() => {
     if (
       error !== null &&
-      error !== 'socket_unknown_message' &&
+      error.type !== 'socket_unknown_message' &&
       status.value !== 'error' &&
       status.value !== 'disconnected'
     ) {
