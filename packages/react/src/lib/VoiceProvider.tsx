@@ -29,7 +29,8 @@ import {
 type VoiceError =
   | { type: 'socket_error'; message: string; error?: Error }
   | { type: 'audio_error'; message: string; error?: Error }
-  | { type: 'mic_error'; message: string; error?: Error };
+  | { type: 'mic_error'; message: string; error?: Error }
+  | { type: 'socket_unknown_message'; message: string; error?: Error };
 
 type VoiceStatus =
   | {
@@ -134,6 +135,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const isMicrophoneError = error?.type === 'mic_error';
   const isSocketError = error?.type === 'socket_error';
   const isAudioError = error?.type === 'audio_error';
+  const isSocketUnknownMessageError = error?.type === 'socket_unknown_message';
 
   const onError = useRef(props.onError ?? noop);
   onError.current = props.onError ?? noop;
@@ -159,6 +161,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     Parameters<typeof useVoiceClient>[0]['onError']
   > = useCallback(
     (message, err) => {
+      if (message === 'Received unknown message type') {
+        updateError({ type: 'socket_unknown_message', message, error: err });
+        return;
+      }
       stopTimer();
       updateError({ type: 'socket_error', message, error: err });
     },
@@ -340,10 +346,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   useEffect(() => {
     if (
       error !== null &&
+      error.type !== 'socket_unknown_message' &&
       status.value !== 'error' &&
       status.value !== 'disconnected'
     ) {
       // If the status is ever set to `error`, disconnect the voice.
+      // With the exception of an unknown message error
       setStatus({ value: 'error', reason: error.message });
       disconnectFromVoice();
     }
@@ -383,7 +391,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         callDurationTimestamp,
         toolStatusStore: toolStatus.store,
         chatMetadata: messageStore.chatMetadata,
-      }) satisfies VoiceContextType,
+      } satisfies VoiceContextType),
     [
       connect,
       disconnect,
@@ -413,6 +421,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isError,
       isMicrophoneError,
       isSocketError,
+      isSocketUnknownMessageError,
       callDurationTimestamp,
       toolStatus,
       messageStore.chatMetadata,
