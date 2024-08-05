@@ -91,6 +91,9 @@ export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
   onToolCall?: ToolCallHandler;
+  onAssistantEnd?: (
+    message: Hume.empathicVoice.JsonMessage & { receivedAt: Date },
+  ) => void;
   /**
    * @default true
    * @description Clear messages when the voice is disconnected.
@@ -204,6 +207,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       },
       [messageStore, player, toolStatus],
     ),
+    onAssistantEnd: props.onAssistantEnd,
     onError: onClientError,
     onOpen: useCallback(() => {
       startTimer();

@@ -36,6 +36,9 @@ export const useVoiceClient = (props: {
   onMessage?: (
     message: Hume.empathicVoice.JsonMessage & { receivedAt: Date },
   ) => void;
+  onAssistantEnd?: (
+    message: Hume.empathicVoice.JsonMessage & { receivedAt: Date },
+  ) => void;
   onToolCall?: ToolCallHandler;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
@@ -68,6 +71,9 @@ export const useVoiceClient = (props: {
 
   const onClose = useRef<typeof props.onClose>(props.onClose);
   onClose.current = props.onClose;
+
+  const onAssistantEnd = useRef<typeof props.onAssistantEnd>(props.onAssistantEnd);
+  onAssistantEnd.current = props.onAssistantEnd;
 
   const connect = useCallback((config: SocketConfig) => {
     return new Promise((resolve, reject) => {
@@ -109,6 +115,11 @@ export const useVoiceClient = (props: {
           const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onMessage.current?.(messageWithReceivedAt);
         }
+
+        if(message.type === "assistant_end"){
+          const messageWithReceivedAt = { ...message, receivedAt: new Date() };
+          onAssistantEnd.current?.(messageWithReceivedAt);
+        } 
 
         if (message.type === 'tool_call') {
           const messageWithReceivedAt = { ...message, receivedAt: new Date() };
