@@ -4,9 +4,9 @@ import { useCallback, useRef, useState } from 'react';
 
 import { type AuthStrategy } from './auth';
 
-const isNever = (n: never) => {
+const isNever = (_n: never) => {
   return;
-}
+};
 
 export type SocketConfig = {
   auth: AuthStrategy;
@@ -163,7 +163,7 @@ export const useVoiceClient = (props: {
                 onError.current?.('Invalid response from tool call');
               }
             });
-            return;
+          return;
         }
 
         // asserts that all message types are handled
