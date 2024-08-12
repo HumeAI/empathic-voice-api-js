@@ -4,6 +4,10 @@ import { useCallback, useRef, useState } from 'react';
 
 import { type AuthStrategy } from './auth';
 
+const isNever = (_n: never) => {
+  return;
+};
+
 export type SocketConfig = {
   auth: AuthStrategy;
   hostname?: string;
@@ -95,6 +99,7 @@ export const useVoiceClient = (props: {
         if (message.type === 'audio_output') {
           const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onAudioMessage.current?.(messageWithReceivedAt);
+          return;
         }
 
         if (
@@ -109,6 +114,7 @@ export const useVoiceClient = (props: {
         ) {
           const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onMessage.current?.(messageWithReceivedAt);
+          return;
         }
 
         if (message.type === 'tool_call') {
@@ -157,7 +163,12 @@ export const useVoiceClient = (props: {
                 onError.current?.('Invalid response from tool call');
               }
             });
+          return;
         }
+
+        // asserts that all message types are handled
+        isNever(message);
+        return;
       });
 
       client.current.on('close', (event) => {
