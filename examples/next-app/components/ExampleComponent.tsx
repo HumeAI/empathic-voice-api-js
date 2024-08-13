@@ -116,6 +116,12 @@ export const ExampleComponent = () => {
                     </div>
                     <div>{chatMetadata?.requestId}</div>
                   </div>
+                  <div>
+                    <div className={'text-sm font-medium uppercase'}>
+                      Chat group ID
+                    </div>
+                    <div>{chatMetadata?.chatGroupId}</div>
+                  </div>
                 </div>
 
                 <button
