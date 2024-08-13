@@ -1,28 +1,11 @@
 import { type Hume } from 'hume';
 import * as serializers from 'hume/serialization';
 
+import { type AudioMessage, parseAudioMessage } from './audio-message';
 import {
   SocketFailedToParseMessageError,
   SocketUnknownMessageError,
 } from './errors';
-
-export const parseAudioMessage = async (
-  blob: Blob,
-): Promise<Hume.empathicVoice.AudioOutput | null> => {
-  return blob
-    .arrayBuffer()
-    .then((buffer) => {
-      return {
-        type: 'audio_output',
-        id: '',
-        data: buffer,
-        receivedAt: new Date(),
-      };
-    })
-    .catch(() => {
-      return null;
-    });
-};
 
 /**
  * @name parseMessageData
@@ -41,7 +24,7 @@ export const parseMessageData = async (
 ): Promise<
   | {
       success: true;
-      message: Hume.empathicVoice.SubscribeEvent;
+      message: Hume.empathicVoice.SubscribeEvent | AudioMessage;
     }
   | {
       success: false;
@@ -109,7 +92,7 @@ export const parseMessageType = async (
 ): Promise<
   | {
       success: true;
-      message: Hume.empathicVoice.SubscribeEvent;
+      message: Hume.empathicVoice.SubscribeEvent | AudioMessage;
     }
   | {
       success: false;
