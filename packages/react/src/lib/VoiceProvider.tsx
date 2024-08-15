@@ -349,6 +349,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
   }, [status.value, disconnect, disconnectFromVoice, error]);
 
+  useEffect(() => {
+    // disconnect from socket when the voice provider component unmounts
+    return () => {
+      disconnectFromVoice();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const ctx = useMemo(
     () =>
       ({
