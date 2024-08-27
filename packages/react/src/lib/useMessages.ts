@@ -101,9 +101,8 @@ export const useMessages = ({
         default:
           break;
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [],
+    [messageHistoryLimit, sendMessageToParent],
   );
 
   const onPlayAudio = useCallback(
