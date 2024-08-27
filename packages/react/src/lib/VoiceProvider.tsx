@@ -86,7 +86,9 @@ const VoiceContext = createContext<VoiceContextType | null>(null);
 
 export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
   sessionSettings?: Hume.empathicVoice.SessionSettings;
-  onMessage?: (message: Hume.empathicVoice.SubscribeEvent) => void;
+  onMessage?: (
+    message: Hume.empathicVoice.JsonMessage & { receivedAt: Date },
+  ) => void;
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
@@ -141,10 +143,13 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const onClose = useRef(props.onClose ?? noop);
   onClose.current = props.onClose ?? noop;
 
+  const onMessage = useRef(props.onMessage ?? noop);
+  onMessage.current = props.onMessage ?? noop;
+
   const toolStatus = useToolStatus();
 
   const messageStore = useMessages({
-    sendMessageToParent: props.onMessage,
+    sendMessageToParent: onMessage.current,
     messageHistoryLimit,
   });
 
