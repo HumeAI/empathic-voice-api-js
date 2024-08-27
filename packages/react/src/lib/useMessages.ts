@@ -85,6 +85,7 @@ export const useMessages = ({
         case 'tool_call':
         case 'tool_response':
         case 'tool_error':
+        case 'assistant_end':
           sendMessageToParent?.(message);
           setMessages((prev) => {
             return keepLastN(messageHistoryLimit, prev.concat([message]));
