@@ -41,8 +41,8 @@ importers:
         specifier: ^11.0.28
         version: 11.2.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       hume:
-        specifier: 0.8.7
-        version: 0.8.7
+        specifier: 0.8.8
+        version: 0.8.8
       lucide-react:
         specifier: ^0.372.0
         version: 0.372.0(react@18.3.1)
@@ -194,8 +194,8 @@ importers:
   packages/embed:
     dependencies:
       hume:
-        specifier: 0.8.7
-        version: 0.8.7
+        specifier: 0.8.8
+        version: 0.8.8
       zod:
         specifier: ^3.22.4
         version: 3.23.8
@@ -292,8 +292,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       hume:
-        specifier: 0.8.7
-        version: 0.8.7
+        specifier: 0.8.8
+        version: 0.8.8
       meyda:
         specifier: ^5.6.2
         version: 5.6.3(rollup@4.18.0)
@@ -2432,8 +2432,8 @@ packages:
   hume@0.8.6:
     resolution: {integrity: sha512-BD67z0/Eq03UbL3r32Mno2cuJ9cWLQho/zdd/dK/71DJ0Lx8SAm+/3VDQ3Zw/ACj8Y2pNbeLv+jLe3EjdV3fvg==}
 
-  hume@0.8.7:
-    resolution: {integrity: sha512-GVJekpcp5CfZAAaxawf8ICk/uKcHKbkPBTvbAqDUqFUbI2FtccipyM7FfU7SXs4wgGlbs05PxIHVGN2P/O2m7Q==}
+  hume@0.8.8:
+    resolution: {integrity: sha512-JTWJUGmV4ZH2ikMIHGNOKbFDoQdZo3Iljd2smja3+KYB6e1oxY0+S89mMnR513byA98YP/n0uT7m1RVbVwoAPw==}
 
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
@@ -5979,7 +5979,7 @@ snapshots:
       - encoding
       - utf-8-validate
 
-  hume@0.8.7:
+  hume@0.8.8:
     dependencies:
       form-data: 4.0.0
       form-data-encoder: 4.0.2
