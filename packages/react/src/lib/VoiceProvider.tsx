@@ -80,6 +80,7 @@ export type VoiceContextType = {
   callDurationTimestamp: string | null;
   toolStatusStore: ReturnType<typeof useToolStatus>['store'];
   chatMetadata: Hume.empathicVoice.ChatMetadata | null;
+  playerQueueLength: number;
 };
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
@@ -396,6 +397,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         callDurationTimestamp,
         toolStatusStore: toolStatus.store,
         chatMetadata: messageStore.chatMetadata,
+        playerQueueLength: player.queueLength,
       }) satisfies VoiceContextType,
     [
       connect,
@@ -405,6 +407,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       player.isAudioMuted,
       player.muteAudio,
       player.unmuteAudio,
+      player.queueLength,
       mic.fft,
       mic.isMuted,
       mic.mute,

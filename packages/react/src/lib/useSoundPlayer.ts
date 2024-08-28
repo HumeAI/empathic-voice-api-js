@@ -23,6 +23,8 @@ export const useSoundPlayer = (props: {
       buffer: AudioBuffer;
     }>
   >([]);
+  const [queueLength, setQueueLength] = useState(0);
+
   const isProcessing = useRef(false);
   const currentlyPlayingAudioBuffer = useRef<AudioBufferSourceNode | null>(
     null,
@@ -36,6 +38,8 @@ export const useSoundPlayer = (props: {
   onError.current = props.onError;
 
   const playNextClip = useCallback(() => {
+    setQueueLength(clipQueue.current.length);
+
     if (analyserNode.current === null || audioContext.current === null) {
       onError.current('Audio environment is not initialized');
       return;
@@ -227,5 +231,6 @@ export const useSoundPlayer = (props: {
     unmuteAudio,
     stopAll,
     clearQueue,
+    queueLength,
   };
 };
