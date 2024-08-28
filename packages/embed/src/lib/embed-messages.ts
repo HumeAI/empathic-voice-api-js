@@ -31,7 +31,10 @@
  └───────────────────────────┘                                           
                                                                        */
 import { type Hume } from 'hume';
-import * as serializers from 'hume/serialization';
+import {
+  AssistantMessage,
+  UserMessage,
+} from 'hume/serialization/resources/empathicVoice/index.js';
 import { z } from 'zod';
 
 import { AuthStrategySchema } from './auth';
@@ -130,13 +133,11 @@ export const FrameToClientActionSchema = z.union([
     payload: z.custom<
       Hume.empathicVoice.UserMessage | Hume.empathicVoice.AssistantMessage
     >((val) => {
-      const userMessageParseResponse =
-        serializers.empathicVoice.UserMessage.parse(val);
+      const userMessageParseResponse = UserMessage.parse(val);
       if (userMessageParseResponse.ok) {
         return true;
       }
-      const assistantMessageParseResponse =
-        serializers.empathicVoice.AssistantMessage.parse(val);
+      const assistantMessageParseResponse = AssistantMessage.parse(val);
       if (assistantMessageParseResponse.ok) {
         return true;
       }
