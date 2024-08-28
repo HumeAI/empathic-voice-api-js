@@ -1,5 +1,6 @@
-import { type Hume, HumeClient } from 'hume';
+import { Hume, HumeClient } from 'hume';
 import { useCallback, useRef, useState } from 'react';
+import { type Simplify } from 'type-fest';
 
 import { type AuthStrategy } from './auth';
 
@@ -20,7 +21,15 @@ export enum VoiceReadyState {
 }
 
 export type ToolCallHandler = (
-  message: Hume.empathicVoice.ToolCallMessage,
+  // message will always be a tool call message where toolType === 'function'
+  message: Simplify<
+    Hume.empathicVoice.ToolCallMessage & {
+      // caveat: this doesn't actually do what it appears to, since ToolType is
+      // exported as both an interface and a value, this ends up being a constant
+      // that doesn't share an type identity with the actual ToolType enum
+      toolType: typeof Hume.empathicVoice.ToolType.Function;
+    }
+  >,
   send: {
     success: (content: unknown) => Hume.empathicVoice.ToolResponseMessage;
     error: (e: {
@@ -119,43 +128,57 @@ export const useVoiceClient = (props: {
         if (message.type === 'tool_call') {
           const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onMessage.current?.(messageWithReceivedAt);
-          void onToolCall
-            .current?.(messageWithReceivedAt, {
-              success: (content: unknown) => ({
-                type: 'tool_response',
-                toolCallId: messageWithReceivedAt.toolCallId,
-                content: JSON.stringify(content),
-              }),
-              error: ({
-                error,
-                code,
-                level,
-                content,
-              }: {
-                error: string;
-                code: string;
-                level: string;
-                content: string;
-              }) => ({
-                type: 'tool_error',
-                toolCallId: messageWithReceivedAt.toolCallId,
-                error,
-                code,
-                level: level !== null ? 'warn' : undefined, // level can only be warn
-                content,
-              }),
-            })
-            .then((response) => {
-              // if valid send it to the socket
-              // otherwise, report error
-              if (response.type === 'tool_response') {
-                client.current?.sendToolResponseMessage(response);
-              } else if (response.type === 'tool_error') {
-                client.current?.sendToolErrorMessage(response);
-              } else {
-                onError.current?.('Invalid response from tool call');
-              }
-            });
+
+          // only pass tool call messages for user defined tools
+          if (message.toolType === Hume.empathicVoice.ToolType.Function) {
+            void onToolCall
+              .current?.(
+                {
+                  ...messageWithReceivedAt,
+                  // we have to do this because even though we are using the correct
+                  // enum on line 30 for the type definition
+                  // fern exports an interface and a value using the same `ToolType`
+                  // identifier so the type comparisons will always fail
+                  toolType: 'function',
+                },
+                {
+                  success: (content: unknown) => ({
+                    type: 'tool_response',
+                    toolCallId: messageWithReceivedAt.toolCallId,
+                    content: JSON.stringify(content),
+                  }),
+                  error: ({
+                    error,
+                    code,
+                    level,
+                    content,
+                  }: {
+                    error: string;
+                    code: string;
+                    level: string;
+                    content: string;
+                  }) => ({
+                    type: 'tool_error',
+                    toolCallId: messageWithReceivedAt.toolCallId,
+                    error,
+                    code,
+                    level: level !== null ? 'warn' : undefined, // level can only be warn
+                    content,
+                  }),
+                },
+              )
+              .then((response) => {
+                // if valid send it to the socket
+                // otherwise, report error
+                if (response.type === 'tool_response') {
+                  client.current?.sendToolResponseMessage(response);
+                } else if (response.type === 'tool_error') {
+                  client.current?.sendToolErrorMessage(response);
+                } else {
+                  onError.current?.('Invalid response from tool call');
+                }
+              });
+          }
           return;
         }
 
