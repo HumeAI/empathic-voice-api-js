@@ -1,5 +1,4 @@
 import { type Hume, HumeClient } from 'hume';
-import * as serializers from 'hume/serialization';
 import { useCallback, useRef, useState } from 'react';
 
 import { type AuthStrategy } from './auth';
@@ -147,17 +146,11 @@ export const useVoiceClient = (props: {
               }),
             })
             .then((response) => {
-              // check that response is a correctly formatted response or error payload
-              const parsedResponse =
-                serializers.empathicVoice.ToolResponseMessage.parse(response);
-              const parsedError =
-                serializers.empathicVoice.ToolErrorMessage.parse(response);
-
               // if valid send it to the socket
               // otherwise, report error
-              if (response.type === 'tool_response' && parsedResponse.ok) {
+              if (response.type === 'tool_response') {
                 client.current?.sendToolResponseMessage(response);
-              } else if (response.type === 'tool_error' && parsedError.ok) {
+              } else if (response.type === 'tool_error') {
                 client.current?.sendToolErrorMessage(response);
               } else {
                 onError.current?.('Invalid response from tool call');
