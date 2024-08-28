@@ -35,7 +35,7 @@
     "vitest": "^1.4.0"
   },
   "dependencies": {
-    "hume": "0.8.7",
+    "hume": "0.8.8",
     "zod": "^3.22.4"
   },
   "browserslist": [
