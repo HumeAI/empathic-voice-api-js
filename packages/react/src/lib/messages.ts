@@ -1,5 +1,5 @@
 import { type Hume } from 'hume';
-import { SubscribeEvent } from 'hume/serialization/resources/empathicVoice';
+import { SubscribeEvent } from 'hume/serialization/resources/empathicVoice/index.js';
 
 import { type AudioMessage, parseAudioMessage } from './audio-message';
 import {

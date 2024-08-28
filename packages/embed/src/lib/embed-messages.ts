@@ -34,7 +34,7 @@ import { type Hume } from 'hume';
 import {
   AssistantMessage,
   UserMessage,
-} from 'hume/serialization/resources/empathicVoice';
+} from 'hume/serialization/resources/empathicVoice/index.js';
 import { z } from 'zod';
 
 import { AuthStrategySchema } from './auth';
