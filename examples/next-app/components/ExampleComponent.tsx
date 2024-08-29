@@ -46,6 +46,7 @@ export const ExampleComponent = () => {
     sendResumeAssistantMessage,
     sendPauseAssistantMessage,
     chatMetadata,
+    playerQueueLength,
   } = useVoice();
 
   const [textValue, setTextValue] = useState('');
@@ -103,6 +104,12 @@ export const ExampleComponent = () => {
                       Playing
                     </div>
                     <div>{isPlaying ? 'true' : 'false'}</div>
+                  </div>
+                  <div>
+                    <div className={'text-sm font-medium uppercase'}>
+                      Player queue length
+                    </div>
+                    <div>{playerQueueLength}</div>
                   </div>
                   <div>
                     <div className={'text-sm font-medium uppercase'}>
