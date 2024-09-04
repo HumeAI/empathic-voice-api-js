@@ -68,8 +68,8 @@ export type VoiceContextType = {
       | Hume.empathicVoice.ToolResponseMessage
       | Hume.empathicVoice.ToolErrorMessage,
   ) => void;
-  sendPauseAssistantMessage: Hume.empathicVoice.chat.ChatSocket['pauseAssistant'];
-  sendResumeAssistantMessage: Hume.empathicVoice.chat.ChatSocket['resumeAssistant'];
+  pauseAssistant: () => void;
+  resumeAssistant: () => void;
   status: VoiceStatus;
   micFft: number[];
   error: VoiceError | null;
@@ -247,6 +247,15 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     ),
   });
 
+  const pauseAssistant = useCallback(() => {
+    client.sendPauseAssistantMessage();
+    player.clearQueue();
+  }, [client, player]);
+
+  const resumeAssistant = useCallback(() => {
+    client.sendResumeAssistantMessage();
+  }, [client]);
+
   const connect = useCallback(async () => {
     updateError(null);
     setStatus({ value: 'connecting' });
@@ -383,8 +392,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         sendUserInput: client.sendUserInput,
         sendAssistantInput: client.sendAssistantInput,
         sendSessionSettings: client.sendSessionSettings,
-        sendPauseAssistantMessage: client.sendPauseAssistantMessage,
-        sendResumeAssistantMessage: client.sendResumeAssistantMessage,
+        pauseAssistant,
+        resumeAssistant,
         sendToolMessage: client.sendToolMessage,
         status,
         unmute: mic.unmute,
@@ -403,8 +412,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       connect,
       disconnect,
       player.fft,
-      player.isPlaying,
       player.isAudioMuted,
+      player.isPlaying,
       player.muteAudio,
       player.unmuteAudio,
       player.queueLength,
@@ -416,13 +425,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       messageStore.lastVoiceMessage,
       messageStore.lastUserMessage,
       messageStore.clearMessages,
+      messageStore.chatMetadata,
       client.readyState,
       client.sendUserInput,
       client.sendAssistantInput,
       client.sendSessionSettings,
       client.sendToolMessage,
-      client.sendPauseAssistantMessage,
-      client.sendResumeAssistantMessage,
+      pauseAssistant,
+      resumeAssistant,
       status,
       error,
       isAudioError,
@@ -430,8 +440,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isMicrophoneError,
       isSocketError,
       callDurationTimestamp,
-      toolStatus,
-      messageStore.chatMetadata,
+      toolStatus.store,
     ],
   );
 

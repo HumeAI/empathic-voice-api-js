@@ -113,8 +113,8 @@ export const ExampleComponent = () => {
 | `sendUserInput: (text: string) => void`                             | Send a user input message.                                                                                                          |
 | `sendAssistantInput: (text: string) => void`                        | Send a text string for the assistant to read out loud.                                                                              |
 | `sendToolMessage: (toolMessage: ToolResponse \| ToolError) => void` | Send a tool response or tool error message to the EVI backend.                                                                      |
-| `sendPauseAssistantMessage: () => void`                             | Send pause assistant message to the websocket. This pauses responses from EVI. Chat history is still saved and sent after resuming. |
-| `sendResumeAssistantMessage: () => void`                            | Send resume assistant message to the websocket. This resumes responses from EVI. Chat history sent while paused will now be sent.   |
+| `pauseAssistant: () => void`                             | Pauses responses from EVI. Chat history is still saved and sent after resuming. |
+| `resumeAssistant: () => void`                            | Resumes responses from EVI. Chat history sent while paused will now be sent.   |
 
 ### Properties
 

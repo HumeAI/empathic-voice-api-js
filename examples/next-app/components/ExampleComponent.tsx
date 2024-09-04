@@ -43,8 +43,8 @@ export const ExampleComponent = () => {
     callDurationTimestamp,
     sendUserInput,
     sendAssistantInput,
-    sendResumeAssistantMessage,
-    sendPauseAssistantMessage,
+    pauseAssistant,
+    resumeAssistant,
     chatMetadata,
     playerQueueLength,
   } = useVoice();
@@ -57,13 +57,13 @@ export const ExampleComponent = () => {
 
   const togglePaused = useCallback(() => {
     if (paused) {
-      sendResumeAssistantMessage({});
+      resumeAssistant();
       setPaused(false);
     } else {
-      sendPauseAssistantMessage({});
+      pauseAssistant();
       setPaused(true);
     }
-  }, [paused, sendPauseAssistantMessage, sendResumeAssistantMessage]);
+  }, [paused, resumeAssistant, pauseAssistant]);
   const pausedText = paused ? 'Resume' : 'Pause';
 
   const assistantMessages = useMemo(() => {
