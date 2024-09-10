@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "hume": "0.8.6"
+    "hume": "0.8.10"
   },
   "devDependencies": {
     "typescript": "^5.2.2",
