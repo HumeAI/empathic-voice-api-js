@@ -4,6 +4,10 @@ import type { Hume } from 'hume';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMessages } from './useMessages'; // adjust the import path as needed
+import type {
+  AssistantTranscriptMessage,
+  UserTranscriptMessage,
+} from '../models/messages';
 
 const MODEL_CONFIG: Hume.empathicVoice.Inference = {
   prosody: {
@@ -62,8 +66,8 @@ const MODEL_CONFIG: Hume.empathicVoice.Inference = {
 
 describe('useMessages hook', () => {
   let hook: RenderHookResult<unknown, ReturnType<typeof useMessages>>;
-  let userMessage: Hume.empathicVoice.UserMessage;
-  let agentMessage: Hume.empathicVoice.AssistantMessage;
+  let userMessage: UserTranscriptMessage;
+  let agentMessage: AssistantTranscriptMessage;
 
   const sendMessageToParent = vi.fn();
 
@@ -84,6 +88,7 @@ describe('useMessages hook', () => {
         end: 1633035635,
       },
       fromText: false,
+      receivedAt: new Date(1),
     };
     agentMessage = {
       type: 'assistant_message' as const,
@@ -94,6 +99,7 @@ describe('useMessages hook', () => {
       },
       fromText: false,
       models: MODEL_CONFIG,
+      receivedAt: new Date(1),
     };
   });
 
@@ -125,7 +131,7 @@ describe('useMessages hook', () => {
     act(() => {
       hook.result.current.onMessage({
         ...userMessage,
-        receivedAt: new Date(),
+        receivedAt: new Date(1),
       });
     });
 
@@ -141,7 +147,7 @@ describe('useMessages hook', () => {
     act(() => {
       hook.result.current.onMessage({
         ...agentMessage,
-        receivedAt: new Date(),
+        receivedAt: new Date(1),
       });
     });
 
@@ -154,7 +160,7 @@ describe('useMessages hook', () => {
     act(() => {
       hook.result.current.onMessage({
         ...agentMessage,
-        receivedAt: new Date(),
+        receivedAt: new Date(1),
       });
     });
 
@@ -176,7 +182,7 @@ describe('useMessages hook', () => {
       // First, add the message
       hook.result.current.onMessage({
         ...agentMessage,
-        receivedAt: new Date(),
+        receivedAt: new Date(1),
       });
     });
 
@@ -197,7 +203,7 @@ describe('useMessages hook', () => {
       // First, add the message
       hook.result.current.onMessage({
         ...agentMessage,
-        receivedAt: new Date(),
+        receivedAt: new Date(1),
       });
     });
 
@@ -219,7 +225,7 @@ describe('useMessages hook', () => {
     act(() => {
       hook.result.current.onMessage({
         ...agentMessage,
-        receivedAt: new Date(),
+        receivedAt: new Date(1),
       });
     });
 

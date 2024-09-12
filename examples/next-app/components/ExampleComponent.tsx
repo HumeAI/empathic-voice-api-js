@@ -2,8 +2,7 @@
 
 import { useVoice } from '@humeai/voice-react';
 import { SelectItem } from '@radix-ui/react-select';
-import type { Hume } from 'hume';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { match } from 'ts-pattern';
 
 import {
@@ -14,15 +13,6 @@ import {
   SelectValue,
 } from '@/components/Select';
 import { Waveform } from '@/components/Waveform';
-
-function getTop3Expressions(
-  expressionOutputs: Hume.empathicVoice.EmotionScores,
-) {
-  return Object.entries(expressionOutputs)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3)
-    .map(([key, value]) => ({ name: key, score: value as number }));
-}
 
 export const ExampleComponent = () => {
   const {
@@ -47,6 +37,8 @@ export const ExampleComponent = () => {
     resumeAssistant,
     chatMetadata,
     playerQueueLength,
+    lastUserMessage,
+    lastVoiceMessage,
   } = useVoice();
 
   const [textValue, setTextValue] = useState('');
@@ -65,23 +57,6 @@ export const ExampleComponent = () => {
     }
   }, [paused, resumeAssistant, pauseAssistant]);
   const pausedText = paused ? 'Resume' : 'Pause';
-
-  const assistantMessages = useMemo(() => {
-    return messages
-      .map((message) => {
-        if (message.type === 'assistant_message') {
-          return {
-            message: message.message,
-            top3:
-              message.models.prosody?.scores !== undefined
-                ? getTop3Expressions(message.models.prosody?.scores)
-                : {},
-          };
-        }
-        return null;
-      })
-      .filter(Boolean);
-  }, [messages]);
 
   const callDuration = (
     <div>
@@ -239,17 +214,35 @@ export const ExampleComponent = () => {
                   <div className={'text-sm font-medium uppercase'}>
                     Last assistant message
                   </div>
-                  {assistantMessages.length > 0 ? (
-                    <div className="bg-neutral-800 font-mono text-sm text-white">
-                      {JSON.stringify(
-                        assistantMessages[assistantMessages.length - 1],
-                        null,
-                        2,
-                      )}
-                    </div>
-                  ) : (
-                    <div>No transcript available</div>
-                  )}
+                  <div>
+                    Received at:{' '}
+                    {lastVoiceMessage?.receivedAt.toTimeString() ?? 'n/a'}
+                  </div>
+
+                  <textarea
+                    className={
+                      'w-full bg-neutral-800 font-mono text-sm text-white'
+                    }
+                    value={JSON.stringify(lastVoiceMessage)}
+                    readOnly
+                  ></textarea>
+                </div>
+
+                <div>
+                  <div className={'text-sm font-medium uppercase'}>
+                    Last user message
+                  </div>
+                  <div>
+                    Received at:{' '}
+                    {lastUserMessage?.receivedAt.toTimeString() ?? 'n/a'}
+                  </div>
+                  <textarea
+                    className={
+                      'w-full bg-neutral-800 font-mono text-sm text-white'
+                    }
+                    value={JSON.stringify(lastUserMessage)}
+                    readOnly
+                  ></textarea>
                 </div>
               </>
             ))
