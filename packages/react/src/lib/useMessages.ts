@@ -1,36 +1,37 @@
-import { type Hume } from 'hume';
 import { useCallback, useState } from 'react';
 
 import type { ConnectionMessage } from './connection-message';
+import type {
+  AssistantTranscriptMessage,
+  ChatMetadataMessage,
+  JSONMessage,
+  UserTranscriptMessage,
+} from '../models/messages';
 import { keepLastN } from '../utils';
 
 export const useMessages = ({
   sendMessageToParent,
   messageHistoryLimit,
 }: {
-  sendMessageToParent?: (
-    message: Hume.empathicVoice.JsonMessage & { receivedAt: Date },
-  ) => void;
+  sendMessageToParent?: (message: JSONMessage) => void;
   messageHistoryLimit: number;
 }) => {
   const [voiceMessageMap, setVoiceMessageMap] = useState<
-    Record<string, Hume.empathicVoice.AssistantMessage & { receivedAt: Date }>
+    Record<string, AssistantTranscriptMessage>
   >({});
 
   const [messages, setMessages] = useState<
-    Array<
-      | (Hume.empathicVoice.JsonMessage & { receivedAt: Date })
-      | ConnectionMessage
-    >
+    Array<JSONMessage | ConnectionMessage>
   >([]);
 
   const [lastVoiceMessage, setLastVoiceMessage] =
-    useState<Hume.empathicVoice.AssistantMessage | null>(null);
+    useState<AssistantTranscriptMessage | null>(null);
   const [lastUserMessage, setLastUserMessage] =
-    useState<Hume.empathicVoice.UserMessage | null>(null);
+    useState<UserTranscriptMessage | null>(null);
 
-  const [chatMetadata, setChatMetadata] =
-    useState<Hume.empathicVoice.ChatMetadata | null>(null);
+  const [chatMetadata, setChatMetadata] = useState<ChatMetadataMessage | null>(
+    null,
+  );
 
   const createConnectMessage = useCallback(() => {
     setMessages((prev) =>
@@ -55,7 +56,7 @@ export const useMessages = ({
   }, []);
 
   const onMessage = useCallback(
-    (message: Hume.empathicVoice.JsonMessage & { receivedAt: Date }) => {
+    (message: JSONMessage) => {
       /* 
       1. message comes in from the backend
         - if the message IS NOT AssistantTranscriptMessage, store in `messages` immediately  

@@ -1,26 +1,20 @@
-import type { Hume } from 'hume';
 import { useCallback, useState } from 'react';
+
+import type { ToolCall, ToolError, ToolResponse } from '../models/messages';
 
 export const useToolStatus = () => {
   const [store, setStore] = useState<
     Record<
       string,
       {
-        call?: Hume.empathicVoice.ToolCallMessage;
-        resolved?:
-          | Hume.empathicVoice.ToolResponseMessage
-          | Hume.empathicVoice.ToolErrorMessage;
+        call?: ToolCall;
+        resolved?: ToolResponse | ToolError;
       }
     >
   >({});
 
   const addToStore = useCallback(
-    (
-      message:
-        | Hume.empathicVoice.ToolCallMessage
-        | Hume.empathicVoice.ToolResponseMessage
-        | Hume.empathicVoice.ToolErrorMessage,
-    ) => {
+    (message: ToolCall | ToolResponse | ToolError) => {
       setStore((prev) => {
         const entry = {
           ...prev[message.toolCallId],

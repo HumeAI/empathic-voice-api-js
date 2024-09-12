@@ -1,5 +1,4 @@
 import { act, renderHook } from '@testing-library/react';
-import type { Hume } from 'hume';
 import { describe, expect, it } from 'vitest';
 
 import { useToolStatus } from './useToolStatus';
@@ -10,13 +9,14 @@ describe('useToolStatus', () => {
 
     const toolId = 'tool-id-abc-123';
 
-    const toolCall: Hume.empathicVoice.ToolCallMessage = {
-      type: 'tool_call',
+    const toolCall = {
+      type: 'tool_call' as const,
       toolCallId: toolId,
       name: 'tool_name',
       parameters: '{}',
-      toolType: 'function',
+      toolType: 'function' as const,
       responseRequired: true,
+      receivedAt: new Date(1),
     };
 
     act(() => {
@@ -27,10 +27,11 @@ describe('useToolStatus', () => {
     expect(hook.result.current.store[toolId]?.call).toMatchObject(toolCall);
     expect(hook.result.current.store[toolId]?.resolved).toBeUndefined();
 
-    const toolResponse: Hume.empathicVoice.ToolResponseMessage = {
-      type: 'tool_response',
+    const toolResponse = {
+      type: 'tool_response' as const,
       toolCallId: toolId,
       content: '',
+      receivedAt: new Date(1),
     };
 
     act(() => {

@@ -3,6 +3,11 @@ import { useCallback, useRef, useState } from 'react';
 import { type Simplify } from 'type-fest';
 
 import { type AuthStrategy } from './auth';
+import type {
+  AudioOutputMessage,
+  JSONMessage,
+  ToolCall,
+} from '../models/messages';
 
 const isNever = (_n: never) => {
   return;
@@ -23,7 +28,7 @@ export enum VoiceReadyState {
 export type ToolCallHandler = (
   // message will always be a tool call message where toolType === 'function'
   message: Simplify<
-    Hume.empathicVoice.ToolCallMessage & {
+    ToolCall & {
       // caveat: this doesn't actually do what it appears to, since ToolType is
       // exported as both an interface and a value, this ends up being a constant
       // that doesn't share an type identity with the actual ToolType enum
@@ -44,10 +49,8 @@ export type ToolCallHandler = (
 >;
 
 export const useVoiceClient = (props: {
-  onAudioMessage?: (message: Hume.empathicVoice.AudioOutput) => void;
-  onMessage?: (
-    message: Hume.empathicVoice.JsonMessage & { receivedAt: Date },
-  ) => void;
+  onAudioMessage?: (message: AudioOutputMessage) => void;
+  onMessage?: (message: JSONMessage) => void;
   onToolCall?: ToolCallHandler;
   onError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
@@ -230,6 +233,8 @@ export const useVoiceClient = (props: {
 
   const sendToolMessage = useCallback(
     (
+      // type definitions for toolMessage come from the Hume SDK because messages that are sent from the client
+      // to the backend do not have the extended `receivedAt` field
       toolMessage:
         | Hume.empathicVoice.ToolResponseMessage
         | Hume.empathicVoice.ToolErrorMessage,

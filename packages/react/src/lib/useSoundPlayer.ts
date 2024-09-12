@@ -1,8 +1,9 @@
-import { convertBase64ToBlob, type Hume } from 'hume';
+import { convertBase64ToBlob } from 'hume';
 import { useCallback, useRef, useState } from 'react';
 
 import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
+import type { AudioOutputMessage } from '../models/messages';
 
 export const useSoundPlayer = (props: {
   onError: (message: string) => void;
@@ -128,7 +129,7 @@ export const useSoundPlayer = (props: {
   }, []);
 
   const addToQueue = useCallback(
-    async (message: Hume.empathicVoice.AudioOutput) => {
+    async (message: AudioOutputMessage) => {
       if (!isInitialized.current || !audioContext.current) {
         onError.current('Audio player has not been initialized');
         return;

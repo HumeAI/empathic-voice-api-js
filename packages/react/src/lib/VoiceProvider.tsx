@@ -25,6 +25,13 @@ import {
   useVoiceClient,
   type VoiceReadyState,
 } from './useVoiceClient';
+import {
+  AssistantTranscriptMessage,
+  AudioOutputMessage,
+  ChatMetadataMessage,
+  JSONMessage,
+  UserTranscriptMessage,
+} from '../models/messages';
 
 type VoiceError =
   | { type: 'socket_error'; message: string; error?: Error }
@@ -48,12 +55,9 @@ export type VoiceContextType = {
   isMuted: boolean;
   isAudioMuted: boolean;
   isPlaying: boolean;
-  messages: (
-    | (Hume.empathicVoice.JsonMessage & { receivedAt: Date })
-    | ConnectionMessage
-  )[];
-  lastVoiceMessage: Hume.empathicVoice.AssistantMessage | null;
-  lastUserMessage: Hume.empathicVoice.UserMessage | null;
+  messages: (JSONMessage | ConnectionMessage)[];
+  lastVoiceMessage: AssistantTranscriptMessage | null;
+  lastUserMessage: UserTranscriptMessage | null;
   clearMessages: () => void;
   mute: () => void;
   unmute: () => void;
@@ -79,7 +83,7 @@ export type VoiceContextType = {
   isSocketError: boolean;
   callDurationTimestamp: string | null;
   toolStatusStore: ReturnType<typeof useToolStatus>['store'];
-  chatMetadata: Hume.empathicVoice.ChatMetadata | null;
+  chatMetadata: ChatMetadataMessage | null;
   playerQueueLength: number;
 };
 
@@ -87,9 +91,7 @@ const VoiceContext = createContext<VoiceContextType | null>(null);
 
 export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
   sessionSettings?: Hume.empathicVoice.SessionSettings;
-  onMessage?: (
-    message: Hume.empathicVoice.JsonMessage & { receivedAt: Date },
-  ) => void;
+  onMessage?: (message: JSONMessage) => void;
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
@@ -185,11 +187,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
   const client = useVoiceClient({
-    onAudioMessage: (message: Hume.empathicVoice.AudioOutput) => {
+    onAudioMessage: (message: AudioOutputMessage) => {
       player.addToQueue(message);
     },
     onMessage: useCallback(
-      (message: Hume.empathicVoice.JsonMessage & { receivedAt: Date }) => {
+      (message: JSONMessage) => {
         // store message
         messageStore.onMessage(message);
 
