@@ -233,17 +233,20 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const mic = useMicrophone({
     streamRef,
-    onAudioCaptured: useCallback((arrayBuffer) => {
-      try {
-        if (client.readyState !== 'open') {
-          throw new Error('Socket is not open');
+    onAudioCaptured: useCallback(
+      (arrayBuffer) => {
+        try {
+          if (client.readyState !== 'open') {
+            throw new Error('Socket is not open');
+          }
+          client.sendAudio(arrayBuffer);
+        } catch (e) {
+          const message = e instanceof Error ? e.message : 'Unknown error';
+          updateError({ type: 'socket_error', message });
         }
-        client.sendAudio(arrayBuffer);
-      } catch (e) {
-        const message = e instanceof Error ? e.message : 'Unknown error';
-        updateError({ type: 'socket_error', message });
-      }
-    }, [client.readyState]),
+      },
+      [client.readyState],
+    ),
     onError: useCallback(
       (message) => {
         updateError({ type: 'mic_error', message });
@@ -368,12 +371,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       disconnectFromVoice();
     }
   }, [status.value, disconnect, disconnectFromVoice, error]);
-
-  useEffect(() => {
-    if (error === null && client.readyState === 'closed') {
-      disconnectFromVoice();
-    }
-  }, [client.readyState]);
 
   useEffect(() => {
     // disconnect from socket when the voice provider component unmounts

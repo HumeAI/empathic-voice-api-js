@@ -220,28 +220,37 @@ export const useVoiceClient = (props: {
     [readyState],
   );
 
-  const sendAudio = useCallback((arrayBuffer: ArrayBufferLike) => {
-    if (readyState !== VoiceReadyState.OPEN) {
-      throw new Error('Socket is not open');
-    }
-    client.current?.socket?.send(arrayBuffer);
-  }, [readyState]);
+  const sendAudio = useCallback(
+    (arrayBuffer: ArrayBufferLike) => {
+      if (readyState !== VoiceReadyState.OPEN) {
+        throw new Error('Socket is not open');
+      }
+      client.current?.socket?.send(arrayBuffer);
+    },
+    [readyState],
+  );
 
-  const sendUserInput = useCallback((text: string) => {
-    if (readyState !== VoiceReadyState.OPEN) {
-      throw new Error('Socket is not open');
-    }
-    client.current?.sendUserInput(text);
-  }, [readyState]);
+  const sendUserInput = useCallback(
+    (text: string) => {
+      if (readyState !== VoiceReadyState.OPEN) {
+        throw new Error('Socket is not open');
+      }
+      client.current?.sendUserInput(text);
+    },
+    [readyState],
+  );
 
-  const sendAssistantInput = useCallback((text: string) => {
-    if (readyState !== VoiceReadyState.OPEN) {
-      throw new Error('Socket is not open');
-    }
-    client.current?.sendAssistantInput({
-      text,
-    });
-  }, [readyState]);
+  const sendAssistantInput = useCallback(
+    (text: string) => {
+      if (readyState !== VoiceReadyState.OPEN) {
+        throw new Error('Socket is not open');
+      }
+      client.current?.sendAssistantInput({
+        text,
+      });
+    },
+    [readyState],
+  );
 
   const sendToolMessage = useCallback(
     (
