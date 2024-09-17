@@ -23,7 +23,7 @@ import {
   SocketConfig,
   ToolCallHandler,
   useVoiceClient,
-  type VoiceReadyState,
+  VoiceReadyState,
 } from './useVoiceClient';
 import {
   AssistantTranscriptMessage,
@@ -332,7 +332,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, [client, config, getStream, mic, player, sessionSettings, updateError]);
 
   const disconnectFromVoice = useCallback(() => {
-    client.disconnect();
+    if (client.readyState !== VoiceReadyState.CLOSED) {
+      client.disconnect();
+    }
     player.stopAll();
     mic.stop();
     if (clearMessagesOnDisconnect) {
