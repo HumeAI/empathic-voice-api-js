@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://storage.googleapis.com/hume-public-logos/hume/hume-banner.png">
-  <h1>Hume AI EVI React SDK</h1>
+  <h1>@humeai/voice-react</h1>
   <p>
     <strong>Integrate Hume's Empathic Voice Interface in your React application</strong>
   </p>
@@ -8,9 +8,15 @@
 
 ## Overview
 
-This is the React SDK for Hume's Empathic Voice Interface, making it easy to integrate the voice API into your own front-end application. The SDK abstracts the complexities of managing websocket connections, capturing user audio via the client's microphone, and handling the playback of the interface's audio responses.
+This package streamlines all of the required state management for building client side applications using the [EVI Chat WebSocket](https://dev.hume.ai/reference/empathic-voice-interface-evi/chat/chat) through a `<VoiceProvider>` component and `useVoice()` hook. It provides a WebSocket, Microphone Interface, Audio Playback Queue, and Message History that are all designed to work closely together.
+
+> [!NOTE]
+> This package uses Web APIs for microphone input and audio playback that are not compatible with React Native.
 
 ## Prerequisites
+
+> [!IMPORTANT]
+> This package is built for use within modern web based React applications using a bundler like `Next.js`, `Webpack`, or `Vite`
 
 Before installing this package, please ensure your development environment meets the following requirement:
 
@@ -45,22 +51,18 @@ import { VoiceProvider } from '@humeai/voice-react';
 To use the SDK, wrap your components in the `VoiceProvider`, which will enable your components to access available voice methods. Here's a simple example to get you started:
 
 ```tsx
-import React, { useState } from 'react';
-import { EmbeddedVoice } from '@humeai/voice-react';
+import { VoiceProvider } from '@humeai/voice-react';
 
 function App() {
-  const apiKey = process.env.HUME_API_KEY || '';
-  const [isEmbedOpen, setIsEmbedOpen] = useState(false);
+  const apiKey = process.env.HUME_API_KEY;
 
   return (
-    <>
-      <VoiceProvider
-        auth={{ type: 'apiKey', value: apiKey }}
-        hostname={process.env.HUME_VOICE_HOSTNAME || 'api.hume.ai'}
-      >
-        <ExampleComponent />
-      </VoiceProvider>
-    </>
+    <VoiceProvider
+      auth={{ type: 'apiKey', value: apiKey }}
+      configId={/* Optional: Your EVI Configuration ID */}
+    >
+      {/* ... */}
+    </VoiceProvider>
   );
 }
 ```
@@ -89,32 +91,39 @@ The table below outlines the props accepted by `VoiceProvider`:
 
 After you have set up your voice provider, you will be able to access various properties and methods to use the voice in your application. In any component that is a child of `VoiceProvider`, access these methods by importing the `useVoice` custom hook.
 
-```jsx
-// ExampleComponent is nested within VoiceProvider
+For example, to include a button to start a call, you could create a button like this:
+
+```tsx
 import { useVoice } from '@humeai/voice-react';
 
-export const ExampleComponent = () => {
+export function StartCallButton () {
   const { connect } = useVoice();
+
+  return (
+    <button onClick={() => connect()}>
+      Start Call
+    </button>
+  )
 };
 ```
 
 ### Methods
 
-| Method                                                              | Usage                                                                                                                               |
-| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `connect: () => Promise`                                            | Opens a socket connection to the voice API and initializes the microphone.                                                          |
-| `disconnect: () => void`                                            | Disconnect from the voice API and microphone.                                                                                       |
-| `clearMessages: () => void`                                         | Clear transcript messages from history.                                                                                             |
-| `mute: () => void`                                                  | Mute the microphone                                                                                                                 |
-| `unmute: () => void`                                                | Unmute the microphone                                                                                                               |
-| `muteAudio: () => void`                                             | Mute the assistant audio                                                                                                            |
-| `unmuteAudio: () => void`                                           | Unmute the assistant audio                                                                                                          |
-| `sendSessionSettings: (text: string) => void`                       | Send new session settings to the assistant. This overrides any session settings that were passed as props to the VoiceProvider.     |
-| `sendUserInput: (text: string) => void`                             | Send a user input message.                                                                                                          |
-| `sendAssistantInput: (text: string) => void`                        | Send a text string for the assistant to read out loud.                                                                              |
-| `sendToolMessage: (toolMessage: ToolResponse \| ToolError) => void` | Send a tool response or tool error message to the EVI backend.                                                                      |
-| `pauseAssistant: () => void`                             | Pauses responses from EVI. Chat history is still saved and sent after resuming. |
-| `resumeAssistant: () => void`                            | Resumes responses from EVI. Chat history sent while paused will now be sent.   |
+| Method                                                              | Usage                                                                                                                           |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `connect: () => Promise`                                            | Opens a socket connection to the voice API and initializes the microphone.                                                      |
+| `disconnect: () => void`                                            | Disconnect from the voice API and microphone.                                                                                   |
+| `clearMessages: () => void`                                         | Clear transcript messages from history.                                                                                         |
+| `mute: () => void`                                                  | Mute the microphone                                                                                                             |
+| `unmute: () => void`                                                | Unmute the microphone                                                                                                           |
+| `muteAudio: () => void`                                             | Mute the assistant audio                                                                                                        |
+| `unmuteAudio: () => void`                                           | Unmute the assistant audio                                                                                                      |
+| `sendSessionSettings: (text: string) => void`                       | Send new session settings to the assistant. This overrides any session settings that were passed as props to the VoiceProvider. |
+| `sendUserInput: (text: string) => void`                             | Send a user input message.                                                                                                      |
+| `sendAssistantInput: (text: string) => void`                        | Send a text string for the assistant to read out loud.                                                                          |
+| `sendToolMessage: (toolMessage: ToolResponse \| ToolError) => void` | Send a tool response or tool error message to the EVI backend.                                                                  |
+| `pauseAssistant: () => void`                                        | Pauses responses from EVI. Chat history is still saved and sent after resuming.                                                 |
+| `resumeAssistant: () => void`                                       | Resumes responses from EVI. Chat history sent while paused will now be sent.                                                    |
 
 ### Properties
 
@@ -139,7 +148,7 @@ export const ExampleComponent = () => {
 | `callDurationTimestamp` | `string` or `null`                                                                                                           | The length of a call. This value persists after the conversation has ended.                                                                                                                                                           |
 | `toolStatusStore`       | `Record<string, { call?: ToolCall; resolved?: ToolResponse \| ToolError }>`                                                  | A map of tool call IDs to their associated tool messages.                                                                                                                                                                             |
 | `chatMetadata`          | `ChatMetadataMessage` or `null`                                                                                              | Metadata about the current chat, including chat ID, chat group ID, and request ID.                                                                                                                                                    |
-| `playerQueueLength`          | `number`                                                                                              | The number of assistant audio clips that are queued up, including the clip that is currently playing.                                                                                                                                                    |
+| `playerQueueLength`     | `number`                                                                                                                     | The number of assistant audio clips that are queued up, including the clip that is currently playing.                                                                                                                                 |
 
 ## Support
 
