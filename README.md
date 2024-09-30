@@ -8,19 +8,21 @@
 
 ## Getting started
 
-This repository contains several Typescript SDKs for the Hume Empathic Voice Interface.
+This monorepo contains multiple packages for using the Hume Empathic Voice Interface within browser based web applications.
 
-EVI API
+| Package | Version | README | npm URL |
+| :--- | :--- | :--- | :--- |
+| [@humeai/voice-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react) | ![https://img.shields.io/npm/v/%40humeai%2Fvoice-react](https://img.shields.io/npm/v/%40humeai%2Fvoice-react) | [README](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react/README.md) | <https://npmjs.com/package/@humeai/voice-react> |
+| [@humeai/voice-embed](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed) |  ![https://img.shields.io/npm/v/%40humeai%2Fvoice-embed](https://img.shields.io/npm/v/%40humeai%2Fvoice-embed)| [README](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed/README.md) | <https://npmjs.com/package/@humeai/voice-embed> |
+| [@humeai/voice-embed-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react) |  ![https://img.shields.io/npm/v/%40humeai%2Fvoice-embed-react](https://img.shields.io/npm/v/%40humeai%2Fvoice-embed-react)| [README](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react/README.md) | <https://npmjs.com/package/@humeai/voice-embed-react> |
 
-- [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/core](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/core)
-- [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react)
+> [!IMPORTANT]  
+> `@humeai/voice` has been deprecated and replaced with `hume`
+>
+> - GitHub: <https://github.com/humeai/hume-typescript-sdk>
+> - npm: <https://npmjs.com/package/hume>
 
-Embedded Widget
-
-- [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react)
-- [https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed)
-
-Aside from the Typescript SDKs, you may visit [our documentation page](https://dev.hume.ai/docs/empathic-voice-interface-evi/overview) for guides on how to use the EVI API.
+More information on how to use the EVI API may be found in [our documentation site](https://dev.hume.ai/docs/empathic-voice-interface-evi/overview).
 
 ## Example applications
 

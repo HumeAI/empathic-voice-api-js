@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://storage.googleapis.com/hume-public-logos/hume/hume-banner.png">
-  <h1>Hume AI Voice Embed SDK</h1>
+  <h1>@humeai/voice-embed</h1>
   <p>
     <strong>Integrate Hume's Empathic Voice Interface directly into your web application</strong>
   </p>
