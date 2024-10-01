@@ -212,48 +212,45 @@ export const useVoiceClient = (props: {
 
   const sendSessionSettings = useCallback(
     (sessionSettings: Hume.empathicVoice.SessionSettings) => {
-      if (
-        client.current?.readyState &&
-        client.current?.readyState !== WebSocket.OPEN
-      ) {
+      if (readyState !== VoiceReadyState.OPEN) {
         throw new Error('Socket is not open');
       }
       client.current?.sendSessionSettings(sessionSettings);
     },
-    [],
+    [readyState],
   );
 
-  const sendAudio = useCallback((arrayBuffer: ArrayBufferLike) => {
-    if (
-      client.current?.readyState &&
-      client.current?.readyState !== WebSocket.OPEN
-    ) {
-      throw new Error('Socket is not open');
-    }
-    client.current?.socket?.send(arrayBuffer);
-  }, []);
+  const sendAudio = useCallback(
+    (arrayBuffer: ArrayBufferLike) => {
+      if (readyState !== VoiceReadyState.OPEN) {
+        throw new Error('Socket is not open');
+      }
+      client.current?.socket?.send(arrayBuffer);
+    },
+    [readyState],
+  );
 
-  const sendUserInput = useCallback((text: string) => {
-    if (
-      client.current?.readyState &&
-      client.current?.readyState !== WebSocket.OPEN
-    ) {
-      throw new Error('Socket is not open');
-    }
-    client.current?.sendUserInput(text);
-  }, []);
+  const sendUserInput = useCallback(
+    (text: string) => {
+      if (readyState !== VoiceReadyState.OPEN) {
+        throw new Error('Socket is not open');
+      }
+      client.current?.sendUserInput(text);
+    },
+    [readyState],
+  );
 
-  const sendAssistantInput = useCallback((text: string) => {
-    if (
-      client.current?.readyState &&
-      client.current?.readyState !== WebSocket.OPEN
-    ) {
-      throw new Error('Socket is not open');
-    }
-    client.current?.sendAssistantInput({
-      text,
-    });
-  }, []);
+  const sendAssistantInput = useCallback(
+    (text: string) => {
+      if (readyState !== VoiceReadyState.OPEN) {
+        throw new Error('Socket is not open');
+      }
+      client.current?.sendAssistantInput({
+        text,
+      });
+    },
+    [readyState],
+  );
 
   const sendToolMessage = useCallback(
     (
@@ -263,10 +260,7 @@ export const useVoiceClient = (props: {
         | Hume.empathicVoice.ToolResponseMessage
         | Hume.empathicVoice.ToolErrorMessage,
     ) => {
-      if (
-        client.current?.readyState &&
-        client.current?.readyState !== WebSocket.OPEN
-      ) {
+      if (readyState !== VoiceReadyState.OPEN) {
         throw new Error('Socket is not open');
       }
       if (toolMessage.type === 'tool_error') {
@@ -275,30 +269,21 @@ export const useVoiceClient = (props: {
         client.current?.sendToolResponseMessage(toolMessage);
       }
     },
-    [],
+    [readyState],
   );
 
   const sendPauseAssistantMessage = useCallback(() => {
-    if (
-      client.current?.readyState &&
-      client.current?.readyState !== WebSocket.OPEN
-    ) {
+    if (readyState !== VoiceReadyState.OPEN) {
       throw new Error('Socket is not open');
     }
     client.current?.pauseAssistant({});
-  }, []);
-
+  }, [readyState]);
   const sendResumeAssistantMessage = useCallback(() => {
-    if (
-      client.current?.readyState &&
-      client.current?.readyState !== WebSocket.OPEN
-    ) {
+    if (readyState !== VoiceReadyState.OPEN) {
       throw new Error('Socket is not open');
     }
     client.current?.resumeAssistant({});
-  }, []);
-
-  console.log('client.current.readyState', client.current?.readyState);
+  }, [readyState]);
 
   return {
     readyState,

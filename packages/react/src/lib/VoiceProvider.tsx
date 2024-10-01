@@ -252,24 +252,35 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     ),
   });
 
+  const {
+    sendUserInput: clientSendUserInput,
+    sendAssistantInput: clientSendAssistantInput,
+    sendSessionSettings: clientSendSessionSettings,
+    sendToolMessage: clientSendToolMessage,
+    sendPauseAssistantMessage,
+    sendResumeAssistantMessage,
+  } = client;
+
+  const { clearQueue } = player;
+
   const pauseAssistant = useCallback(() => {
     try {
-      client.sendPauseAssistantMessage();
+      sendPauseAssistantMessage();
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       updateError({ type: 'socket_error', message });
     }
-    player.clearQueue();
-  }, [client, player, updateError]);
+    clearQueue();
+  }, [sendPauseAssistantMessage, clearQueue, updateError]);
 
   const resumeAssistant = useCallback(() => {
     try {
-      client.sendResumeAssistantMessage();
+      sendResumeAssistantMessage();
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       updateError({ type: 'socket_error', message });
     }
-  }, [client, updateError]);
+  }, [sendResumeAssistantMessage, updateError]);
 
   const connect = useCallback(async () => {
     updateError(null);
@@ -392,37 +403,37 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const sendUserInput = useCallback(
     (text: string) => {
       try {
-        client?.sendUserInput(text);
+        clientSendUserInput(text);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
         updateError({ type: 'socket_error', message });
       }
     },
-    [client, updateError],
+    [clientSendUserInput, updateError],
   );
 
   const sendAssistantInput = useCallback(
     (text: string) => {
       try {
-        client?.sendAssistantInput(text);
+        clientSendAssistantInput(text);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
         updateError({ type: 'socket_error', message });
       }
     },
-    [client, updateError],
+    [clientSendAssistantInput, updateError],
   );
 
   const sendSessionSettings = useCallback(
     (sessionSettings: Hume.empathicVoice.SessionSettings) => {
       try {
-        client.sendSessionSettings(sessionSettings);
+        clientSendSessionSettings(sessionSettings);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
         updateError({ type: 'socket_error', message });
       }
     },
-    [client, updateError],
+    [clientSendSessionSettings, updateError],
   );
 
   const sendToolMessage = useCallback(
@@ -432,13 +443,13 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         | Hume.empathicVoice.ToolErrorMessage,
     ) => {
       try {
-        client.sendToolMessage(message);
+        clientSendToolMessage(message);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
         updateError({ type: 'socket_error', message });
       }
     },
-    [client, updateError],
+    [clientSendToolMessage, updateError],
   );
 
   const ctx = useMemo(
