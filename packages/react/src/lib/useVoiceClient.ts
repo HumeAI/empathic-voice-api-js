@@ -212,11 +212,8 @@ export const useVoiceClient = (props: {
 
   const sendSessionSettings = useCallback(
     (sessionSettings: Hume.empathicVoice.SessionSettings) => {
-      if (
-        readyState !== VoiceReadyState.OPEN &&
-        readyState !== VoiceReadyState.IDLE
-      ) {
-        throw new Error('Socket is not open nor idle');
+      if (readyState !== VoiceReadyState.OPEN) {
+        throw new Error('Socket is not open');
       }
       client.current?.sendSessionSettings(sessionSettings);
     },

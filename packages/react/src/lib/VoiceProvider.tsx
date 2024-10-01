@@ -231,18 +231,28 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     onToolCall: props.onToolCall,
   });
 
+  const {
+    sendAudio: clientSendAudio,
+    sendUserInput: clientSendUserInput,
+    sendAssistantInput: clientSendAssistantInput,
+    sendSessionSettings: clientSendSessionSettings,
+    sendToolMessage: clientSendToolMessage,
+    sendPauseAssistantMessage,
+    sendResumeAssistantMessage,
+  } = client;
+
   const mic = useMicrophone({
     streamRef,
     onAudioCaptured: useCallback(
       (arrayBuffer) => {
         try {
-          client.sendAudio(arrayBuffer);
+          clientSendAudio(arrayBuffer);
         } catch (e) {
           const message = e instanceof Error ? e.message : 'Unknown error';
           updateError({ type: 'socket_error', message });
         }
       },
-      [client, updateError],
+      [clientSendAudio, updateError],
     ),
     onError: useCallback(
       (message) => {
@@ -251,15 +261,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       [updateError],
     ),
   });
-
-  const {
-    sendUserInput: clientSendUserInput,
-    sendAssistantInput: clientSendAssistantInput,
-    sendSessionSettings: clientSendSessionSettings,
-    sendToolMessage: clientSendToolMessage,
-    sendPauseAssistantMessage,
-    sendResumeAssistantMessage,
-  } = client;
 
   const { clearQueue } = player;
 
@@ -297,18 +298,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
 
     try {
-      await client
-        .connect({
-          ...config,
-        })
-        .then(() => {
-          if (
-            sessionSettings !== undefined &&
-            Object.keys(sessionSettings).length > 0
-          ) {
-            client.sendSessionSettings(sessionSettings);
-          }
-        });
+      await client.connect({
+        ...config,
+      });
     } catch (e) {
       const error: VoiceError = {
         type: 'socket_error',
@@ -435,6 +427,16 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
     [clientSendSessionSettings, updateError],
   );
+
+  useEffect(() => {
+    if (
+      client.readyState === VoiceReadyState.OPEN &&
+      sessionSettings !== undefined &&
+      Object.keys(sessionSettings).length > 0
+    ) {
+      clientSendSessionSettings(sessionSettings);
+    }
+  }, [client.readyState, clientSendSessionSettings, sessionSettings]);
 
   const sendToolMessage = useCallback(
     (
