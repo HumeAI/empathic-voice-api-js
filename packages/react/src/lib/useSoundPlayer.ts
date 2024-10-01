@@ -39,18 +39,19 @@ export const useSoundPlayer = (props: {
   onError.current = props.onError;
 
   const playNextClip = useCallback(() => {
-    setQueueLength(clipQueue.current.length);
-
     if (analyserNode.current === null || audioContext.current === null) {
       onError.current('Audio environment is not initialized');
       return;
     }
 
     if (clipQueue.current.length === 0 || isProcessing.current) {
+      setQueueLength(0);
       return;
     }
 
     const nextClip = clipQueue.current.shift();
+    setQueueLength(clipQueue.current.length);
+
     if (!nextClip) return;
 
     isProcessing.current = true;
@@ -193,6 +194,7 @@ export const useSoundPlayer = (props: {
     }
 
     clipQueue.current = [];
+    setQueueLength(0);
     setFft(generateEmptyFft());
   }, []);
 
@@ -203,6 +205,7 @@ export const useSoundPlayer = (props: {
     }
 
     clipQueue.current = [];
+    setQueueLength(0);
     isProcessing.current = false;
     setIsPlaying(false);
     setFft(generateEmptyFft());
