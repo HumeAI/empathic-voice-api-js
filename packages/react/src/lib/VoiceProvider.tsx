@@ -242,7 +242,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           updateError({ type: 'socket_error', message });
         }
       },
-      [client.readyState],
+      [client, updateError],
     ),
     onError: useCallback(
       (message) => {
@@ -260,7 +260,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       updateError({ type: 'socket_error', message });
     }
     player.clearQueue();
-  }, [client, player]);
+  }, [client, player, updateError]);
 
   const resumeAssistant = useCallback(() => {
     try {
@@ -269,7 +269,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       const message = e instanceof Error ? e.message : 'Unknown error';
       updateError({ type: 'socket_error', message });
     }
-  }, [client]);
+  }, [client, updateError]);
 
   const connect = useCallback(async () => {
     updateError(null);
