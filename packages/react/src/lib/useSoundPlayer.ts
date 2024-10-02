@@ -146,6 +146,7 @@ export const useSoundPlayer = (props: {
           id: message.id,
           buffer: audioBuffer,
         });
+        setQueueLength(clipQueue.current.length);
 
         // playNextClip will iterate the clipQueue upon finishing the playback of the current audio clip, so we can
         // just call playNextClip here if it's the only one in the queue
