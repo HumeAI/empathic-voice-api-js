@@ -223,7 +223,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     >(
       (event) => {
         stopTimer();
-        messageStore.createDisconnectMessage();
+        messageStore.createDisconnectMessage(event);
         onClose.current?.(event);
       },
       [messageStore, stopTimer],

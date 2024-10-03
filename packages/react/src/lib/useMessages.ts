@@ -1,3 +1,4 @@
+import type { CloseEvent } from 'hume/core';
 import { useCallback, useState } from 'react';
 
 import type { ConnectionMessage } from './connection-message';
@@ -44,11 +45,13 @@ export const useMessages = ({
     );
   }, []);
 
-  const createDisconnectMessage = useCallback(() => {
+  const createDisconnectMessage = useCallback((event: CloseEvent) => {
     setMessages((prev) =>
       prev.concat([
         {
           type: 'socket_disconnected',
+          code: event.code,
+          reason: event.reason,
           receivedAt: new Date(),
         },
       ]),
