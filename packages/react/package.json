@@ -39,6 +39,7 @@
     "@humeai/typescript-config": "workspace:*",
     "@testing-library/react": "^14.2.1",
     "@testing-library/react-hooks": "^8.0.1",
+    "@total-typescript/shoehorn": "^0.1.2",
     "@types/eslint": "^8.56.2",
     "@types/meyda": "^4.3.8",
     "@types/node": "^20.11.19",
