@@ -69,23 +69,87 @@ function App() {
 
 ### Configuring VoiceProvider
 
-The table below outlines the props accepted by `VoiceProvider`:
+See a complete list of props accepted by `VoiceProvider` below:
 
-| Prop                      | Required | Description                                                                                                                                                                                                                                                                 |
-| ------------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| auth                      | yes      | Authentication strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`. |
-| hostname                  | no       | Hostname of the Hume API. If not provided this value will default to `"api.hume.ai"`.                                                                                                                                                                                       |
-| reconnectAttempts         | no       | Number of times to attempt to reconnect to the API. If not provided this value will default to `30`.                                                                                                                                                                        |
-| debug                     | no       | Enable debug mode. If not provided this value will default to `false`.                                                                                                                                                                                                      |
-| configId                  | no       | If you have a configuration ID with voice presets, pass the config ID here.                                                                                                                                                                                                 |
-| configVersion             | no       | If you wish to use a specific version of your config, pass in the version ID here.                                                                                                                                                                                          |
-| onMessage                 | no       | Callback function to invoke upon receiving a message through the web socket.                                                                                                                                                                                                |
-| onToolCall                | no       | Callback function to invoke upon receiving a ToolCallMessage through the web socket. It will send the string returned as a the content of a ToolResponseMessage. This is where you should add logic that handles your custom tool calls.                                    |
-| onClose                   | no       | Callback function to invoke upon the web socket connection being closed.                                                                                                                                                                                                    |
-| clearMessagesOnDisconnect | no       | Boolean which indicates whether you want to clear message history when the call ends.                                                                                                                                                                                       |
-| messageHistoryLimit       | no       | Set the number of messages that you wish to keep over the course of the conversation. The default value is 100.                                                                                                                                                             |
-| sessionSettings           | no       | Optional settings where you can set custom values for the session.                                                                                                                                                                                                          |
-| resumedGroupChatId        | no       | Include a chat group ID, which enables the chat to continue from a previous chat group.                                                                                                                                                                                     |
+---
+
+#### `auth` (Required)
+
+Authentication strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`.
+
+---
+
+#### `hostname` (Optional)
+
+Hostname of the Hume API. If not provided this value will default to `"api.hume.ai"`.
+
+---
+
+#### `reconnectAttempts` (Optional)
+
+Number of times to attempt to reconnect to the API. If not provided this value will default to `30`.
+
+---
+
+#### `debug` (Optional)
+
+Enable debug mode. If not provided this value will default to `false`.
+
+---
+
+#### `configId` (Optional)
+
+If you have a configuration ID with voice presets, pass the config ID here.
+
+---
+
+#### `configVersion` (Optional)
+
+If you wish to use a specific version of your config, pass in the version ID here.
+
+---
+
+#### `onMessage` (Optional)
+
+Callback function to invoke upon receiving a message through the web socket.
+
+---
+
+#### `onToolCall` (Optional)
+
+Callback function to invoke upon receiving a ToolCallMessage through the web socket. It will send the string returned as a the content of a ToolResponseMessage. This is where you should add logic that handles your custom tool calls.
+
+---
+
+#### `onClose` (Optional)
+
+Callback function to invoke upon the web socket connection being closed.
+
+---
+
+#### `clearMessagesOnDisconnect` (Optional)
+
+Boolean which indicates whether you want to clear message history when the call ends.
+
+---
+
+#### `messageHistoryLimit` (Optional)
+
+Set the number of messages that you wish to keep over the course of the conversation. The default value is 100.
+
+---
+
+#### `sessionSettings` (Optional)
+
+Optional settings where you can set custom values for the session
+
+---
+
+#### `resumedGroupChatId` (Optional)
+
+Include a chat group ID, which enables the chat to continue from a previous chat group.
+
+---
 
 ## Using the Voice
 
@@ -96,59 +160,212 @@ For example, to include a button to start a call, you could create a button like
 ```tsx
 import { useVoice } from '@humeai/voice-react';
 
-export function StartCallButton () {
+export function StartCallButton() {
   const { connect } = useVoice();
 
-  return (
-    <button onClick={() => connect()}>
-      Start Call
-    </button>
-  )
-};
+  return <button onClick={() => connect()}>Start Call</button>;
+}
 ```
 
 ### Methods
 
-| Method                                                              | Usage                                                                                                                           |
-| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| `connect: () => Promise`                                            | Opens a socket connection to the voice API and initializes the microphone.                                                      |
-| `disconnect: () => void`                                            | Disconnect from the voice API and microphone.                                                                                   |
-| `clearMessages: () => void`                                         | Clear transcript messages from history.                                                                                         |
-| `mute: () => void`                                                  | Mute the microphone                                                                                                             |
-| `unmute: () => void`                                                | Unmute the microphone                                                                                                           |
-| `muteAudio: () => void`                                             | Mute the assistant audio                                                                                                        |
-| `unmuteAudio: () => void`                                           | Unmute the assistant audio                                                                                                      |
-| `sendSessionSettings: (text: string) => void`                       | Send new session settings to the assistant. This overrides any session settings that were passed as props to the VoiceProvider. |
-| `sendUserInput: (text: string) => void`                             | Send a user input message.                                                                                                      |
-| `sendAssistantInput: (text: string) => void`                        | Send a text string for the assistant to read out loud.                                                                          |
-| `sendToolMessage: (toolMessage: ToolResponse \| ToolError) => void` | Send a tool response or tool error message to the EVI backend.                                                                  |
-| `pauseAssistant: () => void`                                        | Pauses responses from EVI. Chat history is still saved and sent after resuming.                                                 |
-| `resumeAssistant: () => void`                                       | Resumes responses from EVI. Chat history sent while paused will now be sent.                                                    |
+---
+
+#### `connect: () => Promise`
+
+Opens a socket connection to the voice API and initializes the microphone.
+
+---
+
+#### `disconnect: () => void`
+
+Disconnect from the voice API and microphone.
+
+---
+
+#### `clearMessages: () => void`
+
+Clear transcript messages from history.
+
+---
+
+#### `mute: () => void`
+
+Mute the microphone
+
+---
+
+#### `unmute: () => void`
+
+Unmute the microphone
+
+---
+
+#### `muteAudio: () => void`
+
+Mute the assistant audio
+
+---
+
+#### `unmuteAudio: () => void`
+
+Unmute the assistant audio
+
+---
+
+#### `sendSessionSettings: (text: string) => void`
+
+Send new session settings to the assistant. This overrides any session settings that were passed as props to the VoiceProvider.
+
+---
+
+#### `sendUserInput: (text: string) => void`
+
+Send a user input message.
+
+---
+
+#### `sendAssistantInput: (text: string) => void`
+
+Send a text string for the assistant to read out loud.
+
+---
+
+#### `sendToolMessage: (toolMessage: ToolResponse \| ToolError) => void`
+
+Send a tool response or tool error message to the EVI backend.
+
+---
+
+#### `pauseAssistant: () => void`
+
+Pauses responses from EVI. Chat history is still saved and sent after resuming.
+
+---
+
+#### `resumeAssistant: () => void`
+
+Resumes responses from EVI. Chat history sent while paused will now be sent.
+
+---
 
 ### Properties
 
-| Property                | Type                                                                                                                         | Description                                                                                                                                                                                                                           |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `isMuted`               | `boolean`                                                                                                                    | Boolean that describes whether the microphone is muted                                                                                                                                                                                |
-| `isAudioMuted`          | `boolean`                                                                                                                    | Boolean that describes whether the assistant audio is muted                                                                                                                                                                           |
-| `isPlaying`             | `boolean`                                                                                                                    | Describes whether the assistant audio is currently playing.                                                                                                                                                                           |
-| `fft`                   | `number[]`                                                                                                                   | Audio FFT values for the assistant audio output.                                                                                                                                                                                      |
-| `micFft`                | `number[]`                                                                                                                   | Audio FFT values for microphone input.                                                                                                                                                                                                |
-| `messages`              | `UserTranscriptMessage`, `AssistantTranscriptMessage`, `ConnectionMessage`, `UserInterruptionMessage`, or `JSONErrorMessage` | Message history of the current conversation.                                                                                                                                                                                          |
-| `lastVoiceMessage`      | `AssistantTranscriptMessage` or `null`                                                                                       | The last transcript message received from the assistant.                                                                                                                                                                              |
-| `lastUserMessage`       | `UserTranscriptMessage` or `null`                                                                                            | The last transcript message received from the user.                                                                                                                                                                                   |
-| `readyState`            | `VoiceReadyState`                                                                                                            | The current readyState of the websocket connection.                                                                                                                                                                                   |
-| `readyState`            | `VoiceReadyState`                                                                                                            | The current readyState of the websocket connection.                                                                                                                                                                                   |
-| `status`                | `VoiceStatus`                                                                                                                | The current status of the voice connection. Informs you of whether the voice is connected, disconnected, connecting, or error. If the voice is in an error state, it will automatically disconnect from the websocket and microphone. |
-| `error`                 | `VoiceError`                                                                                                                 | Provides more detailed error information if the voice is in an error state.                                                                                                                                                           |
-| `isError`               | `boolean`                                                                                                                    | If true, the voice is in an error state.                                                                                                                                                                                              |
-| `isAudioError`          | `boolean`                                                                                                                    | If true, an audio playback error has occurred.                                                                                                                                                                                        |
-| `isMicrophoneError`     | `boolean`                                                                                                                    | If true, a microphone error has occurred.                                                                                                                                                                                             |
-| `isSocketError`         | `boolean`                                                                                                                    | If true, there was an error connecting to the websocket.                                                                                                                                                                              |
-| `callDurationTimestamp` | `string` or `null`                                                                                                           | The length of a call. This value persists after the conversation has ended.                                                                                                                                                           |
-| `toolStatusStore`       | `Record<string, { call?: ToolCall; resolved?: ToolResponse \| ToolError }>`                                                  | A map of tool call IDs to their associated tool messages.                                                                                                                                                                             |
-| `chatMetadata`          | `ChatMetadataMessage` or `null`                                                                                              | Metadata about the current chat, including chat ID, chat group ID, and request ID.                                                                                                                                                    |
-| `playerQueueLength`     | `number`                                                                                                                     | The number of assistant audio clips that are queued up, including the clip that is currently playing.                                                                                                                                 |
+---
+
+#### `isMuted: boolean`
+
+Boolean that describes whether the microphone is muted.
+
+---
+
+#### `isAudioMuted: boolean`
+
+Boolean that describes whether the assistant audio is muted.
+
+---
+
+#### `isPlaying: boolean`
+
+Describes whether the assistant audio is currently playing.
+
+---
+
+#### `fft: number[]`
+
+Audio FFT values for the assistant audio output.
+
+---
+
+#### `micFft: number[]`
+
+Audio FFT values for microphone input.
+
+---
+
+#### `messages: UserTranscriptMessage | AssistantTranscriptMessage | ConnectionMessage | UserInterruptionMessage | JSONErrorMessage`
+
+Message history of the current conversation.
+
+---
+
+#### `lastVoiceMessage: AssistantTranscriptMessage | null`
+
+The last transcript message received from the assistant.
+
+---
+
+#### `lastUserMessage: UserTranscriptMessage | null`
+
+The last transcript message received from the user.
+
+---
+
+#### `readyState: VoiceReadyState`
+
+The current readyState of the websocket connection.
+
+---
+
+#### `status: VoiceStatus`
+
+The current status of the voice connection. Informs you of whether the voice is connected, disconnected, connecting, or error. If the voice is in an error state, it will automatically disconnect from the websocket and microphone.
+
+---
+
+#### `error: VoiceError`
+
+Provides more detailed error information if the voice is in an error state.
+
+---
+
+#### `isError: boolean`
+
+If true, the voice is in an error state.
+
+---
+
+#### `isAudioError: boolean`
+
+If true, an audio playback error has occurred.
+
+---
+
+#### `isMicrophoneError: boolean`
+
+If true, a microphone error has occurred.
+
+---
+
+#### `isSocketError: boolean`
+
+If true, there was an error connecting to the websocket.
+
+---
+
+#### `callDurationTimestamp: string | null`
+
+The length of a call. This value persists after the conversation has ended.
+
+---
+
+#### `toolStatusStore: Record<string, { call?: ToolCall; resolved?: ToolResponse | ToolError }>`
+
+A map of tool call IDs to their associated tool messages.
+
+---
+
+#### `chatMetadata: ChatMetadataMessage | null`
+
+Metadata about the current chat, including chat ID, chat group ID, and request ID.
+
+---
+
+#### `playerQueueLength: number`
+
+The number of assistant audio clips that are queued up, including the clip that is currently playing.
+
+---
 
 ## Support
 
