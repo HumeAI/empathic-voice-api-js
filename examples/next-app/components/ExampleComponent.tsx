@@ -39,24 +39,22 @@ export const ExampleComponent = () => {
     playerQueueLength,
     lastUserMessage,
     lastVoiceMessage,
+    isPaused,
   } = useVoice();
 
   const [textValue, setTextValue] = useState('');
   const [textInputType, setTextInputType] = useState<'user' | 'assistant'>(
     'user',
   );
-  const [paused, setPaused] = useState(false);
 
   const togglePaused = useCallback(() => {
-    if (paused) {
+    if (isPaused) {
       resumeAssistant();
-      setPaused(false);
     } else {
       pauseAssistant();
-      setPaused(true);
     }
-  }, [paused, resumeAssistant, pauseAssistant]);
-  const pausedText = paused ? 'Resume' : 'Pause';
+  }, [isPaused, resumeAssistant, pauseAssistant]);
+  const pausedText = isPaused ? 'Resume' : 'Pause';
 
   const callDuration = (
     <div>

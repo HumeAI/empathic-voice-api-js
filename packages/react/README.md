@@ -207,6 +207,10 @@ Boolean that describes whether the assistant audio is muted.
 
 Describes whether the assistant audio is currently playing.
 
+#### `isPaused: boolean`
+
+Boolean that describes whether the assistant is paused.
+
 #### `fft: number[]`
 
 Audio FFT values for the assistant audio output.
