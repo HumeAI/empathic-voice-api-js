@@ -209,7 +209,7 @@ Describes whether the assistant audio is currently playing.
 
 #### `isPaused: boolean`
 
-Boolean that describes whether the assistant is paused.
+Boolean that describes whether the assistant is paused. When paused, the assistant will still be listening, but will not send a response until it is resumed. 
 
 #### `fft: number[]`
 
