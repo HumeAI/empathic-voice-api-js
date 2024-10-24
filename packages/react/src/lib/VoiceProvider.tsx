@@ -85,6 +85,7 @@ export type VoiceContextType = {
   toolStatusStore: ReturnType<typeof useToolStatus>['store'];
   chatMetadata: ChatMetadataMessage | null;
   playerQueueLength: number;
+  isPaused: boolean;
 };
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
@@ -132,6 +133,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const [status, setStatus] = useState<VoiceStatus>({
     value: 'disconnected',
   });
+
+  const [isPaused, setIsPaused] = useState(false);
 
   // error handling
   const [error, setError] = useState<VoiceError | null>(null);
@@ -267,6 +270,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const pauseAssistant = useCallback(() => {
     try {
       sendPauseAssistantMessage();
+      setIsPaused(true);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       updateError({ type: 'socket_error', message });
@@ -277,6 +281,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const resumeAssistant = useCallback(() => {
     try {
       sendResumeAssistantMessage();
+      setIsPaused(false);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
       updateError({ type: 'socket_error', message });
@@ -332,7 +337,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       };
       updateError(error);
     }
-  }, [client, config, getStream, mic, player, sessionSettings, updateError]);
+  }, [client, config, getStream, mic, player, updateError]);
 
   const disconnectFromVoice = useCallback(() => {
     if (client.readyState !== VoiceReadyState.CLOSED) {
@@ -344,6 +349,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       messageStore.clearMessages();
     }
     toolStatus.clearStore();
+    setIsPaused(false);
   }, [
     client,
     player,
@@ -489,6 +495,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         toolStatusStore: toolStatus.store,
         chatMetadata: messageStore.chatMetadata,
         playerQueueLength: player.queueLength,
+        isPaused,
       }) satisfies VoiceContextType,
     [
       connect,
@@ -523,6 +530,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isSocketError,
       callDurationTimestamp,
       toolStatus.store,
+      isPaused,
     ],
   );
 
