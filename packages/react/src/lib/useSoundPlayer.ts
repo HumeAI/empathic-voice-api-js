@@ -165,6 +165,7 @@ export const useSoundPlayer = (props: {
     isInitialized.current = false;
     isProcessing.current = false;
     setIsPlaying(false);
+    setIsAudioMuted(false);
 
     if (frequencyDataIntervalId.current) {
       window.clearInterval(frequencyDataIntervalId.current);
