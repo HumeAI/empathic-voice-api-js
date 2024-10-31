@@ -169,7 +169,7 @@ Mute the assistant audio
 
 Unmute the assistant audio
 
-#### `sendSessionSettings: (text: string) => void`
+#### `sendSessionSettings: (message: SessionSettings) => void`
 
 Send new session settings to the assistant. This overrides any session settings that were passed as props to the VoiceProvider.
 
