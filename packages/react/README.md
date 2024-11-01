@@ -73,55 +73,55 @@ See a complete list of props accepted by `VoiceProvider` below:
 
 #### `auth`: {value: string; type: "apiKey";} | {value: string; type: "accessToken";}
 
-(Required) Authentication strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`.
+(_Required_) Authentication strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`.
 
 #### `hostname?`: string
 
-(Optional) Hostname of the Hume API. If not provided this value will default to `"api.hume.ai"`.
+(_Optional_) Hostname of the Hume API. If not provided this value will default to `"api.hume.ai"`.
 
 #### `reconnectAttempts?`: number
 
-(Optional) Number of times to attempt to reconnect to the API. If not provided this value will default to `30`.
+(_Optional_) Number of times to attempt to reconnect to the API. If not provided this value will default to `30`.
 
 #### `debug?`: boolean
 
-(Optional) Enable debug mode. If not provided this value will default to `false`.
+(_Optional_) Enable debug mode. If not provided this value will default to `false`.
 
 #### `configId?`: string
 
-(Optional) If you have a configuration ID with voice presets, pass the config ID here.
+(_Optional_) If you have a configuration ID with voice presets, pass the config ID here.
 
 #### `configVersion?`: string
 
-(Optional) If you wish to use a specific version of your config, pass in the version ID here.
+(_Optional_) If you wish to use a specific version of your config, pass in the version ID here.
 
 #### `onMessage?`: (message: [JsonMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/JsonMessage.ts) & { receivedAt: Date;}) => void
 
-(Optional) Callback function to invoke upon receiving a message through the web socket.
+(_Optional_) Callback function to invoke upon receiving a message through the web socket.
 
 #### `onToolCall?`: [ToolCallHandler](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/useVoiceClient.ts#L28)
 
-(Optional) Callback function to invoke upon receiving a ToolCallMessage through the web socket. It will send the string returned as a the content of a ToolResponseMessage. This is where you should add logic that handles your custom tool calls.
+(_Optional_) Callback function to invoke upon receiving a ToolCallMessage through the web socket. It will send the string returned as a the content of a ToolResponseMessage. This is where you should add logic that handles your custom tool calls.
 
 #### `onClose?`: (event: [CloseEvent](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/core/websocket/events.ts#L20)) => void
 
-(Optional) Callback function to invoke upon the web socket connection being closed.
+(_Optional_) Callback function to invoke upon the web socket connection being closed.
 
 #### `clearMessagesOnDisconnect?`: boolean
 
-(Optional) Boolean which indicates whether you want to clear message history when the call ends.
+(_Optional_) Boolean which indicates whether you want to clear message history when the call ends.
 
 #### `messageHistoryLimit?`: number
 
-(Optional) Set the number of messages that you wish to keep over the course of the conversation. The default value is 100.
+(_Optional_) Set the number of messages that you wish to keep over the course of the conversation. The default value is 100.
 
 #### `sessionSettings?`: [SessionSettings](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/SessionSettings.ts)
 
-(Optional) Settings where you can set custom values for the session
+(_Optional_) Settings where you can set custom values for the session
 
 #### `resumedGroupChatId?`: string
 
-(Optional) Include a chat group ID, which enables the chat to continue from a previous chat group.
+(_Optional_) Include a chat group ID, which enables the chat to continue from a previous chat group.
 
 ## Using the Voice
 
