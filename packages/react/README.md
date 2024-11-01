@@ -67,59 +67,59 @@ function App() {
 }
 ```
 
-### Configuring VoiceProvider
+### Configuring [VoiceProvider](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/VoiceProvider.tsx)
 
 See a complete list of props accepted by `VoiceProvider` below:
 
-#### auth: {value: string; type: "apiKey";} | {value: string; type: "accessToken";} (Required)
+#### `auth`: {value: string; type: "apiKey";} | {value: string; type: "accessToken";} (Required)
 
 Authentication strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`.
 
-#### hostname: string (Optional)
+#### `hostname`: string (Optional)
 
 Hostname of the Hume API. If not provided this value will default to `"api.hume.ai"`.
 
-#### reconnectAttempts: number (Optional)
+#### `reconnectAttempts`: number (Optional)
 
 Number of times to attempt to reconnect to the API. If not provided this value will default to `30`.
 
-#### debug: boolean (Optional)
+#### `debug`: boolean (Optional)
 
 Enable debug mode. If not provided this value will default to `false`.
 
-#### configId: string (Optional)
+#### `configId`: string (Optional)
 
 If you have a configuration ID with voice presets, pass the config ID here.
 
-#### configVersion: string (Optional)
+#### `configVersion`: string (Optional)
 
 If you wish to use a specific version of your config, pass in the version ID here.
 
-#### onMessage: (message: [JsonMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/JsonMessage.ts) & { receivedAt: Date;}) => void (Optional)
+#### `onMessage`: (message: [JsonMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/JsonMessage.ts) & { receivedAt: Date;}) => void (Optional)
 
 Callback function to invoke upon receiving a message through the web socket.
 
-#### onToolCall: [ToolCallHandler](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/useVoiceClient.ts#L28) (Optional)
+#### `onToolCall`: [ToolCallHandler](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/useVoiceClient.ts#L28) (Optional)
 
 Callback function to invoke upon receiving a ToolCallMessage through the web socket. It will send the string returned as a the content of a ToolResponseMessage. This is where you should add logic that handles your custom tool calls.
 
-#### onClose: (event: [CloseEvent](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/core/websocket/events.ts#L20)) => void (Optional)
+#### `onClose`: (event: [CloseEvent](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/core/websocket/events.ts#L20)) => void (Optional)
 
 Callback function to invoke upon the web socket connection being closed.
 
-#### clearMessagesOnDisconnect: boolean (Optional)
+#### `clearMessagesOnDisconnect`: boolean (Optional)
 
 Boolean which indicates whether you want to clear message history when the call ends.
 
-#### messageHistoryLimit: number (Optional)
+#### `messageHistoryLimit`: number (Optional)
 
 Set the number of messages that you wish to keep over the course of the conversation. The default value is 100.
 
-#### sessionSettings: [SessionSettings](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/SessionSettings.ts) (Optional)
+#### `sessionSettings`: [SessionSettings](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/SessionSettings.ts) (Optional)
 
 Optional settings where you can set custom values for the session
 
-#### resumedGroupChatId: string (Optional)
+#### `resumedGroupChatId`: string (Optional)
 
 Include a chat group ID, which enables the chat to continue from a previous chat group.
 
@@ -141,137 +141,137 @@ export function StartCallButton() {
 
 ### Methods
 
-#### connect: () => Promise
+#### `connect`: () => Promise
 
 Opens a socket connection to the voice API and initializes the microphone.
 
-#### disconnect: () => void
+#### `disconnect`: () => void
 
 Disconnect from the voice API and microphone.
 
-#### clearMessages: () => void
+#### `clearMessages`: () => void
 
 Clear transcript messages from history.
 
-#### mute: () => void
+#### `mute`: () => void
 
 Mute the microphone
 
-#### unmute: () => void
+#### `unmute`: () => void
 
 Unmute the microphone
 
-#### muteAudio: () => void
+#### `muteAudio`: () => void
 
 Mute the assistant audio
 
-#### unmuteAudio: () => void
+#### `unmuteAudio`: () => void
 
 Unmute the assistant audio
 
-#### sendSessionSettings: (message: [SessionSettings](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/SessionSettings.ts)) => void
+#### `sendSessionSettings`: (message: [SessionSettings](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/SessionSettings.ts)) => void
 
 Send new session settings to the assistant. This overrides any session settings that were passed as props to the VoiceProvider.
 
-#### sendUserInput: (text: string) => void
+#### `sendUserInput`: (text: string) => void
 
 Send a user input message.
 
-#### sendAssistantInput: (text: string) => void
+#### `sendAssistantInput`: (text: string) => void
 
 Send a text string for the assistant to read out loud.
 
-#### sendToolMessage: (toolMessage: [ToolResponse](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/ToolResponseMessage.ts) \| [ToolError](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/ToolErrorMessage.ts)) => void
+#### `sendToolMessage`: (toolMessage: [ToolResponse](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/ToolResponseMessage.ts) \| [ToolError](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/ToolErrorMessage.ts)) => void
 
 Send a tool response or tool error message to the EVI backend.
 
-#### pauseAssistant: () => void
+#### `pauseAssistant`: () => void
 
 Pauses responses from EVI. Chat history is still saved and sent after resuming.
 
-#### resumeAssistant: () => void
+#### `resumeAssistant`: () => void
 
 Resumes responses from EVI. Chat history sent while paused will now be sent.
 
 ### Properties
 
-#### isMuted: boolean
+#### `isMuted`: boolean
 
 Boolean that describes whether the microphone is muted.
 
-#### isAudioMuted: boolean
+#### `isAudioMuted`: boolean
 
 Boolean that describes whether the assistant audio is muted.
 
-#### isPlaying: boolean
+#### `isPlaying`: boolean
 
 Describes whether the assistant audio is currently playing.
 
-#### isPaused: boolean
+#### `isPaused`: boolean
 
 Boolean that describes whether the assistant is paused. When paused, the assistant will still be listening, but will not send a response until it is resumed.
 
-#### fft: number[]
+#### `fft`: number[]
 
 Audio FFT values for the assistant audio output.
 
-#### micFft: number[]
+#### `micFft`: number[]
 
 Audio FFT values for microphone input.
 
-#### messages: [UserTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/UserMessage.ts) | [AssistantTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/AssistantMessage.ts) | [ConnectionMessage](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/connection-message.ts) | [UserInterruptionMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/UserInterruption.ts) | [JSONErrorMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/WebSocketError.ts)
+#### `messages`: [UserTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/UserMessage.ts) | [AssistantTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/AssistantMessage.ts) | [ConnectionMessage](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/connection-message.ts) | [UserInterruptionMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/UserInterruption.ts) | [JSONErrorMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/WebSocketError.ts)
 
 Message history of the current conversation.
 
-#### lastVoiceMessage: [AssistantTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/AssistantMessage.ts) | null
+#### `lastVoiceMessage`: [AssistantTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/AssistantMessage.ts) | null
 
 The last transcript message received from the assistant.
 
-#### lastUserMessage: [UserTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/UserMessage.ts) | null
+#### `lastUserMessage`: [UserTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/UserMessage.ts) | null
 
 The last transcript message received from the user.
 
-#### readyState: [VoiceReadyState](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/useVoiceClient.ts#L21)
+#### `readyState`: [VoiceReadyState](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/useVoiceClient.ts#L21)
 
 The current readyState of the websocket connection.
 
-#### status: [VoiceStatus](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/VoiceProvider.tsx#L41)
+#### `status`: [VoiceStatus](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/VoiceProvider.tsx#L41)
 
 The current status of the voice connection. Informs you of whether the voice is connected, disconnected, connecting, or error. If the voice is in an error state, it will automatically disconnect from the websocket and microphone.
 
-#### error: [VoiceError](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/VoiceProvider.tsx#L36)
+#### `error`: [VoiceError](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/VoiceProvider.tsx#L36)
 
 Provides more detailed error information if the voice is in an error state.
 
-#### isError: boolean
+#### `isError`: boolean
 
 If true, the voice is in an error state.
 
-#### isAudioError: boolean
+#### `isAudioError`: boolean
 
 If true, an audio playback error has occurred.
 
-#### isMicrophoneError: boolean
+#### `isMicrophoneError`: boolean
 
 If true, a microphone error has occurred.
 
-#### isSocketError: boolean
+#### `isSocketError`: boolean
 
 If true, there was an error connecting to the websocket.
 
-#### callDurationTimestamp: string | null
+#### `callDurationTimestamp`: string | null
 
 The length of a call. This value persists after the conversation has ended.
 
-#### toolStatusStore: Record<string, { call?: [ToolCall](); resolved?: [ToolResponse]() | [ToolError]() }>
+#### `toolStatusStore`: Record<string, { call?: [ToolCall](); resolved?: [ToolResponse]() | [ToolError]() }>
 
 A map of tool call IDs to their associated tool messages.
 
-#### chatMetadata: [ChatMetadataMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/ChatMetadata.ts) | null
+#### `chatMetadata`: [ChatMetadataMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/ChatMetadata.ts) | null
 
 Metadata about the current chat, including chat ID, chat group ID, and request ID.
 
-#### playerQueueLength: number
+#### `playerQueueLength`: number
 
 The number of assistant audio clips that are queued up, including the clip that is currently playing.
 
