@@ -95,6 +95,10 @@ See a complete list of props accepted by `VoiceProvider` below:
 
 (_Optional_) If you wish to use a specific version of your config, pass in the version ID here.
 
+#### `verboseTranscription?`: boolean
+
+(_Optional_) A flag to enable verbose transcription. Set this query parameter to `true` to have unfinalized user transcripts sent to the client as interim UserMessage messages. When `true`, verbose transcription makes the assistant more sensitive to interruptions. Defaults to `true`.
+
 #### `onMessage?`: (message: [JsonMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/JsonMessage.ts) & { receivedAt: Date;}) => void
 
 (_Optional_) Callback function to invoke upon receiving a message through the web socket.
