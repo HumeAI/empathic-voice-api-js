@@ -80,6 +80,7 @@ describe('useMessages hook', () => {
     );
     userMessage = {
       type: 'user_message',
+      interim: false,
       message: {
         role: 'user',
         content: 'How is the weather today?',

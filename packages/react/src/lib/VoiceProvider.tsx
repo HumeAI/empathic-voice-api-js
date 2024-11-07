@@ -122,6 +122,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   clearMessagesOnDisconnect = true,
   messageHistoryLimit = 100,
   sessionSettings,
+  verboseTranscription = true,
   ...props
 }) => {
   const {
@@ -305,6 +306,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     try {
       await client.connect({
         ...config,
+        verboseTranscription: true,
       });
     } catch (e) {
       const error: VoiceError = {
