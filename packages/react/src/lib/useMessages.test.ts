@@ -267,4 +267,22 @@ describe('useMessages hook', () => {
     expect(hook.result.current.lastVoiceMessage).toBeNull();
     expect(hook.result.current.lastUserMessage).toBeNull();
   });
+
+  it('should not add interim user messages to `messages` or `lastUserMessage`, but does call `sendMessageToParent`', () => {
+    act(() => {
+      hook.result.current.onMessage({
+        ...userMessage,
+        interim: true,
+        receivedAt: new Date(1),
+      });
+    });
+
+    expect(hook.result.current.messages).toMatchObject([]);
+    expect(hook.result.current.lastUserMessage).toBe(null);
+    expect(sendMessageToParent).toHaveBeenCalledWith({
+      ...userMessage,
+      interim: true,
+      receivedAt: new Date(1),
+    });
+  });
 });
