@@ -97,7 +97,7 @@ See a complete list of props accepted by `VoiceProvider` below:
 
 #### `verboseTranscription?`: boolean
 
-(_Optional_) A flag to enable verbose transcription. Set this query parameter to `true` to have unfinalized user transcripts sent to the client as interim UserMessage messages. When `true`, verbose transcription makes the assistant more sensitive to interruptions. Defaults to `true`.
+(_Optional_) A flag to enable verbose transcription. When `true`, unfinalized user transcripts are sent to the client as interim UserMessage messages, which makes the assistant more sensitive to interruptions. Defaults to `true`.
 
 #### `onMessage?`: (message: [JsonMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/JsonMessage.ts) & { receivedAt: Date;}) => void
 
@@ -225,7 +225,7 @@ Audio FFT values for microphone input.
 
 #### `messages`: [UserTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/UserMessage.ts) | [AssistantTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/AssistantMessage.ts) | [ConnectionMessage](https://github.com/HumeAI/empathic-voice-api-js/blob/8a4f9b87870c68650cde73a818edd093716c59fd/packages/react/src/lib/connection-message.ts) | [UserInterruptionMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/UserInterruption.ts) | [JSONErrorMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/WebSocketError.ts)
 
-Message history of the current conversation.
+Message history of the current conversation. By default, `messages` does not include interim user messages when `verboseTranscription` is set to true on the `VoiceProvider` (`verboseTranscription` is true by default). To access interim messages, you can define a custom `onMessage` callback on your `VoiceProvider`.
 
 #### `lastVoiceMessage`: [AssistantTranscriptMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/AssistantMessage.ts) | null
 
