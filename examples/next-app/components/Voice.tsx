@@ -24,6 +24,10 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
         // eslint-disable-next-line no-console
         console.log('Stop playing clip with ID:', clipId);
       }}
+      onInterruption={(message) => {
+        // eslint-disable-next-line no-console
+        console.log('Interruption triggered on the following message', message);
+      }}
       onToolCall={useCallback<ToolCallHandler>(async (toolCall, response) => {
         if (toolCall.name === 'weather_tool') {
           try {

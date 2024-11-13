@@ -115,6 +115,10 @@ See a complete list of props accepted by `VoiceProvider` below:
 
 (_Optional_) Callback function to invoke when an audio clip from the assistant stops playing.
 
+#### `onInterruption?`: (clipId: string) => void
+
+(_Optional_) Callback function to invoke when the assistant is interrupted.
+
 #### `onClose?`: (event: [CloseEvent](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/core/websocket/events.ts#L20)) => void
 
 (_Optional_) Callback function to invoke upon the web socket connection being closed.
