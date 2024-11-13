@@ -107,6 +107,14 @@ See a complete list of props accepted by `VoiceProvider` below:
 
 (_Optional_) Callback function to invoke upon receiving a ToolCallMessage through the web socket. It will send the string returned as a the content of a ToolResponseMessage. This is where you should add logic that handles your custom tool calls.
 
+#### `onAudioStart?`: (clipId: string) => void
+
+(_Optional_) Callback function to invoke when an audio clip from the assistant starts playing.
+
+#### `onAudioEnd?`: (clipId: string) => void
+
+(_Optional_) Callback function to invoke when an audio clip from the assistant stops playing.
+
 #### `onClose?`: (event: [CloseEvent](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/core/websocket/events.ts#L20)) => void
 
 (_Optional_) Callback function to invoke upon the web socket connection being closed.
