@@ -30,6 +30,7 @@ import {
   AudioOutputMessage,
   ChatMetadataMessage,
   JSONMessage,
+  UserInterruptionMessage,
   UserTranscriptMessage,
 } from '../models/messages';
 
@@ -97,6 +98,11 @@ export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
   onToolCall?: ToolCallHandler;
+  onAudioStart?: (clipId: string) => void;
+  onAudioEnd?: (clipId: string) => void;
+  onInterruption?: (
+    message: UserTranscriptMessage | UserInterruptionMessage,
+  ) => void;
   /**
    * @default true
    * @description Clear messages when the voice is disconnected.
@@ -153,6 +159,15 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const onMessage = useRef(props.onMessage ?? noop);
   onMessage.current = props.onMessage ?? noop;
 
+  const onAudioStart = useRef(props.onAudioStart ?? noop);
+  onAudioStart.current = props.onAudioStart ?? noop;
+
+  const onAudioEnd = useRef(props.onAudioEnd ?? noop);
+  onAudioEnd.current = props.onAudioEnd ?? noop;
+
+  const onInterruption = useRef(props.onInterruption ?? noop);
+  onInterruption.current = props.onInterruption ?? noop;
+
   const toolStatus = useToolStatus();
 
   const messageStore = useMessages({
@@ -185,6 +200,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
     onPlayAudio: (id: string) => {
       messageStore.onPlayAudio(id);
+      onAudioStart.current(id);
+    },
+    onStopAudio: (id: string) => {
+      onAudioEnd.current(id);
     },
   });
 
@@ -203,6 +222,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           message.type === 'user_interruption' ||
           message.type === 'user_message'
         ) {
+          if (player.isPlaying) {
+            onInterruption.current(message);
+          }
           player.clearQueue();
         }
 

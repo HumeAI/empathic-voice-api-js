@@ -8,6 +8,7 @@ import type { AudioOutputMessage } from '../models/messages';
 export const useSoundPlayer = (props: {
   onError: (message: string) => void;
   onPlayAudio: (id: string) => void;
+  onStopAudio: (id: string) => void;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
@@ -34,6 +35,9 @@ export const useSoundPlayer = (props: {
 
   const onPlayAudio = useRef<typeof props.onPlayAudio>(props.onPlayAudio);
   onPlayAudio.current = props.onPlayAudio;
+
+  const onStopAudio = useRef<typeof props.onStopAudio>(props.onStopAudio);
+  onStopAudio.current = props.onStopAudio;
 
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
@@ -105,6 +109,7 @@ export const useSoundPlayer = (props: {
       bufferSource.disconnect();
       isProcessing.current = false;
       setIsPlaying(false);
+      onStopAudio.current(nextClip.id);
       currentlyPlayingAudioBuffer.current = null;
       playNextClip();
     };
