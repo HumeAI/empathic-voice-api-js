@@ -98,6 +98,7 @@ export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
   onToolCall?: ToolCallHandler;
+  onAudioReceived?: (audioOutputMessage: AudioOutputMessage) => void;
   onAudioStart?: (clipId: string) => void;
   onAudioEnd?: (clipId: string) => void;
   onInterruption?: (
@@ -159,6 +160,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const onMessage = useRef(props.onMessage ?? noop);
   onMessage.current = props.onMessage ?? noop;
 
+  const onAudioReceived = useRef(props.onAudioReceived ?? noop);
+  onAudioReceived.current = props.onAudioReceived ?? noop;
+
   const onAudioStart = useRef(props.onAudioStart ?? noop);
   onAudioStart.current = props.onAudioStart ?? noop;
 
@@ -212,6 +216,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
       player.addToQueue(message);
+      onAudioReceived.current(message);
     },
     onMessage: useCallback(
       (message: JSONMessage) => {
