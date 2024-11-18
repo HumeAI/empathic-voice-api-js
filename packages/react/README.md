@@ -107,6 +107,10 @@ See a complete list of props accepted by `VoiceProvider` below:
 
 (_Optional_) Callback function to invoke upon receiving a ToolCallMessage through the web socket. It will send the string returned as a the content of a ToolResponseMessage. This is where you should add logic that handles your custom tool calls.
 
+#### `onAudioReceived?`: (message: AudioOutputMessage) => void
+
+(_Optional_) Callback function to invoke when an audio output message is received from the websocket.
+
 #### `onAudioStart?`: (clipId: string) => void
 
 (_Optional_) Callback function to invoke when an audio clip from the assistant starts playing.
