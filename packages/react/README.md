@@ -159,6 +159,13 @@ export function StartCallButton() {
 }
 ```
 
+> [!IMPORTANT]
+> Under the hood, the React SDK uses the AudioContext API, which [must be initialized by a user gesture](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Best_practices#autoplay_policy). 
+> 
+> :white_check_mark: CORRECT: call `connect` on a button click. 
+> 
+> :x: INCORRECT: call `connect` in a `useEffect` to start a call on component mount.
+
 ### Methods
 
 #### `connect`: () => Promise
