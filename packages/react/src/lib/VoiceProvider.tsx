@@ -469,9 +469,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       sessionSettings !== undefined &&
       Object.keys(sessionSettings).length > 0
     ) {
-      clientSendSessionSettings(sessionSettings);
+      sendSessionSettings(sessionSettings);
     }
-  }, [client.readyState, clientSendSessionSettings, sessionSettings]);
+  }, [client.readyState, sendSessionSettings, sessionSettings]);
 
   const sendToolMessage = useCallback(
     (
