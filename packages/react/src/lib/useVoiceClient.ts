@@ -100,17 +100,17 @@ export const useVoiceClient = (props: {
 
       client.current = hume.empathicVoice.chat.connect(config);
 
-      client.current.on('open', () => {
-        onOpen.current?.();
-        setReadyState(VoiceReadyState.OPEN);
-        resolve(VoiceReadyState.OPEN);
-      });
-
       client.current.on('message', (message) => {
         if (message.type === 'audio_output') {
           const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onAudioMessage.current?.(messageWithReceivedAt);
           return;
+        }
+
+        if (message.type === 'chat_metadata') {
+          onOpen.current?.();
+          setReadyState(VoiceReadyState.OPEN);
+          resolve(VoiceReadyState.OPEN);
         }
 
         if (
