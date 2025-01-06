@@ -137,7 +137,7 @@ export const useSoundPlayer = (props: {
       }
 
       try {
-        const blob = convertBase64ToBlob(message.data, 'audio/mp3');
+        const blob = convertBase64ToBlob(message.data);
         const arrayBuffer = await blob.arrayBuffer();
         const audioBuffer =
           await audioContext.current.decodeAudioData(arrayBuffer);
