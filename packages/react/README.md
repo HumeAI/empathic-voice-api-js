@@ -139,7 +139,7 @@ See a complete list of props accepted by `VoiceProvider` below:
 
 (_Optional_) Settings where you can set custom values for the session
 
-#### `resumedGroupChatId?`: string
+#### `resumedChatGroupId?`: string
 
 (_Optional_) Include a chat group ID, which enables the chat to continue from a previous chat group.
 
@@ -160,10 +160,10 @@ export function StartCallButton() {
 ```
 
 > [!IMPORTANT]
-> Under the hood, the React SDK uses the AudioContext API, which [must be initialized by a user gesture](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Best_practices#autoplay_policy). 
-> 
-> :white_check_mark: CORRECT: call `connect` on a button click. 
-> 
+> Under the hood, the React SDK uses the AudioContext API, which [must be initialized by a user gesture](https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Best_practices#autoplay_policy).
+>
+> :white_check_mark: CORRECT: call `connect` on a button click.
+>
 > :x: INCORRECT: call `connect` in a `useEffect` to start a call on component mount.
 
 ### Methods
