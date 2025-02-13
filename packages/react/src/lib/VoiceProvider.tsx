@@ -322,12 +322,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     const permission = await getStream();
 
     if (permission === 'denied') {
-      const error: VoiceError = {
-        type: 'mic_error',
-        message: 'Microphone permission denied',
-      };
+      const message = 'Microphone permission denied';
+      const error: VoiceError = { type: 'mic_error', message };
       updateError(error);
-      return Promise.reject(error);
+      return Promise.reject(new Error(message));
     }
 
     try {
@@ -336,12 +334,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         verboseTranscription: true,
       });
     } catch (e) {
-      const error: VoiceError = {
-        type: 'socket_error',
-        message: 'We could not connect to the voice. Please try again.',
-      };
+      const message = 'We could not connect to the voice. Please try again.';
+      const error: VoiceError = { type: 'socket_error', message };
       updateError(error);
-      return Promise.reject(error);
+      return Promise.reject(new Error(message));
     }
 
     try {
