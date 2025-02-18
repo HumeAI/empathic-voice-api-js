@@ -41,8 +41,8 @@ importers:
         specifier: ^11.0.28
         version: 11.2.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       hume:
-        specifier: 0.9.8
-        version: 0.9.8
+        specifier: 0.9.10
+        version: 0.9.10
       lucide-react:
         specifier: ^0.372.0
         version: 0.372.0(react@18.3.1)
@@ -138,8 +138,8 @@ importers:
   examples/vite-app:
     dependencies:
       hume:
-        specifier: 0.9.8
-        version: 0.9.8
+        specifier: 0.9.10
+        version: 0.9.10
     devDependencies:
       typescript:
         specifier: ^5.2.2
@@ -194,8 +194,8 @@ importers:
   packages/embed:
     dependencies:
       hume:
-        specifier: 0.9.8
-        version: 0.9.8
+        specifier: 0.9.10
+        version: 0.9.10
       zod:
         specifier: ^3.22.4
         version: 3.23.8
@@ -227,6 +227,9 @@ importers:
       '@humeai/voice-embed':
         specifier: workspace:*
         version: link:../embed
+      hume:
+        specifier: ^0.9.10
+        version: 0.9.10
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -292,8 +295,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       hume:
-        specifier: 0.9.8
-        version: 0.9.8
+        specifier: 0.9.10
+        version: 0.9.10
       meyda:
         specifier: ^5.6.2
         version: 5.6.3(rollup@4.18.0)
@@ -2439,8 +2442,8 @@ packages:
     resolution: {integrity: sha512-AXcZb6vzzrFAUE61HnN4mpLqd/cSIwNQjtNWR0euPm6y0iqx3G4gOXaIDdtdDwZmhwe82LA6+zinmW4UBWVePQ==}
     engines: {node: '>=16.17.0'}
 
-  hume@0.9.8:
-    resolution: {integrity: sha512-NQ4sF39/dhLVSKOOUb2hAoia9us0/M8rRxk9VeH8iSXmec1lmBgaI+74o0Hx0oY42XMsc/754djHRlzHAf7N9w==}
+  hume@0.9.10:
+    resolution: {integrity: sha512-O1vyrt3NpmhKhiKCdz/2oWcIqannregQSJ/37as+kaZy6NBkVpIGPI6sEQ4U1+gieyN47i3TYMMgMNvOiwf6jw==}
 
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
@@ -5970,7 +5973,7 @@ snapshots:
 
   human-signals@5.0.0: {}
 
-  hume@0.9.8:
+  hume@0.9.10:
     dependencies:
       form-data: 4.0.0
       form-data-encoder: 4.0.2
