@@ -14,6 +14,7 @@ export type MicrophoneProps = {
   onStartRecording?: () => void;
   onStopRecording?: () => void;
   onError: (message: string) => void;
+  deviceId?: string;
 };
 
 export const useMicrophone = (props: MicrophoneProps) => {
@@ -91,10 +92,22 @@ export const useMicrophone = (props: MicrophoneProps) => {
     }
 
     try {
+      // Stop any existing recorder
+      if (recorder.current) {
+        recorder.current.removeEventListener('dataavailable', dataHandler);
+        recorder.current.stop();
+        recorder.current = null;
+      }
+
+      // Create new recorder with the current stream
       recorder.current = new MediaRecorder(stream, {
         mimeType,
       });
+
+      // Add the data handler before starting
       recorder.current.addEventListener('dataavailable', dataHandler);
+
+      // Start recording with a small timeslice to ensure regular data chunks
       recorder.current.start(100);
     } catch (e) {
       const message =
@@ -125,8 +138,9 @@ export const useMicrophone = (props: MicrophoneProps) => {
           });
       }
 
-      recorder.current?.stop();
+      // Remove the dataavailable event listener before stopping
       recorder.current?.removeEventListener('dataavailable', dataHandler);
+      recorder.current?.stop();
       recorder.current = null;
       streamRef.current?.getTracks().forEach((track) => track.stop());
 
@@ -195,6 +209,82 @@ export const useMicrophone = (props: MicrophoneProps) => {
       onError(mimeTypeResult.error.message);
     }
   }, [onError]);
+
+  useEffect(() => {
+    const updateMicrophoneDevice = async () => {
+      if (!streamRef.current) return;
+
+      try {
+        // Stop the current stream and recorder
+        stop();
+
+        // Get new stream with updated device ID
+        const newStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            deviceId: props.deviceId ? { exact: props.deviceId } : undefined,
+          },
+        });
+
+        // Update the stream reference
+        streamRef.current = newStream;
+
+        // Initialize new audio context and analyzer
+        const context = new AudioContext();
+        audioContext.current = context;
+        const input = context.createMediaStreamSource(newStream);
+
+        try {
+          currentAnalyzer.current = Meyda.createMeydaAnalyzer({
+            audioContext: context,
+            source: input,
+            featureExtractors: ['loudness'],
+            callback: (features: MeydaFeaturesObject) => {
+              const newFft = features.loudness.specific || [];
+              setFft(() => Array.from(newFft));
+            },
+          });
+
+          currentAnalyzer.current.start();
+        } catch (e: unknown) {
+          const message = e instanceof Error ? e.message : 'Unknown error';
+          console.error(`Failed to start mic analyzer: ${message}`);
+        }
+
+        // Always restart recording to ensure we're sending audio data
+        const mimeType = mimeTypeRef.current;
+        if (!mimeType) {
+          throw new Error('No MimeType specified');
+        }
+
+        try {
+          // Create new recorder with the new stream
+          const newRecorder = new MediaRecorder(newStream, {
+            mimeType,
+          });
+
+          // Add the data handler to the new recorder
+          newRecorder.addEventListener('dataavailable', dataHandler);
+          newRecorder.start(100);
+
+          // Update the recorder reference
+          recorder.current = newRecorder;
+
+          console.log('Started recording with new microphone');
+        } catch (e) {
+          const message =
+            e instanceof Error ? e.message : 'Failed to create MediaRecorder';
+          onError(message);
+          throw new Error(message);
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
+        onError(`Failed to update microphone device: ${errorMessage}`);
+      }
+    };
+
+    void updateMicrophoneDevice();
+  }, [props.deviceId, stop, streamRef, onError, dataHandler]);
 
   return {
     start,

@@ -113,21 +113,6 @@ export const useVoiceClient = (props: {
           resolve(VoiceReadyState.OPEN);
         }
 
-        if (
-          message.type === 'assistant_message' ||
-          message.type === 'user_message' ||
-          message.type === 'user_interruption' ||
-          message.type === 'error' ||
-          message.type === 'tool_response' ||
-          message.type === 'tool_error' ||
-          message.type === 'chat_metadata' ||
-          message.type === 'assistant_end'
-        ) {
-          const messageWithReceivedAt = { ...message, receivedAt: new Date() };
-          onMessage.current?.(messageWithReceivedAt);
-          return;
-        }
-
         if (message.type === 'tool_call') {
           const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onMessage.current?.(messageWithReceivedAt);
@@ -138,10 +123,6 @@ export const useVoiceClient = (props: {
               .current?.(
                 {
                   ...messageWithReceivedAt,
-                  // we have to do this because even though we are using the correct
-                  // enum on line 30 for the type definition
-                  // fern exports an interface and a value using the same `ToolType`
-                  // identifier so the type comparisons will always fail
                   toolType: 'function',
                 },
                 {
@@ -165,7 +146,7 @@ export const useVoiceClient = (props: {
                     toolCallId: messageWithReceivedAt.toolCallId,
                     error,
                     code,
-                    level: level !== null ? 'warn' : undefined, // level can only be warn
+                    level: level !== null ? 'warn' : undefined,
                     content,
                   }),
                 },
@@ -182,6 +163,21 @@ export const useVoiceClient = (props: {
                 }
               });
           }
+          return;
+        }
+
+        if (
+          message.type === 'assistant_message' ||
+          message.type === 'user_message' ||
+          message.type === 'user_interruption' ||
+          message.type === 'error' ||
+          message.type === 'tool_response' ||
+          message.type === 'tool_error' ||
+          message.type === 'chat_metadata' ||
+          message.type === 'assistant_end'
+        ) {
+          const messageWithReceivedAt = { ...message, receivedAt: new Date() };
+          onMessage.current?.(messageWithReceivedAt);
           return;
         }
 
@@ -206,8 +202,8 @@ export const useVoiceClient = (props: {
   }, []);
 
   const disconnect = useCallback(() => {
-    setReadyState(VoiceReadyState.IDLE);
     client.current?.close();
+    setReadyState(VoiceReadyState.CLOSED);
   }, []);
 
   const sendSessionSettings = useCallback(

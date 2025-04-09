@@ -52,6 +52,7 @@ type VoiceStatus =
 export type VoiceContextType = {
   connect: () => Promise<void>;
   disconnect: () => void;
+  handleDeviceChange: () => Promise<void>;
   fft: number[];
   isMuted: boolean;
   isAudioMuted: boolean;
@@ -306,6 +307,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       },
       [updateError],
     ),
+    deviceId: microphoneDeviceId,
   });
 
   const { clearQueue } = player;
@@ -332,38 +334,60 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, [sendResumeAssistantMessage, updateError]);
 
   const connect = useCallback(async () => {
+    const startTime = performance.now();
     updateError(null);
     setStatus({ value: 'connecting' });
+
+    console.log('Starting connection process...');
+    const permissionStart = performance.now();
     console.log('Requesting microphone permission...');
     const permission = await getStream();
+    console.log(
+      `Microphone permission took ${performance.now() - permissionStart}ms`,
+    );
 
     if (permission === 'denied') {
-      const message = 'Microphone permission denied';
+      const message = 'Microphone access denied';
       const error: VoiceError = { type: 'mic_error', message };
       updateError(error);
+      setStatus({ value: 'error', reason: message });
       return Promise.reject(new Error(message));
     }
 
     try {
+      const socketStart = performance.now();
       console.log('Connecting to voice service...');
       await client.connect({
         ...config,
         verboseTranscription: true,
       });
+      console.log(
+        `WebSocket connection took ${performance.now() - socketStart}ms`,
+      );
     } catch (e) {
-      const message = 'We could not connect to the voice. Please try again.';
-      const error: VoiceError = { type: 'socket_error', message };
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Voice connection error:', errorMessage);
+      const error: VoiceError = {
+        type: 'socket_error',
+        message: 'Unable to connect to service',
+        error: e instanceof Error ? e : undefined,
+      };
       updateError(error);
-      return Promise.reject(new Error(message));
+      setStatus({ value: 'error', reason: errorMessage });
+      return Promise.reject(new Error(errorMessage));
     }
 
     try {
+      const audioStart = performance.now();
       console.log('Initializing audio components...');
       // Initialize both components in parallel
       const [playerResult, micResult] = await Promise.allSettled([
         player.initPlayer(),
         mic.start(),
       ]);
+      console.log(
+        `Audio initialization took ${performance.now() - audioStart}ms`,
+      );
 
       // Handle player initialization result
       if (playerResult.status === 'rejected') {
@@ -377,26 +401,27 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         console.error('Failed to start microphone:', micError);
         const error: VoiceError = {
           type: 'mic_error',
-          message:
-            micError instanceof Error
-              ? micError.message
-              : 'Failed to start microphone',
+          message: 'Unable to start microphone',
         };
         updateError(error);
+        setStatus({ value: 'error', reason: error.message });
+        return Promise.reject(new Error(error.message));
       }
 
       // Set connected status regardless of individual component results
       setStatus({ value: 'connected' });
+      console.log(`Total connection time: ${performance.now() - startTime}ms`);
     } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Audio initialization error:', errorMessage);
       const error: VoiceError = {
         type: 'audio_error',
-        message:
-          e instanceof Error
-            ? e.message
-            : 'We could not connect to audio. Please try again.',
+        message: 'Unable to initialize audio',
+        error: e instanceof Error ? e : undefined,
       };
       updateError(error);
-      setStatus({ value: 'error', reason: error.message });
+      setStatus({ value: 'error', reason: errorMessage });
+      return Promise.reject(new Error(errorMessage));
     }
   }, [client, config, getStream, mic, player, updateError]);
 
@@ -521,11 +546,50 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [clientSendToolMessage, updateError],
   );
 
+  // Handle microphone device changes
+  const isHandlingDeviceChange = useRef(false);
+  const lastDeviceId = useRef(microphoneDeviceId);
+
+  const handleDeviceChange = useCallback(async () => {
+    if (isHandlingDeviceChange.current) return;
+    isHandlingDeviceChange.current = true;
+
+    try {
+      // First disconnect everything
+      disconnectFromVoice();
+
+      // Wait for cleanup
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Get a new stream with the updated device ID
+      const permission = await getStream();
+      if (permission === 'denied') {
+        throw new Error('Microphone access denied');
+      }
+
+      // Start fresh connection with new device
+      await connect();
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'Unknown error';
+      console.error('Failed to handle device change:', errorMessage);
+      const error: VoiceError = {
+        type: 'socket_error',
+        message: 'Unable to handle device change',
+        error: e instanceof Error ? e : undefined,
+      };
+      updateError(error);
+      setStatus({ value: 'error', reason: errorMessage });
+    } finally {
+      isHandlingDeviceChange.current = false;
+    }
+  }, [connect, disconnectFromVoice, getStream, updateError]);
+
   const ctx = useMemo(
     () =>
       ({
         connect,
         disconnect,
+        handleDeviceChange,
         fft: player.fft,
         micFft: mic.fft,
         isMuted: mic.isMuted,
@@ -561,6 +625,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [
       connect,
       disconnect,
+      handleDeviceChange,
       player.fft,
       player.isAudioMuted,
       player.isPlaying,

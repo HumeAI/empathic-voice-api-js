@@ -1,5 +1,5 @@
 import { convertBase64ToBlob } from 'hume';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
@@ -257,6 +257,30 @@ export const useSoundPlayer = (props: {
       setIsAudioMuted(false);
     }
   }, []);
+
+  useEffect(() => {
+    const updateSpeakerDevice = async () => {
+      if (!audioContext.current || !props.speakerDeviceId) return;
+
+      try {
+        if ('setSinkId' in audioContext.current) {
+          await (
+            audioContext.current as AudioContext & {
+              setSinkId: (id: string) => Promise<void>;
+            }
+          ).setSinkId(props.speakerDeviceId);
+        } else {
+          console.warn('setSinkId is not supported in this browser');
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
+        console.warn(`Failed to update speaker device: ${errorMessage}`);
+      }
+    };
+
+    void updateSpeakerDevice();
+  }, [props.speakerDeviceId]);
 
   return {
     addToQueue,
