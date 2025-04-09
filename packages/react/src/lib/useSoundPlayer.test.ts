@@ -68,7 +68,7 @@ describe('useSoundPlayer', () => {
     expect(onStopAudioMock).not.toBeCalled();
     expect(hook.result.current.queueLength).toBe(0);
 
-    hook.result.current.initPlayer();
+    await hook.result.current.initPlayer();
 
     await new Promise((resolve) => {
       setTimeout(resolve, 500);
