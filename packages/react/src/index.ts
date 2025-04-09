@@ -5,9 +5,15 @@ export * from './lib/useVoiceClient';
 export * from './lib/VoiceProvider';
 export * from './lib/errors';
 export * from './lib/messages';
+export * from './lib/useAudioDevices';
 export * from './models/audio';
 export * from './models/llm';
 export * from './models/messages';
 export * from './models/ttsService';
 
 export type { SocketConfig } from './lib/useVoiceClient';
+export type { AudioDevice, AudioDevices } from './utils';
+export type {
+  UseAudioDevicesOptions,
+  UseAudioDevicesReturn,
+} from './lib/useAudioDevices';

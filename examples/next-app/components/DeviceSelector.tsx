@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { type AudioDevice, useAudioDevices } from '@humeai/voice-react';
 
 import {
   Select,
@@ -17,51 +17,39 @@ export const DeviceSelector = ({
   onDeviceChange,
   onSpeakerChange,
 }: DeviceSelectorProps) => {
-  const [availableDevices, setAvailableDevices] = useState<MediaDeviceInfo[]>(
-    [],
-  );
-  const [availableSpeakers, setAvailableSpeakers] = useState<MediaDeviceInfo[]>(
-    [],
-  );
-  const [selectedDevice, setSelectedDevice] = useState<string>('');
-  const [selectedSpeaker, setSelectedSpeaker] = useState<string>('');
+  const {
+    inputDevices,
+    outputDevices,
+    selectedInputDevice,
+    selectedOutputDevice,
+    setSelectedInputDevice,
+    setSelectedOutputDevice,
+    refreshDeviceList,
+    isLoading,
+    error,
+  } = useAudioDevices();
 
-  const getDevices = useCallback(async () => {
-    try {
-      // First request permission to access audio devices
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      // Stop the stream immediately since we only needed it for permission
-      stream.getTracks().forEach((track) => track.stop());
+  if (isLoading) {
+    return <div className="text-neutral-400">Loading devices...</div>;
+  }
 
-      // Now enumerate devices
-      const devices = await navigator.mediaDevices.enumerateDevices();
-      const audioInputDevices = devices.filter(
-        (device) => device.kind === 'audioinput',
-      );
-      const audioOutputDevices = devices.filter(
-        (device) => device.kind === 'audiooutput',
-      );
+  if (error) {
+    return (
+      <div className="text-red-500">
+        Error: {error?.message ?? 'Unknown error'}
+      </div>
+    );
+  }
 
-      setAvailableDevices(audioInputDevices);
-      setAvailableSpeakers(audioOutputDevices);
+  const handleInputChange = (value: string) => {
+    setSelectedInputDevice(value);
+    onDeviceChange(value);
+  };
 
-      // Only set default devices if they exist and have valid IDs
-      if (audioInputDevices.length > 0 && audioInputDevices[0].deviceId) {
-        setSelectedDevice(audioInputDevices[0].deviceId);
-        onDeviceChange(audioInputDevices[0].deviceId);
-      }
-      if (audioOutputDevices.length > 0 && audioOutputDevices[0].deviceId) {
-        setSelectedSpeaker(audioOutputDevices[0].deviceId);
-        onSpeakerChange(audioOutputDevices[0].deviceId);
-      }
-    } catch (error) {
-      // Handle error silently as it's not critical for the app to function
-    }
-  }, [onDeviceChange, onSpeakerChange]);
-
-  useEffect(() => {
-    void getDevices();
-  }, [getDevices]);
+  const handleOutputChange = (value: string) => {
+    setSelectedOutputDevice(value);
+    onSpeakerChange(value);
+  };
 
   return (
     <div className="grid grid-cols-2 gap-4">
@@ -73,14 +61,11 @@ export const DeviceSelector = ({
           Microphone
         </label>
         <Select
-          value={selectedDevice}
-          onValueChange={(value) => {
-            setSelectedDevice(value);
-            onDeviceChange(value);
-          }}
-          onOpenChange={(open) => {
+          value={selectedInputDevice ?? ''}
+          onValueChange={handleInputChange}
+          onOpenChange={(open: boolean) => {
             if (open) {
-              void getDevices();
+              void refreshDeviceList();
             }
           }}
         >
@@ -91,7 +76,7 @@ export const DeviceSelector = ({
             <SelectValue placeholder="Select a microphone" />
           </SelectTrigger>
           <SelectContent className="border-neutral-600 bg-neutral-700">
-            {availableDevices.length === 0 ? (
+            {inputDevices.length === 0 ? (
               <SelectItem
                 value="no-devices"
                 disabled
@@ -100,13 +85,13 @@ export const DeviceSelector = ({
                 No microphones found
               </SelectItem>
             ) : (
-              availableDevices.map((device) => (
+              inputDevices.map((device: AudioDevice) => (
                 <SelectItem
                   key={device.deviceId}
                   value={device.deviceId}
                   className="text-neutral-100 hover:bg-neutral-600"
                 >
-                  {device.label || `Microphone ${device.deviceId.slice(0, 8)}`}
+                  {device.label}
                 </SelectItem>
               ))
             )}
@@ -122,14 +107,11 @@ export const DeviceSelector = ({
           Speaker
         </label>
         <Select
-          value={selectedSpeaker}
-          onValueChange={(value) => {
-            setSelectedSpeaker(value);
-            onSpeakerChange(value);
-          }}
-          onOpenChange={(open) => {
+          value={selectedOutputDevice ?? ''}
+          onValueChange={handleOutputChange}
+          onOpenChange={(open: boolean) => {
             if (open) {
-              void getDevices();
+              void refreshDeviceList();
             }
           }}
         >
@@ -140,7 +122,7 @@ export const DeviceSelector = ({
             <SelectValue placeholder="Select a speaker" />
           </SelectTrigger>
           <SelectContent className="border-neutral-600 bg-neutral-700">
-            {availableSpeakers.length === 0 ? (
+            {outputDevices.length === 0 ? (
               <SelectItem
                 value="no-speakers"
                 disabled
@@ -149,13 +131,13 @@ export const DeviceSelector = ({
                 No speakers found
               </SelectItem>
             ) : (
-              availableSpeakers.map((device) => (
+              outputDevices.map((device: AudioDevice) => (
                 <SelectItem
                   key={device.deviceId}
                   value={device.deviceId}
                   className="text-neutral-100 hover:bg-neutral-600"
                 >
-                  {device.label || `Speaker ${device.deviceId.slice(0, 8)}`}
+                  {device.label}
                 </SelectItem>
               ))
             )}
