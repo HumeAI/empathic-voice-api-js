@@ -114,6 +114,14 @@ export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
    * @description The maximum number of messages to keep in memory.
    */
   messageHistoryLimit?: number;
+  /**
+   * @description Optional device ID to use for input. If not provided, the default microphone will be used.
+   */
+  microphoneDeviceId?: string;
+  /**
+   * @description Optional device ID to use for output. If not provided, the default speaker will be used.
+   */
+  speakerDeviceId?: string;
 };
 
 export const useVoice = () => {
@@ -130,6 +138,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   messageHistoryLimit = 100,
   sessionSettings,
   verboseTranscription = true,
+  microphoneDeviceId,
+  speakerDeviceId,
   ...props
 }) => {
   const {
@@ -209,9 +219,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     onStopAudio: (id: string) => {
       onAudioEnd.current(id);
     },
+    speakerDeviceId,
   });
 
-  const { streamRef, getStream, permission: micPermission } = useEncoding();
+  const {
+    streamRef,
+    getStream,
+    permission: micPermission,
+  } = useEncoding(microphoneDeviceId);
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
@@ -319,6 +334,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const connect = useCallback(async () => {
     updateError(null);
     setStatus({ value: 'connecting' });
+    console.log('Requesting microphone permission...');
     const permission = await getStream();
 
     if (permission === 'denied') {
@@ -329,6 +345,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
 
     try {
+      console.log('Connecting to voice service...');
       await client.connect({
         ...config,
         verboseTranscription: true,
@@ -341,17 +358,35 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
 
     try {
-      const [micPromise, playerPromise] = await Promise.allSettled([
-        mic.start(),
+      console.log('Initializing audio components...');
+      // Initialize both components in parallel
+      const [playerResult, micResult] = await Promise.allSettled([
         player.initPlayer(),
+        mic.start(),
       ]);
 
-      if (
-        micPromise.status === 'fulfilled' &&
-        playerPromise.status === 'fulfilled'
-      ) {
-        setStatus({ value: 'connected' });
+      // Handle player initialization result
+      if (playerResult.status === 'rejected') {
+        console.warn('Player initialization warning:', playerResult.reason);
+        // Continue as player errors are not critical
       }
+
+      // Handle microphone initialization result
+      if (micResult.status === 'rejected') {
+        const micError = micResult.reason;
+        console.error('Failed to start microphone:', micError);
+        const error: VoiceError = {
+          type: 'mic_error',
+          message:
+            micError instanceof Error
+              ? micError.message
+              : 'Failed to start microphone',
+        };
+        updateError(error);
+      }
+
+      // Set connected status regardless of individual component results
+      setStatus({ value: 'connected' });
     } catch (e) {
       const error: VoiceError = {
         type: 'audio_error',
@@ -361,6 +396,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
             : 'We could not connect to audio. Please try again.',
       };
       updateError(error);
+      setStatus({ value: 'error', reason: error.message });
     }
   }, [client, config, getStream, mic, player, updateError]);
 

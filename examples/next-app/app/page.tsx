@@ -1,35 +1,30 @@
-import { fetchAccessToken } from 'hume';
-import dynamic from 'next/dynamic';
-import type { FC, PropsWithChildren } from 'react';
+import { z } from 'zod';
 
 import { Voice } from '@/components/Voice';
 
-const NoOp: FC<PropsWithChildren<Record<never, never>>> = ({ children }) => (
-  <>{children}</>
-);
-
-const NoSSR = dynamic(
-  () => new Promise<typeof NoOp>((resolve) => resolve(NoOp)),
-  { ssr: false },
-);
-
 export default async function Home() {
-  const accessToken = await fetchAccessToken({
-    apiKey: process.env.HUME_API_KEY || '',
-    secretKey: process.env.HUME_SECRET_KEY || '',
-  });
+  const accessToken = await fetch(new URL('http://localhost:3003/access-token'))
+    .then((res) => res.json())
+    .then((json: unknown) => {
+      return z
+        .object({
+          accessToken: z.string(),
+        })
+        .transform((data) => data.accessToken)
+        .parse(json);
+    });
 
   return (
-    <div className={'p-6'}>
-      <h1 className={'my-4 text-lg font-medium'}>Hume EVI React Example</h1>
+    <div className={'mx-auto max-w-4xl'}>
+      <h1 className={'mb-4 mt-10 px-6 text-lg font-medium'}>
+        Hume EVI React Example
+      </h1>
 
-      <NoSSR>
-        {accessToken ? (
-          <Voice accessToken={accessToken} />
-        ) : (
-          <div>Missing API Key</div>
-        )}
-      </NoSSR>
+      {accessToken ? (
+        <Voice accessToken={accessToken} />
+      ) : (
+        <div>Missing Access Token Key</div>
+      )}
     </div>
   );
 }

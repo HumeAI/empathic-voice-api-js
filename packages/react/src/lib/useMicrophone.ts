@@ -39,6 +39,11 @@ export const useMicrophone = (props: MicrophoneProps) => {
       .arrayBuffer()
       .then((buffer) => {
         if (buffer.byteLength > 0) {
+          console.log(
+            'Sending audio chunk of size:',
+            buffer.byteLength,
+            'bytes',
+          );
           sendAudio.current?.(buffer);
         }
       })
@@ -51,6 +56,12 @@ export const useMicrophone = (props: MicrophoneProps) => {
     const stream = streamRef.current;
     if (!stream) {
       throw new Error('No stream connected');
+    }
+
+    // Check if the stream has audio tracks
+    const audioTracks = stream.getAudioTracks();
+    if (audioTracks.length === 0) {
+      throw new Error('No audio tracks found in the provided stream');
     }
 
     const context = new AudioContext();
@@ -73,17 +84,25 @@ export const useMicrophone = (props: MicrophoneProps) => {
       const message = e instanceof Error ? e.message : 'Unknown error';
       console.error(`Failed to start mic analyzer: ${message}`);
     }
+
     const mimeType = mimeTypeRef.current;
     if (!mimeType) {
       throw new Error('No MimeType specified');
     }
 
-    recorder.current = new MediaRecorder(stream, {
-      mimeType,
-    });
-    recorder.current.addEventListener('dataavailable', dataHandler);
-    recorder.current.start(100);
-  }, [dataHandler, streamRef, mimeTypeRef]);
+    try {
+      recorder.current = new MediaRecorder(stream, {
+        mimeType,
+      });
+      recorder.current.addEventListener('dataavailable', dataHandler);
+      recorder.current.start(100);
+    } catch (e) {
+      const message =
+        e instanceof Error ? e.message : 'Failed to create MediaRecorder';
+      onError(message);
+      throw new Error(message);
+    }
+  }, [dataHandler, streamRef, mimeTypeRef, onError]);
 
   const stop = useCallback(() => {
     try {
@@ -171,6 +190,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
     const mimeTypeResult = getBrowserSupportedMimeType();
     if (mimeTypeResult.success) {
       mimeTypeRef.current = mimeTypeResult.mimeType;
+      console.log('Using MIME type:', mimeTypeResult.mimeType);
     } else {
       onError(mimeTypeResult.error.message);
     }

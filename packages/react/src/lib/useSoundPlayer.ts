@@ -9,6 +9,7 @@ export const useSoundPlayer = (props: {
   onError: (message: string) => void;
   onPlayAudio: (id: string) => void;
   onStopAudio: (id: string) => void;
+  speakerDeviceId?: string;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
@@ -115,7 +116,7 @@ export const useSoundPlayer = (props: {
     };
   }, []);
 
-  const initPlayer = useCallback(() => {
+  const initPlayer = useCallback(async () => {
     const initAudioContext = new AudioContext();
     audioContext.current = initAudioContext;
 
@@ -128,11 +129,33 @@ export const useSoundPlayer = (props: {
     analyser.connect(gain);
     gain.connect(initAudioContext.destination);
 
+    // Set the audio sink if a speaker device is specified
+    if (props.speakerDeviceId) {
+      try {
+        // Check if setSinkId is available on the audio context
+        if ('setSinkId' in initAudioContext) {
+          await (
+            initAudioContext as AudioContext & {
+              setSinkId: (id: string) => Promise<void>;
+            }
+          ).setSinkId(props.speakerDeviceId);
+        } else {
+          console.warn('setSinkId is not supported in this browser');
+          // Continue without setting the sink ID
+        }
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
+        console.warn(`Failed to set speaker device: ${errorMessage}`);
+        // Continue without setting the sink ID
+      }
+    }
+
     analyserNode.current = analyser;
     gainNode.current = gain;
 
     isInitialized.current = true;
-  }, []);
+  }, [props.speakerDeviceId, props.onError]);
 
   const addToQueue = useCallback(
     async (message: AudioOutputMessage) => {
@@ -152,6 +175,9 @@ export const useSoundPlayer = (props: {
           buffer: audioBuffer,
         });
         setQueueLength(clipQueue.current.length);
+
+        console.log('Added clip to queue:', message.id);
+        console.log('Queue length', clipQueue.current.length);
 
         // playNextClip will iterate the clipQueue upon finishing the playback of the current audio clip, so we can
         // just call playNextClip here if it's the only one in the queue
