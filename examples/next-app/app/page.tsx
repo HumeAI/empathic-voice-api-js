@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { Voice } from '@/components/Voice';
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const accessToken = await fetch(new URL('http://localhost:3003/access-token'))
     .then((res) => res.json())

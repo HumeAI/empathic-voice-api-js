@@ -34,7 +34,7 @@ const SelectTrigger = React.forwardRef<
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronsUpDown className="h-4 w-4 opacity-50" />
+      <ChevronsUpDown className="size-4 opacity-50" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
@@ -83,10 +83,10 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        'relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-white shadow-md',
+        'relative z-50 min-w-32 overflow-hidden rounded-md border bg-white shadow-md',
         'transition-all duration-200 ease-in-out',
-        'data-[state=open]:opacity-100 data-[state=closed]:opacity-0',
-        'data-[state=open]:translate-y-0 data-[state=closed]:translate-y-1',
+        'data-[state=closed]:opacity-0 data-[state=open]:opacity-100',
+        'data-[state=closed]:translate-y-1 data-[state=open]:translate-y-0',
         position === 'popper' &&
           'data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1',
         className,
@@ -136,9 +136,9 @@ const SelectItem = React.forwardRef<
     )}
     {...props}
   >
-    <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+    <span className="absolute left-2 flex size-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <CheckIcon className="h-4 w-4" />
+        <CheckIcon className="size-4" />
       </SelectPrimitive.ItemIndicator>
     </span>
     <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
