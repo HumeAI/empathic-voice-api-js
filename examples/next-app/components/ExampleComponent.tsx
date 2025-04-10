@@ -56,91 +56,146 @@ export const ExampleComponent = () => {
   }, [isPaused, resumeAssistant, pauseAssistant]);
   const pausedText = isPaused ? 'Resume' : 'Pause';
 
-  const callDuration = (
-    <div>
-      <div className={'text-sm font-medium uppercase'}>Call duration</div>
-      <div>{callDurationTimestamp ?? 'n/a'}</div>
-    </div>
-  );
-
   return (
     <div>
       <div className={'flex flex-col gap-4 font-light'}>
-        <div className="flex max-w-sm flex-col gap-4">
+        <div className="flex flex-col gap-4">
           {match(status.value)
             .with('connected', () => (
               <>
-                <div className="flex gap-6">
-                  {callDuration}
-                  <div>
-                    <div className={'text-sm font-medium uppercase'}>
+                <div className="grid grid-cols-2 gap-4 rounded-lg border border-neutral-700 bg-neutral-800 p-4">
+                  <div className="col-span-2 flex items-center justify-between border-b border-neutral-700 pb-2">
+                    <div className="text-sm font-medium text-neutral-300">
+                      Call Duration
+                    </div>
+                    <div className="text-sm text-neutral-100">
+                      {callDurationTimestamp ?? 'n/a'}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="text-sm font-medium text-neutral-300">
                       Playing
                     </div>
-                    <div>{isPlaying ? 'true' : 'false'}</div>
-                  </div>
-                  <div>
-                    <div className={'text-sm font-medium uppercase'}>
-                      Player queue length
+                    <div className="text-sm text-neutral-100">
+                      {isPlaying ? 'Yes' : 'No'}
                     </div>
-                    <div>{playerQueueLength}</div>
                   </div>
-                  <div>
-                    <div className={'text-sm font-medium uppercase'}>
-                      Ready state
+
+                  <div className="flex flex-col gap-1">
+                    <div className="text-sm font-medium text-neutral-300">
+                      Queue Length
                     </div>
-                    <div>{readyState}</div>
+                    <div className="text-sm text-neutral-100">
+                      {playerQueueLength}
+                    </div>
                   </div>
-                  <div>
-                    <div className={'text-sm font-medium uppercase'}>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="text-sm font-medium text-neutral-300">
+                      Ready State
+                    </div>
+                    <div className="text-sm text-neutral-100">{readyState}</div>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="text-sm font-medium text-neutral-300">
                       Request ID
                     </div>
-                    <div>{chatMetadata?.requestId}</div>
-                  </div>
-                  <div>
-                    <div className={'text-sm font-medium uppercase'}>
-                      Chat group ID
+                    <div className="text-sm text-neutral-100">
+                      {chatMetadata?.requestId || '-'}
                     </div>
-                    <div>{chatMetadata?.chatGroupId}</div>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="text-sm font-medium text-neutral-300">
+                      Chat Group ID
+                    </div>
+                    <div className="text-sm text-neutral-100">
+                      {chatMetadata?.chatGroupId || '-'}
+                    </div>
+                  </div>
+
+                  <div className="col-span-2 flex justify-start">
+                    <button
+                      className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-neutral-800"
+                      onClick={() => {
+                        disconnect();
+                      }}
+                    >
+                      Disconnect
+                    </button>
                   </div>
                 </div>
 
-                <button
-                  className="rounded border border-neutral-500 p-2"
-                  onClick={() => {
-                    disconnect();
-                  }}
-                >
-                  Disconnect
-                </button>
-                {isMuted ? (
-                  <button
-                    className="rounded border border-neutral-500 p-2"
-                    onClick={() => unmute()}
-                  >
-                    Unmute mic
-                  </button>
-                ) : (
-                  <button
-                    className="rounded border border-neutral-500 p-2"
-                    onClick={() => mute()}
-                  >
-                    Mute mic
-                  </button>
-                )}
-                <button
-                  className="rounded border border-neutral-500 p-2"
-                  onClick={() => (isAudioMuted ? unmuteAudio() : muteAudio())}
-                >
-                  {isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
-                </button>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className={'rounded-lg border border-neutral-700'}>
+                    <div className="p-2">User</div>
+                    <div className="flex flex-col items-center gap-2">
+                      <Waveform fft={micFft} />
+                    </div>
+                    <div className={'p-2'}>
+                      <button
+                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-neutral-800"
+                        onClick={() => (isMuted ? unmute() : mute())}
+                      >
+                        {isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
+                      </button>
+                    </div>
+                    <div className="border-t border-neutral-700 p-2">
+                      <div className={'text-sm font-medium'}>
+                        Last user message
+                      </div>
+                      <div>
+                        Received at:{' '}
+                        {lastUserMessage?.receivedAt.toTimeString() ?? 'n/a'}
+                      </div>
+                      <textarea
+                        className={
+                          'w-full bg-neutral-800 font-mono text-sm text-white'
+                        }
+                        value={JSON.stringify(lastUserMessage)}
+                        readOnly
+                      ></textarea>
+                    </div>
+                  </div>
+                  <div className={'rounded-lg border border-neutral-700'}>
+                    <div className="p-2">Assistant</div>
+                    <div className="flex flex-col items-center gap-2">
+                      <Waveform fft={audioFft} />
+                    </div>
+                    <div className={'p-2'}>
+                      <button
+                        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-neutral-800"
+                        onClick={() =>
+                          isAudioMuted ? unmuteAudio() : muteAudio()
+                        }
+                      >
+                        {isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
+                      </button>
+                    </div>
+                    <div className="border-t border-neutral-700 p-2">
+                      <div className={'text-sm font-medium'}>
+                        Last assistant message
+                      </div>
+                      <div>
+                        Received at:{' '}
+                        {lastVoiceMessage?.receivedAt.toTimeString() ?? 'n/a'}
+                      </div>
 
-                <div className="flex gap-10">
-                  <Waveform fft={audioFft} />
-                  <Waveform fft={micFft} />
+                      <textarea
+                        className={
+                          'w-full bg-neutral-800 font-mono text-sm text-white'
+                        }
+                        value={JSON.stringify(lastVoiceMessage)}
+                        readOnly
+                      ></textarea>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex flex-col justify-start gap-2">
-                  <div className="text-sm font-medium uppercase">
+                  <div className="text-sm font-medium text-neutral-300">
                     Send a text input message
                   </div>
                   <div className="flex gap-2">
@@ -153,20 +208,30 @@ export const ExampleComponent = () => {
                           }
                         }}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="border-neutral-600 bg-neutral-700 text-neutral-100">
                           <SelectValue placeholder="Select message input type" />
                           {textInputType === 'user' ? 'User' : 'Assistant'}
                         </SelectTrigger>
-                        <SelectContent className="bg-white">
-                          <SelectItem value="user">User</SelectItem>
-                          <SelectItem value="assistant">Assistant</SelectItem>
+                        <SelectContent className="border-neutral-600 bg-neutral-700">
+                          <SelectItem
+                            value="user"
+                            className="text-neutral-100 hover:bg-neutral-600"
+                          >
+                            User
+                          </SelectItem>
+                          <SelectItem
+                            value="assistant"
+                            className="text-neutral-100 hover:bg-neutral-600"
+                          >
+                            Assistant
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </SelectGroup>
                     <label className="flex grow flex-col gap-2">
                       <span className="sr-only">Text input content</span>
                       <input
-                        className="border px-2 py-1 text-black"
+                        className="rounded-lg border border-neutral-600 bg-neutral-700 px-3 py-2 text-neutral-100 placeholder:text-neutral-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                         placeholder="Write an input message here"
                         value={textValue}
                         onChange={(e) => setTextValue(e.target.value)}
@@ -175,7 +240,7 @@ export const ExampleComponent = () => {
                   </div>
 
                   <button
-                    className="border border-black p-2"
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-neutral-800"
                     onClick={() => {
                       const method =
                         textInputType === 'user'
@@ -184,11 +249,11 @@ export const ExampleComponent = () => {
                       method(textValue);
                     }}
                   >
-                    Send text input message
+                    Send Message
                   </button>
 
                   <button
-                    className="border border-black p-2"
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-neutral-800"
                     onClick={togglePaused}
                   >
                     {pausedText}
@@ -207,49 +272,12 @@ export const ExampleComponent = () => {
                     readOnly
                   ></textarea>
                 </div>
-
-                <div>
-                  <div className={'text-sm font-medium uppercase'}>
-                    Last assistant message
-                  </div>
-                  <div>
-                    Received at:{' '}
-                    {lastVoiceMessage?.receivedAt.toTimeString() ?? 'n/a'}
-                  </div>
-
-                  <textarea
-                    className={
-                      'w-full bg-neutral-800 font-mono text-sm text-white'
-                    }
-                    value={JSON.stringify(lastVoiceMessage)}
-                    readOnly
-                  ></textarea>
-                </div>
-
-                <div>
-                  <div className={'text-sm font-medium uppercase'}>
-                    Last user message
-                  </div>
-                  <div>
-                    Received at:{' '}
-                    {lastUserMessage?.receivedAt.toTimeString() ?? 'n/a'}
-                  </div>
-                  <textarea
-                    className={
-                      'w-full bg-neutral-800 font-mono text-sm text-white'
-                    }
-                    value={JSON.stringify(lastUserMessage)}
-                    readOnly
-                  ></textarea>
-                </div>
               </>
             ))
             .with('disconnected', () => (
               <>
-                {callDuration}
-
                 <button
-                  className="rounded border border-neutral-500 p-2"
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-neutral-800"
                   onClick={() => {
                     void connect();
                   }}
@@ -260,21 +288,13 @@ export const ExampleComponent = () => {
             ))
             .with('connecting', () => (
               <>
-                {callDuration}
-                <button
-                  className="cursor-not-allowed rounded border border-neutral-500 p-2"
-                  disabled
-                >
-                  Connecting...
-                </button>
+                <div className={'py-6'}>Connecting...</div>
               </>
             ))
             .with('error', () => (
               <div className="flex flex-col gap-4">
-                {callDuration}
-
                 <button
-                  className="rounded border border-neutral-500 p-2"
+                  className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-neutral-800"
                   onClick={() => {
                     void connect();
                   }}

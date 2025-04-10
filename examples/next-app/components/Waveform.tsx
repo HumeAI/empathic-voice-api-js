@@ -19,11 +19,12 @@ export const Waveform: FC<WaveformProps> = (props) => {
           <motion.rect
             className="transition-colors"
             key={index}
-            fill={'black'}
+            fill={'currentColor'}
             height={height}
             width={2}
             x={2 + (index * 100 - 4) / 24}
             y={yOffset}
+            rx={2}
           />
         );
       })}
