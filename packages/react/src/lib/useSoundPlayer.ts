@@ -1,5 +1,5 @@
 import { convertBase64ToBlob } from 'hume';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
