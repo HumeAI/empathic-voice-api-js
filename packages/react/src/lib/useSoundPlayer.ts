@@ -236,8 +236,8 @@ export const useSoundPlayer = (props: {
   const muteAudio = useCallback(() => {
     if (gainNode.current && audioContext.current) {
       gainNode.current.gain.setValueAtTime(0, audioContext.current.currentTime);
+      setIsAudioMuted(true);
     }
-    setIsAudioMuted(true);
   }, []);
 
   const unmuteAudio = useCallback(() => {
@@ -246,8 +246,8 @@ export const useSoundPlayer = (props: {
         volume,
         audioContext.current.currentTime,
       );
+      setIsAudioMuted(false);
     }
-    setIsAudioMuted(false);
   }, [volume]);
 
   return {
