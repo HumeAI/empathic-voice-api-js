@@ -87,6 +87,8 @@ export type VoiceContextType = {
   chatMetadata: ChatMetadataMessage | null;
   playerQueueLength: number;
   isPaused: boolean;
+  volume: number;
+  setVolume: (level: number) => void;
 };
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
@@ -521,6 +523,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         chatMetadata: messageStore.chatMetadata,
         playerQueueLength: player.queueLength,
         isPaused,
+        volume: player.volume,
+        setVolume: player.setVolume,
       }) satisfies VoiceContextType,
     [
       connect,
@@ -531,6 +535,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       player.muteAudio,
       player.unmuteAudio,
       player.queueLength,
+      player.volume,
+      player.setVolume,
       mic.fft,
       mic.isMuted,
       mic.mute,

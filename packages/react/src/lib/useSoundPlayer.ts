@@ -232,6 +232,19 @@ export const useSoundPlayer = (props: {
     }
   }, []);
 
+  /**
+   * Sets the playback volume. Level is clamped between 0.0 (silent) and 1.0 (original audio volume).
+   */
+  const setVolume = useCallback((level: number) => {
+    if (gainNode.current && audioContext.current) {
+      // Clamp volume between 0 and 1
+      const newVolume = Math.max(0, Math.min(1, level));
+      gainNode.current.gain.setValueAtTime(newVolume, audioContext.current.currentTime);
+      // Update mute state based on volume
+      setIsAudioMuted(newVolume === 0);
+    }
+  }, []);
+
   return {
     addToQueue,
     fft,
@@ -243,5 +256,7 @@ export const useSoundPlayer = (props: {
     stopAll,
     clearQueue,
     queueLength,
+    volume: gainNode.current?.gain?.value || 0,
+    setVolume,
   };
 };
