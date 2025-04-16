@@ -128,16 +128,13 @@ export const useSoundPlayer = (props: {
     analyser.fftSize = 2048; // Must be a power of 2
     analyser.connect(gain);
 
-    // Set initial gain based on whether initially muted or not
-    gain.gain.value = isAudioMuted ? 0 : volume;
-
     gain.connect(initAudioContext.destination);
 
     analyserNode.current = analyser;
     gainNode.current = gain;
 
     isInitialized.current = true;
-  }, [volume, isAudioMuted]);
+  }, []);
 
   const addToQueue = useCallback(
     async (message: AudioOutputMessage) => {
