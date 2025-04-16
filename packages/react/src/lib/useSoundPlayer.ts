@@ -1,5 +1,5 @@
 import { convertBase64ToBlob } from 'hume';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
@@ -12,6 +12,7 @@ export const useSoundPlayer = (props: {
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [volume, setVolumeState] = useState<number>(1.0);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
   const audioContext = useRef<AudioContext | null>(null);
@@ -126,13 +127,17 @@ export const useSoundPlayer = (props: {
 
     analyser.fftSize = 2048; // Must be a power of 2
     analyser.connect(gain);
+
+    // Set initial gain based on whether initially muted or not
+    gain.gain.value = isAudioMuted ? 0 : volume;
+
     gain.connect(initAudioContext.destination);
 
     analyserNode.current = analyser;
     gainNode.current = gain;
 
     isInitialized.current = true;
-  }, []);
+  }, [volume, isAudioMuted]);
 
   const addToQueue = useCallback(
     async (message: AudioOutputMessage) => {
@@ -218,19 +223,42 @@ export const useSoundPlayer = (props: {
     setFft(generateEmptyFft());
   }, []);
 
+  const setVolume = useCallback(
+    (newLevel: number) => {
+      const clampedLevel = Math.max(0, Math.min(newLevel, 1.0));
+      setVolumeState(clampedLevel);
+      if (gainNode.current && audioContext.current && !isAudioMuted) {
+        gainNode.current.gain.setValueAtTime(
+          clampedLevel,
+          audioContext.current.currentTime,
+        );
+      }
+    },
+    [isAudioMuted],
+  );
+
   const muteAudio = useCallback(() => {
-    if (gainNode.current && audioContext.current) {
+    if (gainNode.current && audioContext.current && !isAudioMuted) {
       gainNode.current.gain.setValueAtTime(0, audioContext.current.currentTime);
       setIsAudioMuted(true);
     }
-  }, []);
+  }, [isAudioMuted]);
 
   const unmuteAudio = useCallback(() => {
-    if (gainNode.current && audioContext.current) {
-      gainNode.current.gain.setValueAtTime(1, audioContext.current.currentTime);
+    if (gainNode.current && audioContext.current && isAudioMuted) {
+      gainNode.current.gain.setValueAtTime(
+        volume,
+        audioContext.current.currentTime,
+      );
       setIsAudioMuted(false);
     }
-  }, []);
+  }, [isAudioMuted, volume]);
+
+  useEffect(() => {
+    return () => {
+      stopAll();
+    };
+  }, [stopAll]);
 
   return {
     addToQueue,
@@ -243,5 +271,7 @@ export const useSoundPlayer = (props: {
     stopAll,
     clearQueue,
     queueLength,
+    volume,
+    setVolume,
   };
 };
