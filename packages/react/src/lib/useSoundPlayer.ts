@@ -127,7 +127,6 @@ export const useSoundPlayer = (props: {
 
     analyser.fftSize = 2048; // Must be a power of 2
     analyser.connect(gain);
-
     gain.connect(initAudioContext.destination);
 
     analyserNode.current = analyser;
@@ -235,21 +234,21 @@ export const useSoundPlayer = (props: {
   );
 
   const muteAudio = useCallback(() => {
-    if (gainNode.current && audioContext.current && !isAudioMuted) {
+    if (gainNode.current && audioContext.current) {
       gainNode.current.gain.setValueAtTime(0, audioContext.current.currentTime);
-      setIsAudioMuted(true);
     }
-  }, [isAudioMuted]);
+    setIsAudioMuted(true);
+  }, []);
 
   const unmuteAudio = useCallback(() => {
-    if (gainNode.current && audioContext.current && isAudioMuted) {
+    if (gainNode.current && audioContext.current) {
       gainNode.current.gain.setValueAtTime(
         volume,
         audioContext.current.currentTime,
       );
-      setIsAudioMuted(false);
     }
-  }, [isAudioMuted, volume]);
+    setIsAudioMuted(false);
+  }, [volume]);
 
   return {
     addToQueue,
