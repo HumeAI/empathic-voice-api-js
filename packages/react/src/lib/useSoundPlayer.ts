@@ -254,12 +254,6 @@ export const useSoundPlayer = (props: {
     }
   }, [isAudioMuted, volume]);
 
-  useEffect(() => {
-    return () => {
-      stopAll();
-    };
-  }, [stopAll]);
-
   return {
     addToQueue,
     fft,
