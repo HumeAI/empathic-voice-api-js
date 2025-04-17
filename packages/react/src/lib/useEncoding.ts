@@ -4,23 +4,21 @@ import { useCallback, useRef, useState } from 'react';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';
 
+export type AudioStreamOptions = {
+  echoCancellation?: boolean;
+  noiseSuppression?: boolean;
+  autoGainControl?: boolean;
+};
+
 const useEncoding = () => {
   const [permission, setPermission] = useState<PermissionStatus>('prompt');
 
   const streamRef = useRef<MediaStream | null>(null);
 
   const getStream = useCallback(
-    async (
-      echoCancellation: boolean = true,
-      noiseSuppression: boolean = true,
-      autoGainControl: boolean = true,
-    ) => {
+    async (audioStreamOptions: AudioStreamOptions = {}) => {
       try {
-        const stream = await getAudioStream(
-          echoCancellation,
-          noiseSuppression,
-          autoGainControl,
-        );
+        const stream = await getAudioStream(audioStreamOptions);
 
         setPermission('granted');
         streamRef.current = stream;
