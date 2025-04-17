@@ -11,7 +11,7 @@ const useEncoding = () => {
 
   const getStream = useCallback(async () => {
     try {
-      const stream = await getAudioStream();
+      const stream = await getAudioStream(true, false, true);
 
       setPermission('granted');
       streamRef.current = stream;
