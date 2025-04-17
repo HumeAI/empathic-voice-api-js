@@ -114,6 +114,7 @@ export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
    * @description The maximum number of messages to keep in memory.
    */
   messageHistoryLimit?: number;
+  noiseSuppression?: boolean;
 };
 
 export const useVoice = () => {
@@ -130,6 +131,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   messageHistoryLimit = 100,
   sessionSettings,
   verboseTranscription = true,
+  noiseSuppression = true,
   ...props
 }) => {
   const {
@@ -319,7 +321,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const connect = useCallback(async () => {
     updateError(null);
     setStatus({ value: 'connecting' });
-    const permission = await getStream();
+    const permission = await getStream(true, noiseSuppression, true);
 
     if (permission === 'denied') {
       const message = 'Microphone permission denied';
