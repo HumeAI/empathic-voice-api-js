@@ -114,7 +114,6 @@ export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
    * @description The maximum number of messages to keep in memory.
    */
   messageHistoryLimit?: number;
-  noiseSuppression?: boolean;
 };
 
 export const useVoice = () => {
