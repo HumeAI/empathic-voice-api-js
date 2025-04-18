@@ -2,13 +2,9 @@
 import { checkForAudioTracks, getAudioStream } from 'hume';
 import { useCallback, useRef, useState } from 'react';
 
-type PermissionStatus = 'prompt' | 'granted' | 'denied';
+import type { AudioConstraints } from '../models/connect-options';
 
-export type AudioStreamOptions = {
-  echoCancellation?: boolean;
-  noiseSuppression?: boolean;
-  autoGainControl?: boolean;
-};
+type PermissionStatus = 'prompt' | 'granted' | 'denied';
 
 const useEncoding = () => {
   const [permission, setPermission] = useState<PermissionStatus>('prompt');
@@ -16,9 +12,9 @@ const useEncoding = () => {
   const streamRef = useRef<MediaStream | null>(null);
 
   const getStream = useCallback(
-    async (audioStreamOptions: AudioStreamOptions = {}) => {
+    async (audioConstraints: AudioConstraints = {}) => {
       try {
-        const stream = await getAudioStream(audioStreamOptions);
+        const stream = await getAudioStream(audioConstraints);
 
         setPermission('granted');
         streamRef.current = stream;
