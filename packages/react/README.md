@@ -168,9 +168,13 @@ export function StartCallButton() {
 
 ### Methods
 
-#### `connect`: () => Promise
+#### `connect`: (options?: ConnectOptions) => Promise
 
 Opens a socket connection to the voice API and initializes the microphone.
+
+| Parameter | Type               | Description                               |
+| --------- | ------------------ | ----------------------------------------- |
+| `options` | `ConnectOptions`   | Optional settings for the connection.     |
 
 #### `disconnect`: () => void
 
@@ -309,6 +313,30 @@ Metadata about the current chat, including chat ID, chat group ID, and request I
 #### `playerQueueLength`: number
 
 The number of assistant audio clips that are queued up, including the clip that is currently playing.
+
+## Types
+
+###  `ConnectOptions`
+
+```ts
+export type ConnectOptions = {
+  /** Custom audio constraints passed to navigator.getUserMedia to get the microphone stream */
+  audioConstraints?: AudioConstraints;
+};
+```
+
+### `AudioConstraints`
+
+```ts
+export type AudioConstraints = {
+  /** Reduce echo from the input (if supported). Defaults to `true`. */
+  echoCancellation?: boolean;
+  /** Suppress background noise (if supported). Defaults to `true`.*/
+  noiseSuppression?: boolean;
+  /** Automatically adjust microphone gain (if supported). Defaults to `true`. */
+  autoGainControl?: boolean;
+};
+```
 
 ## Support
 
