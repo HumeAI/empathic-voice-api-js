@@ -14,7 +14,7 @@ import React, {
 import { ConnectionMessage } from './connection-message';
 import { noop } from './noop';
 import { useCallDuration } from './useCallDuration';
-import { useEncoding } from './useEncoding';
+import { AudioStreamOptions, useEncoding } from './useEncoding';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
@@ -124,6 +124,10 @@ export const useVoice = () => {
     throw new Error('useVoice must be used within an VoiceProvider');
   }
   return ctx;
+};
+
+export type ConnectConfig = {
+  audioStreamOptions?: AudioStreamOptions;
 };
 
 export const VoiceProvider: FC<VoiceProviderProps> = ({
@@ -318,53 +322,56 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
   }, [sendResumeAssistantMessage, updateError]);
 
-  const connect = useCallback(async () => {
-    updateError(null);
-    setStatus({ value: 'connecting' });
-    const permission = await getStream();
+  const connect = useCallback(
+    async (connectConfig: ConnectConfig = {}) => {
+      updateError(null);
+      setStatus({ value: 'connecting' });
+      const permission = await getStream(connectConfig.audioStreamOptions);
 
-    if (permission === 'denied') {
-      const message = 'Microphone permission denied';
-      const error: VoiceError = { type: 'mic_error', message };
-      updateError(error);
-      return Promise.reject(new Error(message));
-    }
-
-    try {
-      await client.connect({
-        ...config,
-        verboseTranscription: true,
-      });
-    } catch (e) {
-      const message = 'We could not connect to the voice. Please try again.';
-      const error: VoiceError = { type: 'socket_error', message };
-      updateError(error);
-      return Promise.reject(new Error(message));
-    }
-
-    try {
-      const [micPromise, playerPromise] = await Promise.allSettled([
-        mic.start(),
-        player.initPlayer(),
-      ]);
-
-      if (
-        micPromise.status === 'fulfilled' &&
-        playerPromise.status === 'fulfilled'
-      ) {
-        setStatus({ value: 'connected' });
+      if (permission === 'denied') {
+        const message = 'Microphone permission denied';
+        const error: VoiceError = { type: 'mic_error', message };
+        updateError(error);
+        return Promise.reject(new Error(message));
       }
-    } catch (e) {
-      const error: VoiceError = {
-        type: 'audio_error',
-        message:
-          e instanceof Error
-            ? e.message
-            : 'We could not connect to audio. Please try again.',
-      };
-      updateError(error);
-    }
-  }, [client, config, getStream, mic, player, updateError]);
+
+      try {
+        await client.connect({
+          ...config,
+          verboseTranscription: true,
+        });
+      } catch (e) {
+        const message = 'We could not connect to the voice. Please try again.';
+        const error: VoiceError = { type: 'socket_error', message };
+        updateError(error);
+        return Promise.reject(new Error(message));
+      }
+
+      try {
+        const [micPromise, playerPromise] = await Promise.allSettled([
+          mic.start(),
+          player.initPlayer(),
+        ]);
+
+        if (
+          micPromise.status === 'fulfilled' &&
+          playerPromise.status === 'fulfilled'
+        ) {
+          setStatus({ value: 'connected' });
+        }
+      } catch (e) {
+        const error: VoiceError = {
+          type: 'audio_error',
+          message:
+            e instanceof Error
+              ? e.message
+              : 'We could not connect to audio. Please try again.',
+        };
+        updateError(error);
+      }
+    },
+    [client, config, getStream, mic, player, updateError],
+  );
 
   const disconnectFromVoice = useCallback(() => {
     if (client.readyState !== VoiceReadyState.CLOSED) {
