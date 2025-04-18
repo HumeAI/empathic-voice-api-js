@@ -14,7 +14,7 @@ import React, {
 import { ConnectionMessage } from './connection-message';
 import { noop } from './noop';
 import { useCallDuration } from './useCallDuration';
-import { AudioStreamOptions, useEncoding } from './useEncoding';
+import { useEncoding } from './useEncoding';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
@@ -25,6 +25,7 @@ import {
   useVoiceClient,
   VoiceReadyState,
 } from './useVoiceClient';
+import { ConnectConfig } from '../models/connect-options';
 import {
   AssistantTranscriptMessage,
   AudioOutputMessage,
@@ -124,10 +125,6 @@ export const useVoice = () => {
     throw new Error('useVoice must be used within an VoiceProvider');
   }
   return ctx;
-};
-
-export type ConnectConfig = {
-  audioStreamOptions?: AudioStreamOptions;
 };
 
 export const VoiceProvider: FC<VoiceProviderProps> = ({
@@ -326,7 +323,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     async (connectConfig: ConnectConfig = {}) => {
       updateError(null);
       setStatus({ value: 'connecting' });
-      const permission = await getStream(connectConfig.audioStreamOptions);
+      const permission = await getStream(connectConfig.audioConstraints);
 
       if (permission === 'denied') {
         const message = 'Microphone permission denied';

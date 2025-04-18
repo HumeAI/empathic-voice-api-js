@@ -9,5 +9,6 @@ export * from './models/audio';
 export * from './models/llm';
 export * from './models/messages';
 export * from './models/ttsService';
+export * from './models/connect-options';
 
 export type { SocketConfig } from './lib/useVoiceClient';
