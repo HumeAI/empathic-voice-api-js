@@ -8,9 +8,11 @@ import type { AudioOutputMessage } from '../models/messages';
 export const useSoundPlayer = (props: {
   onError: (message: string) => void;
   onPlayAudio: (id: string) => void;
+  onStopAudio: (id: string) => void;
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
+  const [volume, setVolumeState] = useState<number>(1.0);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
   const audioContext = useRef<AudioContext | null>(null);
@@ -34,6 +36,9 @@ export const useSoundPlayer = (props: {
 
   const onPlayAudio = useRef<typeof props.onPlayAudio>(props.onPlayAudio);
   onPlayAudio.current = props.onPlayAudio;
+
+  const onStopAudio = useRef<typeof props.onStopAudio>(props.onStopAudio);
+  onStopAudio.current = props.onStopAudio;
 
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
@@ -105,6 +110,7 @@ export const useSoundPlayer = (props: {
       bufferSource.disconnect();
       isProcessing.current = false;
       setIsPlaying(false);
+      onStopAudio.current(nextClip.id);
       currentlyPlayingAudioBuffer.current = null;
       playNextClip();
     };
@@ -165,6 +171,8 @@ export const useSoundPlayer = (props: {
     isInitialized.current = false;
     isProcessing.current = false;
     setIsPlaying(false);
+    setIsAudioMuted(false);
+    setVolumeState(1.0);
 
     if (frequencyDataIntervalId.current) {
       window.clearInterval(frequencyDataIntervalId.current);
@@ -212,6 +220,20 @@ export const useSoundPlayer = (props: {
     setFft(generateEmptyFft());
   }, []);
 
+  const setVolume = useCallback(
+    (newLevel: number) => {
+      const clampedLevel = Math.max(0, Math.min(newLevel, 1.0));
+      setVolumeState(clampedLevel);
+      if (gainNode.current && audioContext.current && !isAudioMuted) {
+        gainNode.current.gain.setValueAtTime(
+          clampedLevel,
+          audioContext.current.currentTime,
+        );
+      }
+    },
+    [isAudioMuted],
+  );
+
   const muteAudio = useCallback(() => {
     if (gainNode.current && audioContext.current) {
       gainNode.current.gain.setValueAtTime(0, audioContext.current.currentTime);
@@ -221,10 +243,13 @@ export const useSoundPlayer = (props: {
 
   const unmuteAudio = useCallback(() => {
     if (gainNode.current && audioContext.current) {
-      gainNode.current.gain.setValueAtTime(1, audioContext.current.currentTime);
+      gainNode.current.gain.setValueAtTime(
+        volume,
+        audioContext.current.currentTime,
+      );
       setIsAudioMuted(false);
     }
-  }, []);
+  }, [volume]);
 
   return {
     addToQueue,
@@ -237,5 +262,7 @@ export const useSoundPlayer = (props: {
     stopAll,
     clearQueue,
     queueLength,
+    volume,
+    setVolume,
   };
 };

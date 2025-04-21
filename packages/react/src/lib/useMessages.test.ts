@@ -1,6 +1,8 @@
 import type { RenderHookResult } from '@testing-library/react-hooks';
 import { act, renderHook } from '@testing-library/react-hooks';
+import { fromPartial } from '@total-typescript/shoehorn';
 import type { Hume } from 'hume';
+import type { CloseEvent } from 'hume/core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMessages } from './useMessages'; // adjust the import path as needed
@@ -78,6 +80,7 @@ describe('useMessages hook', () => {
     );
     userMessage = {
       type: 'user_message',
+      interim: false,
       message: {
         role: 'user',
         content: 'How is the weather today?',
@@ -119,8 +122,13 @@ describe('useMessages hook', () => {
   });
 
   it('should handle disconnection message creation', () => {
+    const closeEvent = fromPartial<CloseEvent>({
+      code: 1000,
+      reason: 'Normal closure',
+    });
+
     act(() => {
-      hook.result.current.createDisconnectMessage();
+      hook.result.current.createDisconnectMessage(closeEvent);
     });
 
     expect(hook.result.current.messages).toHaveLength(1);
@@ -239,10 +247,15 @@ describe('useMessages hook', () => {
   });
 
   it('should clear all messages and states on disconnect', () => {
+    const closeEvent = fromPartial<CloseEvent>({
+      code: 1000,
+      reason: 'Normal closure',
+    });
+
     // First, add some messages and states
     act(() => {
       hook.result.current.createConnectMessage();
-      hook.result.current.createDisconnectMessage();
+      hook.result.current.createDisconnectMessage(closeEvent);
     });
 
     // Then, disconnect
@@ -253,5 +266,23 @@ describe('useMessages hook', () => {
     expect(hook.result.current.messages).toHaveLength(0);
     expect(hook.result.current.lastVoiceMessage).toBeNull();
     expect(hook.result.current.lastUserMessage).toBeNull();
+  });
+
+  it('should not add interim user messages to `messages` or `lastUserMessage`, but does call `sendMessageToParent`', () => {
+    act(() => {
+      hook.result.current.onMessage({
+        ...userMessage,
+        interim: true,
+        receivedAt: new Date(1),
+      });
+    });
+
+    expect(hook.result.current.messages).toMatchObject([]);
+    expect(hook.result.current.lastUserMessage).toBe(null);
+    expect(sendMessageToParent).toHaveBeenCalledWith({
+      ...userMessage,
+      interim: true,
+      receivedAt: new Date(1),
+    });
   });
 });

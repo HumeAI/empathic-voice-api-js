@@ -1,3 +1,4 @@
+import type { CloseEvent } from 'hume/core';
 import { useCallback, useState } from 'react';
 
 import type { ConnectionMessage } from './connection-message';
@@ -44,11 +45,13 @@ export const useMessages = ({
     );
   }, []);
 
-  const createDisconnectMessage = useCallback(() => {
+  const createDisconnectMessage = useCallback((event: CloseEvent) => {
     setMessages((prev) =>
       prev.concat([
         {
           type: 'socket_disconnected',
+          code: event.code,
+          reason: event.reason,
           receivedAt: new Date(),
         },
       ]),
@@ -76,10 +79,17 @@ export const useMessages = ({
           break;
         case 'user_message':
           sendMessageToParent?.(message);
-          setLastUserMessage(message);
-          setMessages((prev) => {
-            return keepLastN(messageHistoryLimit, prev.concat([message]));
-          });
+
+          // Exclude interim messages from the messages array.
+          // If end users want to see interim messages, they can use the onMessage
+          // callback because we are still sending them via `sendMessageToParent`.
+          if (message.interim === false) {
+            setLastUserMessage(message);
+            setMessages((prev) => {
+              return keepLastN(messageHistoryLimit, prev.concat([message]));
+            });
+          }
+
           break;
         case 'user_interruption':
         case 'error':

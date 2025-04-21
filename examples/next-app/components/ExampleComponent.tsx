@@ -39,24 +39,32 @@ export const ExampleComponent = () => {
     playerQueueLength,
     lastUserMessage,
     lastVoiceMessage,
+    isPaused,
+    volume,
+    setVolume,
   } = useVoice();
 
   const [textValue, setTextValue] = useState('');
   const [textInputType, setTextInputType] = useState<'user' | 'assistant'>(
     'user',
   );
-  const [paused, setPaused] = useState(false);
 
   const togglePaused = useCallback(() => {
-    if (paused) {
+    if (isPaused) {
       resumeAssistant();
-      setPaused(false);
     } else {
       pauseAssistant();
-      setPaused(true);
     }
-  }, [paused, resumeAssistant, pauseAssistant]);
-  const pausedText = paused ? 'Resume' : 'Pause';
+  }, [isPaused, resumeAssistant, pauseAssistant]);
+  const pausedText = isPaused ? 'Resume' : 'Pause';
+
+  const handleVolumeChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const newVolume = parseFloat(event.target.value);
+      setVolume(newVolume);
+    },
+    [setVolume],
+  );
 
   const callDuration = (
     <div>
@@ -135,6 +143,25 @@ export const ExampleComponent = () => {
                 >
                   {isAudioMuted ? 'Unmute Audio' : 'Mute Audio'}
                 </button>
+
+                <div className="flex flex-col gap-1 pt-2">
+                  <label
+                    htmlFor="volumeSlider"
+                    className="text-sm font-medium uppercase"
+                  >
+                    Volume ({Math.round(volume * 100)}%)
+                  </label>
+                  <input
+                    id="volumeSlider"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={volume}
+                    onChange={handleVolumeChange}
+                    disabled={isAudioMuted}
+                  />
+                </div>
 
                 <div className="flex gap-10">
                   <Waveform fft={audioFft} />
