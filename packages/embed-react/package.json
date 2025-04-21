@@ -1,6 +1,6 @@
 {
   "name": "@humeai/voice-embed-react",
-  "version": "0.1.21",
+  "version": "0.1.22",
   "description": "",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
