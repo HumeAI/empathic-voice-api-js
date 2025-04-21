@@ -4,6 +4,6 @@ export type AudioConstraints = {
   autoGainControl?: boolean;
 };
 
-export type ConnectConfig = {
+export type ConnectOptions = {
   audioConstraints?: AudioConstraints;
 };

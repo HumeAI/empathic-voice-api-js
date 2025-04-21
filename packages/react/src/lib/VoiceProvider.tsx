@@ -25,7 +25,7 @@ import {
   useVoiceClient,
   VoiceReadyState,
 } from './useVoiceClient';
-import { ConnectConfig } from '../models/connect-options';
+import { ConnectOptions } from '../models/connect-options';
 import {
   AssistantTranscriptMessage,
   AudioOutputMessage,
@@ -51,7 +51,7 @@ type VoiceStatus =
     };
 
 export type VoiceContextType = {
-  connect: () => Promise<void>;
+  connect: (options?: ConnectOptions) => Promise<void>;
   disconnect: () => void;
   fft: number[];
   isMuted: boolean;
@@ -320,10 +320,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, [sendResumeAssistantMessage, updateError]);
 
   const connect = useCallback(
-    async (connectConfig: ConnectConfig = {}) => {
+    async (options: ConnectOptions = {}) => {
       updateError(null);
       setStatus({ value: 'connecting' });
-      const permission = await getStream(connectConfig.audioConstraints);
+      const permission = await getStream(options.audioConstraints);
 
       if (permission === 'denied') {
         const message = 'Microphone permission denied';
