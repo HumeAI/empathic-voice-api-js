@@ -101,6 +101,13 @@ export const useSoundPlayer = (props: {
 
       const pcmData = audioBuffer.getChannelData(0);
 
+      if (gainNode.current) {
+        const now = audioContext.current.currentTime;
+        gainNode.current.gain.cancelScheduledValues(now);
+        const targetGain = isAudioMuted ? 0 : volume;
+        gainNode.current.gain.setValueAtTime(targetGain, now);
+      }
+
       workletNode.current?.port.postMessage({ type: 'audio', data: pcmData });
 
       setIsPlaying(true);
@@ -111,7 +118,31 @@ export const useSoundPlayer = (props: {
     }
   }, []);
 
-  const stopAll = useCallback(() => {
+  const fadeOutAndPostStopMessage = async (type: 'end' | 'clear') => {
+    const FADE_DURATION = 0.1;
+    if (!gainNode.current || !audioContext.current) {
+      workletNode.current?.port.postMessage({ type });
+      return;
+    }
+
+    const now = audioContext.current.currentTime;
+    const FADE_TARGET = 0.0001;
+
+    gainNode.current.gain.cancelScheduledValues(now);
+    gainNode.current.gain.setValueAtTime(gainNode.current.gain.value, now);
+    gainNode.current.gain.exponentialRampToValueAtTime(
+      FADE_TARGET,
+      now + FADE_DURATION,
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, FADE_DURATION * 1000));
+
+    workletNode.current?.port.postMessage({ type });
+
+    gainNode.current.gain.setValueAtTime(1.0, audioContext.current.currentTime);
+  };
+
+  const stopAll = useCallback(async () => {
     isInitialized.current = false;
     isProcessing.current = false;
     setIsPlaying(false);
@@ -121,6 +152,8 @@ export const useSoundPlayer = (props: {
     if (frequencyDataIntervalId.current) {
       window.clearInterval(frequencyDataIntervalId.current);
     }
+
+    await fadeOutAndPostStopMessage('end');
 
     if (analyserNode.current) {
       analyserNode.current.disconnect();
@@ -142,7 +175,6 @@ export const useSoundPlayer = (props: {
     }
 
     if (workletNode.current) {
-      workletNode.current.port.postMessage({ type: 'end' });
       workletNode.current.port.close();
       workletNode.current.disconnect();
       workletNode.current = null;
@@ -152,7 +184,7 @@ export const useSoundPlayer = (props: {
   }, []);
 
   const clearQueue = useCallback(() => {
-    workletNode.current?.port.postMessage({ type: 'clear' });
+    void fadeOutAndPostStopMessage('clear');
     isProcessing.current = false;
     setIsPlaying(false);
     setFft(generateEmptyFft());
