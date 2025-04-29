@@ -120,13 +120,14 @@ export const useSoundPlayer = (props: {
 
   const fadeOutAndPostStopMessage = async (type: 'end' | 'clear') => {
     const FADE_DURATION = 0.1;
+    const FADE_TARGET = 0.0001; // exponential cannot reach 0
+
     if (!gainNode.current || !audioContext.current) {
       workletNode.current?.port.postMessage({ type });
       return;
     }
 
     const now = audioContext.current.currentTime;
-    const FADE_TARGET = 0.0001;
 
     gainNode.current.gain.cancelScheduledValues(now);
     gainNode.current.gain.setValueAtTime(gainNode.current.gain.value, now);
