@@ -142,6 +142,8 @@ export const useSoundPlayer = (props: {
     }
 
     if (workletNode.current) {
+      workletNode.current.port.postMessage({ type: 'end' });
+      workletNode.current.port.close();
       workletNode.current.disconnect();
       workletNode.current = null;
     }
