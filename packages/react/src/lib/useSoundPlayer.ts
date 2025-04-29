@@ -18,20 +18,10 @@ export const useSoundPlayer = (props: {
   const audioContext = useRef<AudioContext | null>(null);
   const analyserNode = useRef<AnalyserNode | null>(null);
   const gainNode = useRef<GainNode | null>(null);
+  const workletNode = useRef<AudioWorkletNode | null>(null);
   const isInitialized = useRef(false);
 
-  const clipQueue = useRef<
-    Array<{
-      id: string;
-      buffer: AudioBuffer;
-    }>
-  >([]);
-  const [queueLength, setQueueLength] = useState(0);
-
   const isProcessing = useRef(false);
-  const currentlyPlayingAudioBuffer = useRef<AudioBufferSourceNode | null>(
-    null,
-  );
   const frequencyDataIntervalId = useRef<number | null>(null);
 
   const onPlayAudio = useRef<typeof props.onPlayAudio>(props.onPlayAudio);
@@ -43,129 +33,83 @@ export const useSoundPlayer = (props: {
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
 
-  const playNextClip = useCallback(() => {
-    if (analyserNode.current === null || audioContext.current === null) {
-      onError.current('Audio environment is not initialized');
-      return;
-    }
+  const initPlayer = useCallback(async () => {
+    try {
+      const initAudioContext = new AudioContext();
+      audioContext.current = initAudioContext;
 
-    if (clipQueue.current.length === 0 || isProcessing.current) {
-      setQueueLength(0);
-      return;
-    }
+      // Use AnalyserNode to get fft frequency data for visualizations
+      const analyser = initAudioContext.createAnalyser();
+      // Use GainNode to adjust volume
+      const gain = initAudioContext.createGain();
 
-    const nextClip = clipQueue.current.shift();
-    setQueueLength(clipQueue.current.length);
+      analyser.fftSize = 2048; // Must be a power of 2
+      analyser.connect(gain);
+      gain.connect(initAudioContext.destination);
 
-    if (!nextClip) return;
+      analyserNode.current = analyser;
+      gainNode.current = gain;
 
-    isProcessing.current = true;
-    setIsPlaying(true);
+      await initAudioContext.audioWorklet
+        .addModule(
+          'https://storage.googleapis.com/garrett-worklet-test/audio-worklet.js',
+        )
+        .catch((e) => {
+          console.log(e);
+        });
 
-    // Use AudioBufferSourceNode for audio playback.
-    // Safari suffered a truncation issue using HTML5 audio playback
-    const bufferSource = audioContext.current.createBufferSource();
+      const worklet = new AudioWorkletNode(initAudioContext, 'audio-processor');
+      worklet.connect(analyser);
+      workletNode.current = worklet;
 
-    bufferSource.buffer = nextClip.buffer;
+      worklet.port.onmessage = (e: MessageEvent) => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        if (e.data?.type === 'ended') {
+          setIsPlaying(false);
+          onStopAudio.current('stream');
+        }
+      };
 
-    bufferSource.connect(analyserNode.current);
-
-    currentlyPlayingAudioBuffer.current = bufferSource;
-
-    const updateFrequencyData = () => {
-      try {
-        const bufferSampleRate = bufferSource.buffer?.sampleRate;
-
-        if (!analyserNode.current || typeof bufferSampleRate === 'undefined')
-          return;
-
-        const dataArray = new Uint8Array(
-          analyserNode.current.frequencyBinCount,
-        ); // frequencyBinCount is 1/2 of fftSize
-        analyserNode.current.getByteFrequencyData(dataArray); // Using getByteFrequencyData for performance
+      frequencyDataIntervalId.current = window.setInterval(() => {
+        const dataArray = new Uint8Array(analyser.frequencyBinCount); // frequencyBinCount is 1/2 of fftSize
+        analyser.getByteFrequencyData(dataArray); // Using getByteFrequencyData for performance
 
         const barkFrequencies = convertLinearFrequenciesToBark(
           dataArray,
-          bufferSampleRate,
+          initAudioContext.sampleRate,
         );
         setFft(() => barkFrequencies);
-      } catch (e) {
-        setFft(generateEmptyFft());
-      }
-    };
+      }, 5);
 
-    frequencyDataIntervalId.current = window.setInterval(
-      updateFrequencyData,
-      5,
-    );
-
-    bufferSource.start(0);
-    onPlayAudio.current(nextClip.id);
-
-    bufferSource.onended = () => {
-      if (frequencyDataIntervalId.current) {
-        clearInterval(frequencyDataIntervalId.current);
-      }
-      setFft(generateEmptyFft());
-      bufferSource.disconnect();
-      isProcessing.current = false;
-      setIsPlaying(false);
-      onStopAudio.current(nextClip.id);
-      currentlyPlayingAudioBuffer.current = null;
-      playNextClip();
-    };
+      isInitialized.current = true;
+    } catch (e) {
+      onError.current('Failed to initialize audio player');
+    }
   }, []);
 
-  const initPlayer = useCallback(() => {
-    const initAudioContext = new AudioContext();
-    audioContext.current = initAudioContext;
+  const addToQueue = useCallback(async (message: AudioOutputMessage) => {
+    if (!isInitialized.current || !audioContext.current) {
+      onError.current('Audio player has not been initialized');
+      return;
+    }
 
-    // Use AnalyserNode to get fft frequency data for visualizations
-    const analyser = initAudioContext.createAnalyser();
-    // Use GainNode to adjust volume
-    const gain = initAudioContext.createGain();
+    try {
+      const blob = convertBase64ToBlob(message.data);
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioBuffer =
+        await audioContext.current.decodeAudioData(arrayBuffer);
 
-    analyser.fftSize = 2048; // Must be a power of 2
-    analyser.connect(gain);
-    gain.connect(initAudioContext.destination);
+      const pcmData = audioBuffer.getChannelData(0);
 
-    analyserNode.current = analyser;
-    gainNode.current = gain;
+      workletNode.current?.port.postMessage({ type: 'audio', data: pcmData });
 
-    isInitialized.current = true;
+      setIsPlaying(true);
+      onPlayAudio.current(message.id);
+    } catch (e) {
+      const eMessage = e instanceof Error ? e.message : 'Unknown error';
+      onError.current(`Failed to add clip to queue: ${eMessage}`);
+    }
   }, []);
-
-  const addToQueue = useCallback(
-    async (message: AudioOutputMessage) => {
-      if (!isInitialized.current || !audioContext.current) {
-        onError.current('Audio player has not been initialized');
-        return;
-      }
-
-      try {
-        const blob = convertBase64ToBlob(message.data);
-        const arrayBuffer = await blob.arrayBuffer();
-        const audioBuffer =
-          await audioContext.current.decodeAudioData(arrayBuffer);
-
-        clipQueue.current.push({
-          id: message.id,
-          buffer: audioBuffer,
-        });
-        setQueueLength(clipQueue.current.length);
-
-        // playNextClip will iterate the clipQueue upon finishing the playback of the current audio clip, so we can
-        // just call playNextClip here if it's the only one in the queue
-        if (clipQueue.current.length === 1) {
-          playNextClip();
-        }
-      } catch (e) {
-        const eMessage = e instanceof Error ? e.message : 'Unknown error';
-        onError.current(`Failed to add clip to queue: ${eMessage}`);
-      }
-    },
-    [playNextClip],
-  );
 
   const stopAll = useCallback(() => {
     isInitialized.current = false;
@@ -176,11 +120,6 @@ export const useSoundPlayer = (props: {
 
     if (frequencyDataIntervalId.current) {
       window.clearInterval(frequencyDataIntervalId.current);
-    }
-
-    if (currentlyPlayingAudioBuffer.current) {
-      currentlyPlayingAudioBuffer.current.disconnect();
-      currentlyPlayingAudioBuffer.current = null;
     }
 
     if (analyserNode.current) {
@@ -202,19 +141,16 @@ export const useSoundPlayer = (props: {
         });
     }
 
-    clipQueue.current = [];
-    setQueueLength(0);
+    if (workletNode.current) {
+      workletNode.current.disconnect();
+      workletNode.current = null;
+    }
+
     setFft(generateEmptyFft());
   }, []);
 
   const clearQueue = useCallback(() => {
-    if (currentlyPlayingAudioBuffer.current) {
-      currentlyPlayingAudioBuffer.current.stop();
-      currentlyPlayingAudioBuffer.current = null;
-    }
-
-    clipQueue.current = [];
-    setQueueLength(0);
+    workletNode.current?.port.postMessage({ type: 'clear' });
     isProcessing.current = false;
     setIsPlaying(false);
     setFft(generateEmptyFft());
@@ -261,7 +197,6 @@ export const useSoundPlayer = (props: {
     unmuteAudio,
     stopAll,
     clearQueue,
-    queueLength,
     volume,
     setVolume,
   };
