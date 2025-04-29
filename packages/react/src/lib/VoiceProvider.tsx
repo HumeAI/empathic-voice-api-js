@@ -86,7 +86,6 @@ export type VoiceContextType = {
   callDurationTimestamp: string | null;
   toolStatusStore: ReturnType<typeof useToolStatus>['store'];
   chatMetadata: ChatMetadataMessage | null;
-  playerQueueLength: number;
   isPaused: boolean;
   volume: number;
   setVolume: (level: number) => void;
@@ -525,7 +524,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         callDurationTimestamp,
         toolStatusStore: toolStatus.store,
         chatMetadata: messageStore.chatMetadata,
-        playerQueueLength: player.queueLength,
         isPaused,
         volume: player.volume,
         setVolume: player.setVolume,
@@ -538,7 +536,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       player.isPlaying,
       player.muteAudio,
       player.unmuteAudio,
-      player.queueLength,
       mic.fft,
       mic.isMuted,
       mic.mute,
