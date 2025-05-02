@@ -1,11 +1,11 @@
 import { convertBase64ToBlob } from 'hume';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 
 import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
 import type { AudioOutputMessage } from '../models/messages';
 
-const FADE_DURATION = 0.1;
+const FADE_DURATION = 0.05;
 const FADE_TARGET = 0.0001;
 
 export const useSoundPlayer = (props: {
@@ -15,7 +15,6 @@ export const useSoundPlayer = (props: {
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
-  const isFadeCancelled = useRef(false);
   const [volume, setVolumeState] = useState<number>(1.0);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
 
@@ -125,25 +124,7 @@ export const useSoundPlayer = (props: {
     [isAudioMuted, volume],
   );
 
-  const waitForAudioTime = (
-    targetTime: number,
-    ctx: AudioContext,
-    isCancelled: () => boolean,
-  ): Promise<void> =>
-    new Promise((resolve) => {
-      const check = () => {
-        if (isCancelled()) return;
-
-        if (ctx.currentTime >= targetTime) {
-          resolve();
-        } else {
-          requestAnimationFrame(check);
-        }
-      };
-      check();
-    });
-
-  const fadeOutAndPostMessage = useCallback((type: 'end' | 'clear') => {
+  const fadeOutAndPostMessage = useCallback(async (type: 'end' | 'clear') => {
     if (!gainNode.current || !audioContext.current) {
       workletNode.current?.port.postMessage({ type });
       return;
@@ -158,12 +139,9 @@ export const useSoundPlayer = (props: {
       now + FADE_DURATION,
     );
 
-    isFadeCancelled.current = false;
-    //await waitForAudioTime(
-    //  now + FADE_DURATION,
-    //  audioContext.current,
-    //  () => isFadeCancelled.current,
-    //);
+    await new Promise((resolve) => {
+      setTimeout(resolve, FADE_DURATION * 1000);
+    });
 
     workletNode.current?.port.postMessage({ type });
 
@@ -173,13 +151,7 @@ export const useSoundPlayer = (props: {
     );
   }, []);
 
-  useEffect(() => {
-    return () => {
-      isFadeCancelled.current = true;
-    };
-  }, []);
-
-  const stopAll = useCallback(() => {
+  const stopAll = useCallback(async () => {
     isInitialized.current = false;
     isProcessing.current = false;
     setIsPlaying(false);
@@ -190,7 +162,7 @@ export const useSoundPlayer = (props: {
       window.clearInterval(frequencyDataIntervalId.current);
     }
 
-    fadeOutAndPostMessage('end');
+    await fadeOutAndPostMessage('end');
 
     if (analyserNode.current) {
       analyserNode.current.disconnect();
@@ -220,8 +192,8 @@ export const useSoundPlayer = (props: {
     setFft(generateEmptyFft());
   }, [fadeOutAndPostMessage]);
 
-  const clearQueue = useCallback(() => {
-    fadeOutAndPostMessage('clear');
+  const clearQueue = useCallback(async () => {
+    await fadeOutAndPostMessage('clear');
     isProcessing.current = false;
     setIsPlaying(false);
     setFft(generateEmptyFft());
