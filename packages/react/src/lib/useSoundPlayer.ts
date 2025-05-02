@@ -143,7 +143,7 @@ export const useSoundPlayer = (props: {
       check();
     });
 
-  const fadeOutAndPostMessage = useCallback(async (type: 'end' | 'clear') => {
+  const fadeOutAndPostMessage = useCallback((type: 'end' | 'clear') => {
     if (!gainNode.current || !audioContext.current) {
       workletNode.current?.port.postMessage({ type });
       return;
@@ -159,11 +159,11 @@ export const useSoundPlayer = (props: {
     );
 
     isFadeCancelled.current = false;
-    await waitForAudioTime(
-      now + FADE_DURATION,
-      audioContext.current,
-      () => isFadeCancelled.current,
-    );
+    //await waitForAudioTime(
+    //  now + FADE_DURATION,
+    //  audioContext.current,
+    //  () => isFadeCancelled.current,
+    //);
 
     workletNode.current?.port.postMessage({ type });
 
@@ -179,7 +179,7 @@ export const useSoundPlayer = (props: {
     };
   }, []);
 
-  const stopAll = useCallback(async () => {
+  const stopAll = useCallback(() => {
     isInitialized.current = false;
     isProcessing.current = false;
     setIsPlaying(false);
@@ -190,7 +190,7 @@ export const useSoundPlayer = (props: {
       window.clearInterval(frequencyDataIntervalId.current);
     }
 
-    await fadeOutAndPostMessage('end');
+    fadeOutAndPostMessage('end');
 
     if (analyserNode.current) {
       analyserNode.current.disconnect();
@@ -221,7 +221,7 @@ export const useSoundPlayer = (props: {
   }, [fadeOutAndPostMessage]);
 
   const clearQueue = useCallback(() => {
-    void fadeOutAndPostMessage('clear');
+    fadeOutAndPostMessage('clear');
     isProcessing.current = false;
     setIsPlaying(false);
     setFft(generateEmptyFft());
