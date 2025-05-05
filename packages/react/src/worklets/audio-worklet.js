@@ -85,7 +85,7 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
         case 'end':
           this._shouldStop = true;
           break;
-        case 'fade':
+        case 'fadeAndClear':
           this._fadeOutActive = true;
           this._fadeOutCounter = 0;
           break;
@@ -111,15 +111,15 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
   process(inputs, outputs) {
     const output = outputs[0];
     const frames = output[0].length;
-    const chans = output.length;
+    const channels = output.length;
 
     const block = this._bq.read();
 
     if (block) {
-      for (let ch = 0; ch < chans; ch++) {
+      for (let ch = 0; ch < channels; ch++) {
         const out = output[ch];
         for (let i = 0; i < frames; i++) {
-          let sample = block[i * chans + ch] ?? 0;
+          let sample = block[i * channels + ch] ?? 0;
 
           // Apply fade out if active
           if (this._fadeOutActive) {
@@ -154,7 +154,7 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
       return false;
     }
 
-    for (let ch = 0; ch < chans; ch++) {
+    for (let ch = 0; ch < channels; ch++) {
       output[ch].fill(0);
     }
 
