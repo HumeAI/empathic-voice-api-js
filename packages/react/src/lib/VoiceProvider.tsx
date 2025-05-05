@@ -232,7 +232,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           if (player.isPlaying) {
             onInterruption.current(message);
           }
-          player.clearQueue();
+          player.clearQueue({
+            fadeOut: message.type === 'user_interruption',
+          });
         }
 
         if (

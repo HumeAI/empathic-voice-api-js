@@ -5,9 +5,6 @@ import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
 import type { AudioOutputMessage } from '../models/messages';
 
-const FADE_DURATION = 0.05;
-const FADE_TARGET = 0.0001;
-
 export const useSoundPlayer = (props: {
   onError: (message: string) => void;
   onPlayAudio: (id: string) => void;
@@ -111,7 +108,7 @@ export const useSoundPlayer = (props: {
           const now = audioContext.current.currentTime;
           gainNode.current.gain.cancelScheduledValues(now);
           gainNode.current.gain.setValueAtTime(
-            volume,
+            isAudioMuted ? 0 : volume,
             audioContext.current.currentTime,
           );
         }
@@ -126,28 +123,7 @@ export const useSoundPlayer = (props: {
     [isAudioMuted, volume],
   );
 
-  const fadeOutAndPostMessage = useCallback(async (type: 'end' | 'clear') => {
-    if (!gainNode.current || !audioContext.current) {
-      workletNode.current?.port.postMessage({ type });
-      return;
-    }
-
-    const now = audioContext.current.currentTime;
-    gainNode.current.gain.cancelScheduledValues(now);
-    gainNode.current.gain.setValueAtTime(gainNode.current.gain.value, now);
-    gainNode.current.gain.exponentialRampToValueAtTime(
-      FADE_TARGET,
-      now + FADE_DURATION,
-    );
-    workletNode.current?.port.postMessage({ type });
-    /*await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(null);
-      }, FADE_DURATION * 1000);
-    });*/
-  }, []);
-
-  const stopAll = useCallback(async () => {
+  const stopAll = useCallback(() => {
     isInitialized.current = false;
     isProcessing.current = false;
     setIsPlaying(false);
@@ -158,7 +134,8 @@ export const useSoundPlayer = (props: {
       window.clearInterval(frequencyDataIntervalId.current);
     }
 
-    await fadeOutAndPostMessage('end');
+    workletNode.current?.port.postMessage({ type: 'fade' });
+    workletNode.current?.port.postMessage({ type: 'end' });
 
     if (analyserNode.current) {
       analyserNode.current.disconnect();
@@ -186,14 +163,23 @@ export const useSoundPlayer = (props: {
     }
 
     setFft(generateEmptyFft());
-  }, [fadeOutAndPostMessage]);
+  }, []);
 
-  const clearQueue = useCallback(async () => {
-    await fadeOutAndPostMessage('clear');
-    isProcessing.current = false;
-    setIsPlaying(false);
-    setFft(generateEmptyFft());
-  }, [fadeOutAndPostMessage]);
+  const clearQueue = useCallback(
+    ({
+      fadeOut,
+    }: {
+      fadeOut?: boolean;
+    } = {}) => {
+      if (fadeOut) workletNode.current?.port.postMessage({ type: 'fade' });
+      workletNode.current?.port.postMessage({ type: 'clear' });
+
+      isProcessing.current = false;
+      setIsPlaying(false);
+      setFft(generateEmptyFft());
+    },
+    [],
+  );
 
   const setVolume = useCallback(
     (newLevel: number) => {

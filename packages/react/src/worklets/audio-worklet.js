@@ -3,6 +3,15 @@ class BufferQueue {
     this._length = 0;
     this._buffers = [];
     this._hasPushed = false;
+
+    // For fading out
+    this._fadeOutDurationMs = 100;
+    this._sampleRate = sampleRate;
+    this._fadeOutSamplesCount = Math.floor(
+      (this._fadeOutDurationMs * this._sampleRate) / 1000,
+    );
+    this._fadeOutActive = false;
+    this._fadeOutCounter = 0;
   }
 
   push(buffer) {
@@ -85,8 +94,11 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
         case 'end':
           this._shouldStop = true;
           break;
+        case 'fade':
+          this._bq._fadeOutActive = true;
+          this._bq._fadeOutCounter = 0;
+          break;
         case 'clear':
-          this._bq.clear();
           this._shouldStop = false;
           break;
       }
@@ -105,19 +117,44 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
       for (let ch = 0; ch < chans; ch++) {
         const out = output[ch];
         for (let i = 0; i < frames; i++) {
-          out[i] = block[i * chans + ch];
+          let sample = block[i * chans + ch] ?? 0;
+
+          // Apply automatic fade-out if active
+          if (this._bq._fadeOutActive) {
+            const fadeProgress =
+              this._bq._fadeOutCounter / this._bq._fadeOutSamplesCount;
+            const gain = 1 - Math.min(fadeProgress, 1);
+            sample *= gain;
+          }
+
+          out[i] = sample;
         }
       }
-    } else {
-      if (this._shouldStop) {
-        // Stop worklet once we've finished playback
-        this.port.postMessage({ type: 'ended' });
-        return false;
+
+      // If we're currently fading out, increment the counter and end if complete
+      if (this._bq._fadeOutActive) {
+        this._bq._fadeOutCounter += frames;
+
+        if (this._bq._fadeOutCounter >= this._bq._fadeOutSamplesCount) {
+          this._bq._fadeOutActive = false;
+          this._bq._fadeOutCounter = 0;
+          this._bq.clear();
+          this.port.postMessage({ type: 'ended' });
+        }
       }
 
-      for (let ch = 0; ch < chans; ch++) {
-        output[ch].fill(0);
-      }
+      return true;
+    }
+
+    if (this._shouldStop) {
+      // Stop worklet once we've finished playback
+      this.port.postMessage({ type: 'ended' });
+      return false;
+    }
+
+    // Fill output with silence during fade-out or between clips
+    for (let ch = 0; ch < chans; ch++) {
+      output[ch].fill(0);
     }
 
     return true;
