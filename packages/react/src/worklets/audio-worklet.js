@@ -6,6 +6,8 @@ class BufferQueue {
 
     // For fading out
     this._fadeOutDurationMs = 100;
+    // sampleRate is part of AudioWorkletGlobalScope
+    // eslint-disable-next-line no-undef
     this._sampleRate = sampleRate;
     this._fadeOutSamplesCount = Math.floor(
       (this._fadeOutDurationMs * this._sampleRate) / 1000,
