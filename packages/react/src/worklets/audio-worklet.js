@@ -3,17 +3,6 @@ class BufferQueue {
     this._length = 0;
     this._buffers = [];
     this._hasPushed = false;
-
-    // For fading out
-    this._fadeOutDurationMs = 100;
-    // sampleRate is part of AudioWorkletGlobalScope
-    // eslint-disable-next-line no-undef
-    this._sampleRate = sampleRate;
-    this._fadeOutSamplesCount = Math.floor(
-      (this._fadeOutDurationMs * this._sampleRate) / 1000,
-    );
-    this._fadeOutActive = false;
-    this._fadeOutCounter = 0;
   }
 
   push(buffer) {
@@ -97,15 +86,26 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
           this._shouldStop = true;
           break;
         case 'fade':
-          this._bq._fadeOutActive = true;
-          this._bq._fadeOutCounter = 0;
+          this._fadeOutActive = true;
+          this._fadeOutCounter = 0;
           break;
         case 'clear':
+          this._bq.clear();
           this._shouldStop = false;
           break;
       }
     };
     this._shouldStop = false;
+
+    this._fadeOutDurationMs = 30;
+    // sampleRate is part of AudioWorkletGlobalScope
+    // eslint-disable-next-line no-undef
+    this._sampleRate = sampleRate;
+    this._fadeOutSamplesCount = Math.floor(
+      (this._fadeOutDurationMs * this._sampleRate) / 1000,
+    );
+    this._fadeOutActive = false;
+    this._fadeOutCounter = 0;
   }
 
   process(inputs, outputs) {
@@ -121,10 +121,10 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
         for (let i = 0; i < frames; i++) {
           let sample = block[i * chans + ch] ?? 0;
 
-          // Apply automatic fade-out if active
-          if (this._bq._fadeOutActive) {
+          // Apply fade out if active
+          if (this._fadeOutActive) {
             const fadeProgress =
-              this._bq._fadeOutCounter / this._bq._fadeOutSamplesCount;
+              this._fadeOutCounter / this._fadeOutSamplesCount;
             const gain = 1 - Math.min(fadeProgress, 1);
             sample *= gain;
           }
@@ -133,13 +133,14 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
         }
       }
 
-      // If we're currently fading out, increment the counter and end if complete
-      if (this._bq._fadeOutActive) {
-        this._bq._fadeOutCounter += frames;
+      // If we're currently fading out,
+      // increment the counter and end if complete
+      if (this._fadeOutActive) {
+        this._fadeOutCounter += frames;
 
-        if (this._bq._fadeOutCounter >= this._bq._fadeOutSamplesCount) {
-          this._bq._fadeOutActive = false;
-          this._bq._fadeOutCounter = 0;
+        if (this._fadeOutCounter >= this._fadeOutSamplesCount) {
+          this._fadeOutActive = false;
+          this._fadeOutCounter = 0;
           this._bq.clear();
           this.port.postMessage({ type: 'ended' });
         }
@@ -149,12 +150,10 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
     }
 
     if (this._shouldStop) {
-      // Stop worklet once we've finished playback
       this.port.postMessage({ type: 'ended' });
       return false;
     }
 
-    // Fill output with silence during fade-out or between clips
     for (let ch = 0; ch < chans; ch++) {
       output[ch].fill(0);
     }
