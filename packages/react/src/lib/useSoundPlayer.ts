@@ -171,8 +171,9 @@ export const useSoundPlayer = (props: {
     }: {
       fadeOut?: boolean;
     } = {}) => {
-      if (fadeOut) workletNode.current?.port.postMessage({ type: 'fade' });
-      workletNode.current?.port.postMessage({ type: 'clear' });
+      workletNode.current?.port.postMessage({
+        type: fadeOut ? 'fade' : 'clear',
+      });
 
       isProcessing.current = false;
       setIsPlaying(false);
