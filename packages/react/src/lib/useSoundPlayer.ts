@@ -87,40 +87,28 @@ export const useSoundPlayer = (props: {
     }
   }, []);
 
-  const addToQueue = useCallback(
-    async (message: AudioOutputMessage) => {
-      if (!isInitialized.current || !audioContext.current) {
-        onError.current('Audio player has not been initialized');
-        return;
-      }
+  const addToQueue = useCallback(async (message: AudioOutputMessage) => {
+    if (!isInitialized.current || !audioContext.current) {
+      onError.current('Audio player has not been initialized');
+      return;
+    }
 
-      try {
-        const blob = convertBase64ToBlob(message.data);
-        const arrayBuffer = await blob.arrayBuffer();
-        const audioBuffer =
-          await audioContext.current.decodeAudioData(arrayBuffer);
+    try {
+      const blob = convertBase64ToBlob(message.data);
+      const arrayBuffer = await blob.arrayBuffer();
+      const audioBuffer =
+        await audioContext.current.decodeAudioData(arrayBuffer);
 
-        const pcmData = audioBuffer.getChannelData(0);
-        workletNode.current?.port.postMessage({ type: 'audio', data: pcmData });
+      const pcmData = audioBuffer.getChannelData(0);
+      workletNode.current?.port.postMessage({ type: 'audio', data: pcmData });
 
-        if (gainNode.current) {
-          const now = audioContext.current.currentTime;
-          gainNode.current.gain.cancelScheduledValues(now);
-          gainNode.current.gain.setValueAtTime(
-            isAudioMuted ? 0 : volume,
-            audioContext.current.currentTime,
-          );
-        }
-
-        setIsPlaying(true);
-        onPlayAudio.current(message.id);
-      } catch (e) {
-        const eMessage = e instanceof Error ? e.message : 'Unknown error';
-        onError.current(`Failed to add clip to queue: ${eMessage}`);
-      }
-    },
-    [isAudioMuted, volume],
-  );
+      setIsPlaying(true);
+      onPlayAudio.current(message.id);
+    } catch (e) {
+      const eMessage = e instanceof Error ? e.message : 'Unknown error';
+      onError.current(`Failed to add clip to queue: ${eMessage}`);
+    }
+  }, []);
 
   const stopAll = useCallback(() => {
     isInitialized.current = false;

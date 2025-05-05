@@ -81,6 +81,10 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
       switch (e.data?.type) {
         case 'audio':
           this._bq.push(new Float32Array(e.data.data));
+          if (this._fadeOutActive) {
+            this._fadeOutActive = false;
+            this._fadeOutCounter = 0;
+          }
           break;
         case 'end':
           this._shouldStop = true;
