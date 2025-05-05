@@ -55,7 +55,8 @@ export const useSoundPlayer = (props: {
 
       await initAudioContext.audioWorklet
         .addModule(
-          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet.js',
+          //'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet.js',
+          'https://storage.googleapis.com/franc-worklet-test/worklet.js',
         )
         .catch((e) => {
           console.log(e);
@@ -104,15 +105,16 @@ export const useSoundPlayer = (props: {
           await audioContext.current.decodeAudioData(arrayBuffer);
 
         const pcmData = audioBuffer.getChannelData(0);
+        workletNode.current?.port.postMessage({ type: 'audio', data: pcmData });
 
         if (gainNode.current) {
           const now = audioContext.current.currentTime;
           gainNode.current.gain.cancelScheduledValues(now);
-          const targetGain = isAudioMuted ? 0 : volume;
-          gainNode.current.gain.setValueAtTime(targetGain, now);
+          gainNode.current.gain.setValueAtTime(
+            volume,
+            audioContext.current.currentTime,
+          );
         }
-
-        workletNode.current?.port.postMessage({ type: 'audio', data: pcmData });
 
         setIsPlaying(true);
         onPlayAudio.current(message.id);
@@ -131,24 +133,18 @@ export const useSoundPlayer = (props: {
     }
 
     const now = audioContext.current.currentTime;
-
     gainNode.current.gain.cancelScheduledValues(now);
     gainNode.current.gain.setValueAtTime(gainNode.current.gain.value, now);
     gainNode.current.gain.exponentialRampToValueAtTime(
       FADE_TARGET,
       now + FADE_DURATION,
     );
-
-    await new Promise((resolve) => {
-      setTimeout(resolve, FADE_DURATION * 1000);
-    });
-
     workletNode.current?.port.postMessage({ type });
-
-    gainNode.current?.gain.setValueAtTime(
-      1.0,
-      audioContext.current?.currentTime || 0,
-    );
+    /*await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(null);
+      }, FADE_DURATION * 1000);
+    });*/
   }, []);
 
   const stopAll = useCallback(async () => {
