@@ -52,7 +52,7 @@ export const useSoundPlayer = (props: {
 
       await initAudioContext.audioWorklet
         .addModule(
-          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet.js',
+          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet-20250506.js',
         )
         .catch((e) => {
           console.log(e);
@@ -100,7 +100,6 @@ export const useSoundPlayer = (props: {
         await audioContext.current.decodeAudioData(arrayBuffer);
 
       const pcmData = audioBuffer.getChannelData(0);
-
       workletNode.current?.port.postMessage({ type: 'audio', data: pcmData });
 
       setIsPlaying(true);
@@ -122,6 +121,9 @@ export const useSoundPlayer = (props: {
       window.clearInterval(frequencyDataIntervalId.current);
     }
 
+    workletNode.current?.port.postMessage({ type: 'fadeAndClear' });
+    workletNode.current?.port.postMessage({ type: 'end' });
+
     if (analyserNode.current) {
       analyserNode.current.disconnect();
       analyserNode.current = null;
@@ -142,7 +144,6 @@ export const useSoundPlayer = (props: {
     }
 
     if (workletNode.current) {
-      workletNode.current.port.postMessage({ type: 'end' });
       workletNode.current.port.close();
       workletNode.current.disconnect();
       workletNode.current = null;
@@ -152,7 +153,10 @@ export const useSoundPlayer = (props: {
   }, []);
 
   const clearQueue = useCallback(() => {
-    workletNode.current?.port.postMessage({ type: 'clear' });
+    workletNode.current?.port.postMessage({
+      type: 'fadeAndClear',
+    });
+
     isProcessing.current = false;
     setIsPlaying(false);
     setFft(generateEmptyFft());
