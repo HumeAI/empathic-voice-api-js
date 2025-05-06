@@ -215,6 +215,42 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
+  const audioResourcesRef = useRef({
+    playerInitialized: false,
+    micInitialized: false,
+    cleanupPlayer: () => {},
+    cleanupMic: () => {},
+  });
+
+  useEffect(() => {
+    audioResourcesRef.current.cleanupPlayer = player.stopAll;
+    audioResourcesRef.current.playerInitialized = true;
+  }, [player]);
+
+  const handleResourceCleanup = useCallback(() => {
+    if (audioResourcesRef.current.playerInitialized) {
+      try {
+        player.stopAll();
+      } catch (e) {
+        console.error('Error stopping audio player:', e);
+      }
+    }
+
+    if (audioResourcesRef.current.micInitialized) {
+      try {
+        audioResourcesRef.current.cleanupMic();
+      } catch (e) {
+        console.error('Error stopping microphone:', e);
+      }
+    }
+
+    if (clearMessagesOnDisconnect) {
+      messageStore.clearMessages();
+    }
+    toolStatus.clearStore();
+    setIsPaused(false);
+  }, [player, clearMessagesOnDisconnect, messageStore, toolStatus]);
+
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
       player.addToQueue(message);
@@ -257,9 +293,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       (event) => {
         stopTimer();
         messageStore.createDisconnectMessage(event);
+        handleResourceCleanup();
         onClose.current?.(event);
       },
-      [messageStore, stopTimer],
+      [messageStore, stopTimer, handleResourceCleanup],
     ),
     onToolCall: props.onToolCall,
   });
@@ -294,6 +331,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       [updateError],
     ),
   });
+
+  useEffect(() => {
+    audioResourcesRef.current.cleanupMic = mic.stop;
+    audioResourcesRef.current.micInitialized = true;
+  }, [mic]);
 
   const { clearQueue } = player;
 
@@ -373,21 +415,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
-    player.stopAll();
-    mic.stop();
-    if (clearMessagesOnDisconnect) {
-      messageStore.clearMessages();
-    }
-    toolStatus.clearStore();
-    setIsPaused(false);
-  }, [
-    client,
-    player,
-    mic,
-    clearMessagesOnDisconnect,
-    toolStatus,
-    messageStore,
-  ]);
+    handleResourceCleanup();
+  }, [client, handleResourceCleanup]);
 
   const disconnect = useCallback(
     (disconnectOnError?: boolean) => {
@@ -418,7 +447,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       setStatus({ value: 'error', reason: error.message });
       disconnectFromVoice();
     }
-  }, [status.value, disconnect, disconnectFromVoice, error]);
+  }, [status.value, disconnectFromVoice, error]);
 
   useEffect(() => {
     // disconnect from socket when the voice provider component unmounts
