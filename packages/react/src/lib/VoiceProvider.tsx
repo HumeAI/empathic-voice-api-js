@@ -219,22 +219,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   });
 
   const handleResourceCleanup = useCallback(() => {
-    try {
-      player.stopAll();
-      console.log('Audio player stopped');
-    } catch (e) {
-      console.error('Error stopping audio player:', e);
-    }
-
+    player.stopAll();
     if (micCleanUpRefs.current.isInitialized) {
-      try {
-        micCleanUpRefs.current.cleanup();
-        console.log('Microphone stopped');
-      } catch (e) {
-        console.error('Error stopping microphone:', e);
-      }
+      micCleanUpRefs.current.cleanup();
     }
-
     if (clearMessagesOnDisconnect) {
       messageStore.clearMessages();
     }
@@ -440,7 +428,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       setStatus({ value: 'error', reason: error.message });
       disconnectFromVoice();
     }
-  }, [status.value, disconnectFromVoice, error]);
+  }, [status.value, disconnect, disconnectFromVoice, error]);
 
   useEffect(() => {
     // disconnect from socket when the voice provider component unmounts
