@@ -52,7 +52,7 @@ export const useSoundPlayer = (props: {
 
       await initAudioContext.audioWorklet
         .addModule(
-          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet.js',
+          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet-20250506.js',
         )
         .catch((e) => {
           console.log(e);
