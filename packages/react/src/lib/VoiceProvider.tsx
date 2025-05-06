@@ -200,6 +200,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const config = props;
 
+  const micCleanUpRefs = useRef({
+    isInitialized: false,
+    cleanup: () => {},
+  });
+
   const player = useSoundPlayer({
     onError: (message) => {
       updateError({ type: 'audio_error', message });
@@ -213,32 +218,18 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
   });
 
-  const { streamRef, getStream, permission: micPermission } = useEncoding();
-
-  const audioResourcesRef = useRef({
-    playerInitialized: false,
-    micInitialized: false,
-    cleanupPlayer: () => {},
-    cleanupMic: () => {},
-  });
-
-  useEffect(() => {
-    audioResourcesRef.current.cleanupPlayer = player.stopAll;
-    audioResourcesRef.current.playerInitialized = true;
-  }, [player]);
-
   const handleResourceCleanup = useCallback(() => {
-    if (audioResourcesRef.current.playerInitialized) {
-      try {
-        player.stopAll();
-      } catch (e) {
-        console.error('Error stopping audio player:', e);
-      }
+    try {
+      player.stopAll();
+      console.log('Audio player stopped');
+    } catch (e) {
+      console.error('Error stopping audio player:', e);
     }
 
-    if (audioResourcesRef.current.micInitialized) {
+    if (micCleanUpRefs.current.isInitialized) {
       try {
-        audioResourcesRef.current.cleanupMic();
+        micCleanUpRefs.current.cleanup();
+        console.log('Microphone stopped');
       } catch (e) {
         console.error('Error stopping microphone:', e);
       }
@@ -250,6 +241,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     toolStatus.clearStore();
     setIsPaused(false);
   }, [player, clearMessagesOnDisconnect, messageStore, toolStatus]);
+
+  const { streamRef, getStream, permission: micPermission } = useEncoding();
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
@@ -333,8 +326,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   });
 
   useEffect(() => {
-    audioResourcesRef.current.cleanupMic = mic.stop;
-    audioResourcesRef.current.micInitialized = true;
+    micCleanUpRefs.current.cleanup = mic.stop;
+    micCleanUpRefs.current.isInitialized = true;
   }, [mic]);
 
   const { clearQueue } = player;
