@@ -21,6 +21,7 @@ describe('useSoundPlayer', () => {
     expect(result.current.volume).toBe(1.0); // full volume
     expect(result.current.isAudioMuted).toBe(false); // not muted
     expect(result.current.isPlaying).toBe(false); // not playing
+    expect(result.current.queueLength).toBe(0); // empty queue
     expect(result.current.fft).toEqual(generateEmptyFft()); // empty fft
   });
 });

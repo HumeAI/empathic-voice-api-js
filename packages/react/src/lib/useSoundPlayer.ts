@@ -1,5 +1,6 @@
 import { convertBase64ToBlob } from 'hume';
 import { useCallback, useRef, useState } from 'react';
+import z from 'zod';
 
 import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
@@ -14,6 +15,7 @@ export const useSoundPlayer = (props: {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [volume, setVolumeState] = useState<number>(1.0);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
+  const [queueLength, setQueueLength] = useState(0);
 
   const audioContext = useRef<AudioContext | null>(null);
   const analyserNode = useRef<AnalyserNode | null>(null);
@@ -52,7 +54,7 @@ export const useSoundPlayer = (props: {
 
       await initAudioContext.audioWorklet
         .addModule(
-          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet-20250506.js',
+          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet-20250507.js',
         )
         .catch((e) => {
           console.log(e);
@@ -63,10 +65,28 @@ export const useSoundPlayer = (props: {
       workletNode.current = worklet;
 
       worklet.port.onmessage = (e: MessageEvent) => {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-        if (e.data?.type === 'ended') {
+        const endedEvent = z
+          .object({
+            type: z.literal('ended'),
+          })
+          .safeParse(e.data);
+
+        if (endedEvent.success) {
           setIsPlaying(false);
           onStopAudio.current('stream');
+        }
+
+        const queueLengthEvent = z
+          .object({
+            type: z.literal('queueLength'),
+            length: z.number(),
+          })
+          .safeParse(e.data);
+        if (queueLengthEvent.success) {
+          if (queueLengthEvent.data.length === 0) {
+            setIsPlaying(false);
+          }
+          setQueueLength(queueLengthEvent.data.length);
         }
       };
 
@@ -205,5 +225,6 @@ export const useSoundPlayer = (props: {
     clearQueue,
     volume,
     setVolume,
+    queueLength,
   };
 };
