@@ -200,6 +200,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const config = props;
 
+  const micCleanUpFnRef = useRef<null | (() => void)>(null);
+
   const player = useSoundPlayer({
     onError: (message) => {
       updateError({ type: 'audio_error', message });
@@ -212,6 +214,28 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       onAudioEnd.current(id);
     },
   });
+
+  const handleResourceCleanup = useCallback(() => {
+    player.stopAll();
+    if (micCleanUpFnRef.current !== null) {
+      micCleanUpFnRef.current();
+    }
+    if (clearMessagesOnDisconnect) {
+      messageStore.clearMessages();
+    }
+    toolStatus.clearStore();
+    setIsPaused(false);
+
+    if (status.value !== 'error') {
+      setStatus({ value: 'disconnected' });
+    }
+  }, [
+    player,
+    clearMessagesOnDisconnect,
+    messageStore,
+    toolStatus,
+    status.value,
+  ]);
 
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
@@ -257,9 +281,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       (event) => {
         stopTimer();
         messageStore.createDisconnectMessage(event);
+        handleResourceCleanup();
         onClose.current?.(event);
       },
-      [messageStore, stopTimer],
+      [messageStore, stopTimer, handleResourceCleanup],
     ),
     onToolCall: props.onToolCall,
   });
@@ -294,6 +319,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       [updateError],
     ),
   });
+
+  useEffect(() => {
+    micCleanUpFnRef.current = mic.stop;
+  }, [mic]);
 
   const { clearQueue } = player;
 
@@ -373,21 +402,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
-    player.stopAll();
-    mic.stop();
-    if (clearMessagesOnDisconnect) {
-      messageStore.clearMessages();
-    }
-    toolStatus.clearStore();
-    setIsPaused(false);
-  }, [
-    client,
-    player,
-    mic,
-    clearMessagesOnDisconnect,
-    toolStatus,
-    messageStore,
-  ]);
+    handleResourceCleanup();
+  }, [client, handleResourceCleanup]);
 
   const disconnect = useCallback(
     (disconnectOnError?: boolean) => {
