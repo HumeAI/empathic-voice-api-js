@@ -200,10 +200,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const config = props;
 
-  const micCleanUpRefs = useRef({
-    isInitialized: false,
-    cleanup: () => {},
-  });
+  const micCleanUpFnRef = useRef<null | (() => void)>(null);
 
   const player = useSoundPlayer({
     onError: (message) => {
@@ -220,15 +217,25 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const handleResourceCleanup = useCallback(() => {
     player.stopAll();
-    if (micCleanUpRefs.current.isInitialized) {
-      micCleanUpRefs.current.cleanup();
+    if (micCleanUpFnRef.current !== null) {
+      micCleanUpFnRef.current();
     }
     if (clearMessagesOnDisconnect) {
       messageStore.clearMessages();
     }
     toolStatus.clearStore();
     setIsPaused(false);
-  }, [player, clearMessagesOnDisconnect, messageStore, toolStatus]);
+
+    if (status.value !== 'error') {
+      setStatus({ value: 'disconnected' });
+    }
+  }, [
+    player,
+    clearMessagesOnDisconnect,
+    messageStore,
+    toolStatus,
+    status.value,
+  ]);
 
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
@@ -314,8 +321,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   });
 
   useEffect(() => {
-    micCleanUpRefs.current.cleanup = mic.stop;
-    micCleanUpRefs.current.isInitialized = true;
+    micCleanUpFnRef.current = mic.stop;
   }, [mic]);
 
   const { clearQueue } = player;
