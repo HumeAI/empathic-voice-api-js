@@ -35,6 +35,25 @@ export const useSoundPlayer = (props: {
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
 
+  const loadAudioWorklet = useCallback(
+    async (ctx: AudioContext, attemptNumber = 1): Promise<boolean> => {
+      return ctx.audioWorklet
+        .addModule(
+          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet-20250507.js',
+        )
+        .then(() => {
+          return true;
+        })
+        .catch(() => {
+          if (attemptNumber >= 10) {
+            return false;
+          }
+          return loadAudioWorklet(ctx, attemptNumber + 1);
+        });
+    },
+    [],
+  );
+
   const initPlayer = useCallback(async () => {
     try {
       const initAudioContext = new AudioContext();
@@ -52,13 +71,11 @@ export const useSoundPlayer = (props: {
       analyserNode.current = analyser;
       gainNode.current = gain;
 
-      await initAudioContext.audioWorklet
-        .addModule(
-          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet-20250507.js',
-        )
-        .catch((e) => {
-          console.log(e);
-        });
+      const isWorkletLoaded = await loadAudioWorklet(initAudioContext);
+      if (!isWorkletLoaded) {
+        onError.current('Failed to load audio worklet');
+        return;
+      }
 
       const worklet = new AudioWorkletNode(initAudioContext, 'audio-processor');
       worklet.connect(analyser);
@@ -105,7 +122,7 @@ export const useSoundPlayer = (props: {
     } catch (e) {
       onError.current('Failed to initialize audio player');
     }
-  }, []);
+  }, [loadAudioWorklet]);
 
   const addToQueue = useCallback(async (message: AudioOutputMessage) => {
     if (!isInitialized.current || !audioContext.current) {
