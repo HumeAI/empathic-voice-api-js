@@ -57,6 +57,7 @@ export type VoiceContextType = {
   isMuted: boolean;
   isAudioMuted: boolean;
   isPlaying: boolean;
+  isReconnecting: boolean;
   messages: (JSONMessage | ConnectionMessage)[];
   lastVoiceMessage: AssistantTranscriptMessage | null;
   lastUserMessage: UserTranscriptMessage | null;
@@ -100,6 +101,7 @@ export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
+  onReconnected?: () => void;
   onToolCall?: ToolCallHandler;
   onAudioReceived?: (audioOutputMessage: AudioOutputMessage) => void;
   onAudioStart?: (clipId: string) => void;
@@ -146,6 +148,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   });
 
   const [isPaused, setIsPaused] = useState(false);
+  const [isReconnecting, setIsReconnecting] = useState(false);
+  const lastConnectionOptions = useRef<ConnectOptions | null>(null);
 
   // error handling
   const [error, setError] = useState<VoiceError | null>(null);
@@ -159,6 +163,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const onClose = useRef(props.onClose ?? noop);
   onClose.current = props.onClose ?? noop;
+
+  const onReconnected = useRef(props.onReconnected ?? noop);
+  onReconnected.current = props.onReconnected ?? noop;
 
   const onMessage = useRef(props.onMessage ?? noop);
   onMessage.current = props.onMessage ?? noop;
@@ -202,6 +209,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const config = props;
 
   const micCleanUpFnRef = useRef<null | (() => void)>(null);
+  const micStartFnRef = useRef<null | (() => void)>(null);
 
   const player = useSoundPlayer({
     onError: (message) => {
@@ -240,6 +248,41 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
+  const initializeResources = useCallback(
+    async (options: ConnectOptions = {}) => {
+      if (micStartFnRef.current === null) {
+        return false;
+      }
+
+      try {
+        const [micPromise, playerPromise] = await Promise.allSettled([
+          micStartFnRef.current(),
+          player.initPlayer(),
+        ]);
+
+        if (
+          micPromise.status === 'fulfilled' &&
+          playerPromise.status === 'fulfilled'
+        ) {
+          setStatus({ value: 'connected' });
+          return true;
+        }
+        return false;
+      } catch (e) {
+        const error: VoiceError = {
+          type: 'audio_error',
+          message:
+            e instanceof Error
+              ? e.message
+              : 'We could not connect to audio. Please try again.',
+        };
+        updateError(error);
+        return false;
+      }
+    },
+    [player, updateError, isReconnecting, getStream],
+  );
+
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
       player.addToQueue(message);
@@ -274,6 +317,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     onOpen: useCallback(() => {
       startTimer();
       messageStore.createConnectMessage();
+      setIsReconnecting(false);
       props.onOpen?.();
     }, [messageStore, props, startTimer]),
     onClose: useCallback<
@@ -282,7 +326,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       (event) => {
         stopTimer();
         messageStore.createDisconnectMessage(event);
-        handleResourceCleanup();
+
+        // Abnormal closes will trigger reconnections
+        if (event.code === 1006 || event.code === 1001) {
+          setIsReconnecting(true);
+        } else {
+          handleResourceCleanup();
+        }
+
         onClose.current?.(event);
       },
       [messageStore, stopTimer, handleResourceCleanup],
@@ -322,6 +373,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   });
 
   useEffect(() => {
+    micStartFnRef.current = mic.start;
     micCleanUpFnRef.current = mic.stop;
   }, [mic]);
 
@@ -352,6 +404,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     async (options: ConnectOptions = {}) => {
       updateError(null);
       setStatus({ value: 'connecting' });
+
+      lastConnectionOptions.current = options;
+
       const permission = await getStream(options.audioConstraints);
 
       if (permission === 'denied') {
@@ -373,30 +428,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return Promise.reject(new Error(message));
       }
 
-      try {
-        const [micPromise, playerPromise] = await Promise.allSettled([
-          mic.start(),
-          player.initPlayer(),
-        ]);
-
-        if (
-          micPromise.status === 'fulfilled' &&
-          playerPromise.status === 'fulfilled'
-        ) {
-          setStatus({ value: 'connected' });
-        }
-      } catch (e) {
-        const error: VoiceError = {
-          type: 'audio_error',
-          message:
-            e instanceof Error
-              ? e.message
-              : 'We could not connect to audio. Please try again.',
-        };
-        updateError(error);
-      }
+      await initializeResources(options);
     },
-    [client, config, getStream, mic, player, updateError],
+    [client, config, getStream, initializeResources, updateError],
   );
 
   const disconnectFromVoice = useCallback(() => {
@@ -517,6 +551,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         isMuted: mic.isMuted,
         isAudioMuted: player.isAudioMuted,
         isPlaying: player.isPlaying,
+        isReconnecting,
         messages: messageStore.messages,
         lastVoiceMessage: messageStore.lastVoiceMessage,
         lastUserMessage: messageStore.lastUserMessage,
@@ -582,6 +617,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       callDurationTimestamp,
       toolStatus.store,
       isPaused,
+      isReconnecting,
     ],
   );
 
