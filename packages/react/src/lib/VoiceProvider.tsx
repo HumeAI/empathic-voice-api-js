@@ -263,7 +263,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const initializeResources = useCallback(
     async (options: ConnectOptions = {}) => {
-      // Check if microphone permission is granted
       if (micStartFnRef.current === null) {
         return false;
       }
@@ -271,8 +270,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       try {
         // If we're reconnecting, we need to get a fresh MediaStream
         if (isReconnecting) {
-          console.log('Getting fresh media stream for reconnection');
-          // Get a fresh MediaStream for the microphone
           const permission = await getStream(options.audioConstraints);
 
           if (permission === 'denied') {
@@ -283,7 +280,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           }
         }
 
-        console.log('starting mic and player');
         const [micPromise, playerPromise] = await Promise.allSettled([
           micStartFnRef.current(),
           player.initPlayer(),
@@ -298,7 +294,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         }
         return false;
       } catch (e) {
-        console.error('Error initializing resources:', e);
         const error: VoiceError = {
           type: 'audio_error',
           message:
@@ -359,11 +354,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       startTimer();
       messageStore.createConnectMessage();
 
-      // Check if this is a reconnection
       if (isReconnecting) {
-        console.log('Reconnected to voice service');
-
-        // Reinitialize resources if we're reconnecting
         if (lastConnectionOptions.current) {
           void initializeResources(lastConnectionOptions.current).then(
             (success) => {
@@ -393,8 +384,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         stopTimer();
         messageStore.createDisconnectMessage(event);
 
-        // Set reconnecting flag based on close event
-        // Code 1006 is "Abnormal Closure" which often indicates unexpected disconnection
+        // Abnormal closes will trigger reconnections
         if (event.code === 1006 || event.code === 1001) {
           setIsReconnecting(true);
         }
