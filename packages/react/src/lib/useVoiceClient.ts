@@ -241,6 +241,10 @@ export const useVoiceClient = (props: {
       if (readyState !== VoiceReadyState.OPEN) {
         return;
       }
+      if (text === '__DISCONNECT__') {
+        client.current?.close();
+        return;
+      }
       client.current?.sendUserInput(text);
     },
     [readyState],
