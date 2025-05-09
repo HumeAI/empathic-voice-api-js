@@ -126,8 +126,6 @@ export const useSoundPlayer = (props: {
 
   const addToQueue = useCallback(async (message: AudioOutputMessage) => {
     if (!isInitialized.current || !audioContext.current) {
-      console.log('is initialized?', isInitialized.current);
-      console.log('audio context?', audioContext.current);
       onError.current('Audio player has not been initialized');
       return;
     }
