@@ -353,27 +353,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     onOpen: useCallback(() => {
       startTimer();
       messageStore.createConnectMessage();
-
-      if (isReconnecting) {
-        if (lastConnectionOptions.current) {
-          void initializeResources(lastConnectionOptions.current).then(
-            (success) => {
-              if (success) {
-                onReconnected.current?.();
-                setIsReconnecting(false);
-              }
-            },
-          );
-        } else {
-          void initializeResources().then((success) => {
-            if (success) {
-              onReconnected.current?.();
-              setIsReconnecting(false);
-            }
-          });
-        }
-      }
-
+      setIsReconnecting(false);
       props.onOpen?.();
       setShouldStopPlayer(false);
     }, [messageStore, props, startTimer]),
@@ -387,9 +367,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         // Abnormal closes will trigger reconnections
         if (event.code === 1006 || event.code === 1001) {
           setIsReconnecting(true);
+        } else {
+          handleResourceCleanup();
         }
 
-        handleResourceCleanup();
         onClose.current?.(event);
       },
       [messageStore, stopTimer, handleResourceCleanup],
