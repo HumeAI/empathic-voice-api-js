@@ -268,18 +268,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       }
 
       try {
-        // If we're reconnecting, we need to get a fresh MediaStream
-        if (isReconnecting) {
-          const permission = await getStream(options.audioConstraints);
-
-          if (permission === 'denied') {
-            const message = 'Microphone permission denied during reconnection';
-            const error: VoiceError = { type: 'mic_error', message };
-            updateError(error);
-            return false;
-          }
-        }
-
         const [micPromise, playerPromise] = await Promise.allSettled([
           micStartFnRef.current(),
           player.initPlayer(),
