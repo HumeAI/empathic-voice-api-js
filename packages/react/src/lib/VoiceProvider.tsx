@@ -458,11 +458,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const connect = useCallback(
     async (options: ConnectOptions = {}) => {
-      console.log('Connecting to voice...');
       updateError(null);
       setStatus({ value: 'connecting' });
 
-      // Store the options for potential reconnection
       lastConnectionOptions.current = options;
 
       const permission = await getStream(options.audioConstraints);
@@ -500,7 +498,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const disconnect = useCallback(
     (disconnectOnError?: boolean) => {
-      console.log('disconnecting from voice...');
       if (micPermission === 'denied') {
         setStatus({ value: 'error', reason: 'Microphone permission denied' });
       }
