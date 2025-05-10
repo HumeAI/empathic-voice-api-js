@@ -183,6 +183,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   });
 
   const updateError = useCallback((err: VoiceError | null) => {
+    console.log('running updateError', err);
     setError(err);
     if (err !== null) {
       onError.current?.(err);
@@ -358,7 +359,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         const message = 'Microphone permission denied';
         const error: VoiceError = { type: 'mic_error', message };
         updateError(error);
-        return Promise.reject(new Error(message));
+        return;
       }
 
       try {
@@ -367,10 +368,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           verboseTranscription: true,
         });
       } catch (e) {
-        const message = 'We could not connect to the voice. Please try again.';
+        const message =
+          'A websocket connection could not be established. Please try again.';
         const error: VoiceError = { type: 'socket_error', message };
         updateError(error);
-        return Promise.reject(new Error(message));
+        return;
       }
 
       try {
