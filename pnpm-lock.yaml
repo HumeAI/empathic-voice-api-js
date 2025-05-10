@@ -41,8 +41,8 @@ importers:
         specifier: ^11.0.28
         version: 11.2.10(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       hume:
-        specifier: 0.10.4-beta.3
-        version: 0.10.4-beta.3
+        specifier: 0.10.4-beta.2
+        version: 0.10.4-beta.2
       lucide-react:
         specifier: ^0.372.0
         version: 0.372.0(react@18.3.1)
@@ -138,8 +138,8 @@ importers:
   examples/vite-app:
     dependencies:
       hume:
-        specifier: 0.10.4-beta.3
-        version: 0.10.4-beta.3
+        specifier: 0.10.4-beta.2
+        version: 0.10.4-beta.2
     devDependencies:
       typescript:
         specifier: ^5.2.2
@@ -194,8 +194,8 @@ importers:
   packages/embed:
     dependencies:
       hume:
-        specifier: 0.10.4-beta.3
-        version: 0.10.4-beta.3
+        specifier: 0.10.4-beta.2
+        version: 0.10.4-beta.2
       zod:
         specifier: ^3.22.4
         version: 3.23.8
@@ -292,8 +292,8 @@ importers:
         specifier: ^3.6.0
         version: 3.6.0
       hume:
-        specifier: 0.10.4-beta.3
-        version: 0.10.4-beta.3
+        specifier: 0.10.4-beta.2
+        version: 0.10.4-beta.2
       meyda:
         specifier: ^5.6.2
         version: 5.6.3(rollup@4.40.1)
@@ -2516,8 +2516,8 @@ packages:
     resolution: {integrity: sha512-wlwpilI7YdjSkWaQ/7omYBMTliDcmCN8OLihO6I9B86g06lMyAoqgoDpV0XqoaPOKj+0DIdAvnsWfyAAhmimcg==}
     engines: {node: '>= 14'}
 
-  hume@0.10.4-beta.3:
-    resolution: {integrity: sha512-5cwpzXFDhg0Mg0vSiFLfDf4tGnyLZsl1hMbtGEeE4TdRgUcMKV6KAypd0IGoiAwaoWve5exRzcGkWrNO4h+Mng==}
+  hume@0.10.4-beta.2:
+    resolution: {integrity: sha512-Ei6L9EeHxI1DiZ8XF/P1iFnE1GhUkQ8+HjdmoLJrK6YeeUkqYJsxHTtvG/7cB+MpBh30ixv1f24rydQVKoAEHQ==}
 
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
@@ -6090,7 +6090,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  hume@0.10.4-beta.3:
+  hume@0.10.4-beta.2:
     dependencies:
       form-data: 4.0.0
       form-data-encoder: 4.0.2
