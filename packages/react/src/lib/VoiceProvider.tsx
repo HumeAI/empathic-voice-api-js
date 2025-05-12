@@ -293,7 +293,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return false;
       }
     },
-    [player, updateError, isReconnecting, getStream],
+    [player, updateError],
   );
 
   const client = useVoiceClient({
