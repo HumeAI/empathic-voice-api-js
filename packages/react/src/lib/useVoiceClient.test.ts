@@ -7,7 +7,7 @@ describe('useVoiceClient', () => {
   it('creates a client with the given config', () => {
     const hook = renderHook(() =>
       useVoiceClient({
-        onError: () => {},
+        onClientError: () => {},
       }),
     );
 
