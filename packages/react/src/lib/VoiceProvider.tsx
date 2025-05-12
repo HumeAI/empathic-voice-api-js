@@ -149,7 +149,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const [isPaused, setIsPaused] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
-  const lastConnectionOptions = useRef<ConnectOptions | null>(null);
 
   // error handling
   const [error, setError] = useState<VoiceError | null>(null);
@@ -429,9 +428,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     async (options: ConnectOptions = {}) => {
       updateError(null);
       setStatus({ value: 'connecting' });
-
-      lastConnectionOptions.current = options;
-
       const permission = await getStream(options.audioConstraints);
 
       if (permission === 'denied') {
