@@ -52,7 +52,8 @@ export const useVoiceClient = (props: {
   onAudioMessage?: (message: AudioOutputMessage) => void;
   onMessage?: (message: JSONMessage) => void;
   onToolCall?: ToolCallHandler;
-  onError?: (message: string, error?: Error) => void;
+  onToolCallError?: (message: string, error?: Error) => void;
+  onClientError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
 }) => {
@@ -75,8 +76,13 @@ export const useVoiceClient = (props: {
   const onToolCall = useRef<typeof props.onToolCall>(props.onToolCall);
   onToolCall.current = props.onToolCall;
 
-  const onError = useRef<typeof props.onError>(props.onError);
-  onError.current = props.onError;
+  const onClientError = useRef<typeof props.onClientError>(props.onClientError);
+  onClientError.current = props.onClientError;
+
+  const onToolCallError = useRef<typeof props.onToolCallError>(
+    props.onToolCallError,
+  );
+  onToolCallError.current = props.onToolCallError;
 
   const onOpen = useRef<typeof props.onOpen>(props.onOpen);
   onOpen.current = props.onOpen;
@@ -178,7 +184,7 @@ export const useVoiceClient = (props: {
                 } else if (response.type === 'tool_error') {
                   client.current?.sendToolErrorMessage(response);
                 } else {
-                  onError.current?.('Invalid response from tool call');
+                  onToolCallError.current?.('Invalid response from tool call');
                 }
               });
           }
@@ -197,7 +203,7 @@ export const useVoiceClient = (props: {
 
       client.current.on('error', (e) => {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        onError.current?.(message, e instanceof Error ? e : undefined);
+        onClientError.current?.(message, e instanceof Error ? e : undefined);
         reject(e);
       });
 
