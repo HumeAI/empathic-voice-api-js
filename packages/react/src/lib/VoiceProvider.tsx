@@ -355,7 +355,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         if (event.code === 1006 || event.code === 1001 || event.code === 1005) {
           setIsReconnecting(true);
         } else {
-          handleResourceCleanup();
+          // Expected closure from the server
+          handleResourceCleanup(true);
         }
 
         onClose.current?.(event);
@@ -453,27 +454,31 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [client, config, getStream, initializeResources, updateError],
   );
 
-  const disconnectFromVoice = useCallback(() => {
-    if (client.readyState !== VoiceReadyState.CLOSED) {
-      client.disconnect();
-    }
-    // Cleanup resources immediately
-    handleResourceCleanup(true);
-  }, [client, handleResourceCleanup]);
+  const disconnectFromVoice = useCallback(
+    (expectedDisconnection?: boolean) => {
+      if (client.readyState !== VoiceReadyState.CLOSED) {
+        client.disconnect();
+      }
+      handleResourceCleanup(expectedDisconnection);
+    },
+    [client, handleResourceCleanup],
+  );
 
   const disconnect = useCallback(
     (disconnectOnError?: boolean) => {
       if (micPermission === 'denied') {
         setStatus({ value: 'error', reason: 'Microphone permission denied' });
       }
+      const expectedDisconnection =
+        status.value !== 'error' && !disconnectOnError;
 
       stopTimer();
 
-      disconnectFromVoice();
+      disconnectFromVoice(expectedDisconnection);
 
-      if (status.value !== 'error' && !disconnectOnError) {
+      if (expectedDisconnection) {
         // if status was 'error', keep the error status so we can show the error message to the end user.
-        // otherwise, set status to 'disconnected'
+        // otherwise, it indicates a voluntary disconnection, so set status to 'disconnected'
         setStatus({ value: 'disconnected' });
       }
     },
