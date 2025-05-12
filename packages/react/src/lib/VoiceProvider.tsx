@@ -395,8 +395,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       (event) => {
         messageStore.createDisconnectMessage(event);
 
-        // Abnormal closure will trigger reconnections
-        if (event.code === 1006 || event.code === 1001 || event.code === 1005) {
+        if (event.willReconnect) {
           setIsReconnecting(true);
         } else {
           disconnectAndCleanup({
