@@ -187,7 +187,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const updateError = useCallback(
     (err: VoiceError | null) => {
       if (err !== null) {
-        // Only update error state if it's a new error (avoids double handling)
         if (
           !error ||
           error.message !== err.message ||
@@ -243,7 +242,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
   }, [shouldStopPlayer, player.queueLength, player, status.value]);
 
-  // Only handles resource cleanup, not status changes
   const handleResourceCleanup = useCallback(
     (forceStop?: boolean) => {
       if (forceStop) {
@@ -301,16 +299,16 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   );
 
   // Create a ref to store socket closing, which we will need on disconnect
-  // when the user initiates the closure;
+  // when the consumer initiates the closure;
   const socketCloseFnRef = useRef(() => {});
 
   // The disconnect function now handles all disconnection cases:
-  // 1. If the user initiates the disconnection, we want to clean up all resources immediately
-  //    and set the status to disconnected.
+  // 1. If the consumer initiates the disconnection, we want to clean up all resources immediately
+  //    and set the status to disconnected. This is the default case with no options.
   // 2. If the socket closes normally, we want to clean up some resources,
   //    set the status to disconnected, but wait on the queue being empty before stopping the player.
   //    In this case, skipSocketClose is set to true, since the closure is initiated by the client,
-  //    and we are already in the onClose callback
+  //    and we are already in the onClose callback.
   // 3. If the socket closes with an error, we want to clean up resources immediately and set the status to error
   //
   // Not handled:
@@ -323,26 +321,21 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isReconnecting?: boolean;
       skipSocketClose?: boolean;
     }) => {
-      const isReconnectingState = options?.isReconnecting ?? false;
-      const isErrorState = options?.isError ?? false;
-      const errorMessage = options?.errorMessage;
-      const skipSocketClose = options?.skipSocketClose ?? false;
-      // If options is undefined, this is a direct consumer call - use forceStop
       const consumerInitiated = options === undefined;
-      const forceStop = consumerInitiated || isErrorState;
+      const forceStop = consumerInitiated || options?.isError;
 
       stopTimer();
 
-      if (!isReconnectingState) {
-        if (!skipSocketClose) {
+      if (!options?.isReconnecting) {
+        if (!options?.skipSocketClose) {
           socketCloseFnRef.current();
         }
 
         handleResourceCleanup(forceStop);
 
-        if (isErrorState && errorMessage) {
-          setStatus({ value: 'error', reason: errorMessage });
-        } else if (!isErrorState) {
+        if (options?.isError && options?.errorMessage) {
+          setStatus({ value: 'error', reason: options?.errorMessage });
+        } else if (!options?.isError) {
           setStatus({ value: 'disconnected' });
         }
       }
@@ -520,9 +513,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [client, config, getStream, initializeResources, updateError],
   );
 
-  // Following are the different cases of disconnection
-
-  // If error, disconnect with error and don't reconnect
   useEffect(() => {
     if (
       error !== null &&
@@ -537,8 +527,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
   }, [error, status.value, disconnect]);
 
-  // If unmounting, disconnect from socket when the voice provider component unmounts
-  // Use disconnect directly with isError: false to ensure clean shutdown
   useEffect(() => {
     return () => {
       disconnect({ isError: false });
