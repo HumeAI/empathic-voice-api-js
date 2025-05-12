@@ -184,12 +184,24 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     messageHistoryLimit,
   });
 
-  const updateError = useCallback((err: VoiceError | null) => {
-    setError(err);
-    if (err !== null) {
-      onError.current?.(err);
-    }
-  }, []);
+  const updateError = useCallback(
+    (err: VoiceError | null) => {
+      if (err !== null) {
+        // Only update error state if it's a new error (avoids double handling)
+        if (
+          !error ||
+          error.message !== err.message ||
+          error.type !== err.type
+        ) {
+          setError(err);
+          onError.current?.(err);
+        }
+      } else {
+        setError(null);
+      }
+    },
+    [error],
+  );
 
   const onClientError: NonNullable<
     Parameters<typeof useVoiceClient>[0]['onClientError']
@@ -231,6 +243,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
   }, [shouldStopPlayer, player.queueLength, player, status.value]);
 
+  // Only handles resource cleanup, not status changes
   const handleResourceCleanup = useCallback(
     (forceStop?: boolean) => {
       if (forceStop) {
@@ -246,12 +259,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       }
       toolStatus.clearStore();
       setIsPaused(false);
-
-      if (status.value !== 'error') {
-        setStatus({ value: 'disconnected' });
-      }
     },
-    [clearMessagesOnDisconnect, toolStatus, status.value, player, messageStore],
+    [clearMessagesOnDisconnect, toolStatus, player, messageStore],
   );
 
   const { streamRef, getStream, permission: micPermission } = useEncoding();
@@ -289,6 +298,57 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       }
     },
     [player, updateError],
+  );
+
+  // Create a ref to store socket closing, which we will need on disconnect
+  // when the user initiates the closure;
+  const socketCloseFnRef = useRef(() => {});
+
+  // The disconnect function now handles all disconnection cases:
+  // 1. If the user initiates the disconnection, we want to clean up all resources immediately
+  //    and set the status to disconnected.
+  // 2. If the socket closes normally, we want to clean up some resources,
+  //    set the status to disconnected, but wait on the queue being empty before stopping the player.
+  //    In this case, skipSocketClose is set to true, since the closure is initiated by the client,
+  //    and we are already in the onClose callback
+  // 3. If the socket closes with an error, we want to clean up resources immediately and set the status to error
+  //
+  // Not handled:
+  // 4. If the socket closes abnormally, client will attempt reconnections.
+  //    Disconnect will be called but do basically nothing
+  const disconnect = useCallback(
+    (options?: {
+      isError?: boolean;
+      errorMessage?: string;
+      isReconnecting?: boolean;
+      skipSocketClose?: boolean;
+    }) => {
+      const isReconnectingState = options?.isReconnecting ?? false;
+      const isErrorState = options?.isError ?? false;
+      const errorMessage = options?.errorMessage;
+      const skipSocketClose = options?.skipSocketClose ?? false;
+      // If options is undefined, this is a direct consumer call - use forceStop
+      const consumerInitiated = options === undefined;
+      const forceStop = consumerInitiated || isErrorState;
+
+      stopTimer();
+
+      if (!isReconnectingState) {
+        if (!skipSocketClose) {
+          socketCloseFnRef.current();
+        }
+
+        handleResourceCleanup(forceStop);
+
+        if (isErrorState && errorMessage) {
+          setStatus({ value: 'error', reason: errorMessage });
+        } else if (!isErrorState) {
+          setStatus({ value: 'disconnected' });
+        }
+      }
+      // If _is_ reconnecting, do none of that
+    },
+    [stopTimer, handleResourceCleanup],
   );
 
   const client = useVoiceClient({
@@ -344,20 +404,22 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
     >(
       (event) => {
-        stopTimer();
         messageStore.createDisconnectMessage(event);
 
         // Abnormal closes will trigger reconnections
         if (event.code === 1006 || event.code === 1001 || event.code === 1005) {
           setIsReconnecting(true);
         } else {
-          // Expected closure from the server
-          handleResourceCleanup(true);
+          disconnect({
+            isError: false,
+            isReconnecting: false,
+            skipSocketClose: true,
+          });
         }
 
         onClose.current?.(event);
       },
-      [messageStore, stopTimer, handleResourceCleanup],
+      [messageStore, disconnect],
     ),
     onToolCall: props.onToolCall,
   });
@@ -371,6 +433,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     sendPauseAssistantMessage,
     sendResumeAssistantMessage,
   } = client;
+
+  useEffect(() => {
+    socketCloseFnRef.current = () => {
+      if (client.readyState !== VoiceReadyState.CLOSED) {
+        client.disconnect();
+      }
+    };
+  }, [client]);
 
   const mic = useMicrophone({
     streamRef,
@@ -450,53 +520,28 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [client, config, getStream, initializeResources, updateError],
   );
 
-  const disconnectFromVoice = useCallback(
-    (expectedDisconnection?: boolean) => {
-      if (client.readyState !== VoiceReadyState.CLOSED) {
-        client.disconnect();
-      }
-      handleResourceCleanup(expectedDisconnection);
-    },
-    [client, handleResourceCleanup],
-  );
+  // Following are the different cases of disconnection
 
-  const disconnect = useCallback(
-    (disconnectOnError?: boolean) => {
-      if (micPermission === 'denied') {
-        setStatus({ value: 'error', reason: 'Microphone permission denied' });
-      }
-      const expectedDisconnection =
-        status.value !== 'error' && !disconnectOnError;
-
-      stopTimer();
-
-      disconnectFromVoice(expectedDisconnection);
-
-      if (expectedDisconnection) {
-        // if status was 'error', keep the error status so we can show the error message to the end user.
-        // otherwise, it indicates a voluntary disconnection, so set status to 'disconnected'
-        setStatus({ value: 'disconnected' });
-      }
-    },
-    [micPermission, stopTimer, disconnectFromVoice, status.value],
-  );
-
+  // If error, disconnect with error and don't reconnect
   useEffect(() => {
     if (
       error !== null &&
       status.value !== 'error' &&
       status.value !== 'disconnected'
     ) {
-      // If the status is ever set to `error`, disconnect the voice.
-      setStatus({ value: 'error', reason: error.message });
-      disconnectFromVoice();
+      disconnect({
+        isError: true,
+        errorMessage: error.message,
+        isReconnecting: false,
+      });
     }
-  }, [status.value, disconnect, disconnectFromVoice, error]);
+  }, [error, status.value, disconnect]);
 
+  // If unmounting, disconnect from socket when the voice provider component unmounts
+  // Use disconnect directly with isError: false to ensure clean shutdown
   useEffect(() => {
-    // disconnect from socket when the voice provider component unmounts
     return () => {
-      disconnectFromVoice();
+      disconnect({ isError: false });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
