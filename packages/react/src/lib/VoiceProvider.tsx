@@ -183,7 +183,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   });
 
   const updateError = useCallback((err: VoiceError | null) => {
-    console.log('running updateError', err);
     setError(err);
     if (err !== null) {
       onError.current?.(err);
@@ -191,10 +190,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, []);
 
   const onClientError: NonNullable<
-    Parameters<typeof useVoiceClient>[0]['onError']
+    Parameters<typeof useVoiceClient>[0]['onClientError']
   > = useCallback(
-    (message, err) => {
+    (msg, err) => {
       stopTimer();
+      const message = `A websocket connection could not be established. Error message: ${msg ?? 'unknown'}`;
       updateError({ type: 'socket_error', message, error: err });
     },
     [stopTimer, updateError],
@@ -271,7 +271,18 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       },
       [messageStore, player, toolStatus],
     ),
-    onError: onClientError,
+    onClientError,
+    onToolCallError: useCallback(
+      (message: string, err?: Error) => {
+        const error: VoiceError = {
+          type: 'socket_error',
+          message,
+          error: err,
+        };
+        updateError(error);
+      },
+      [updateError],
+    ),
     onOpen: useCallback(() => {
       startTimer();
       messageStore.createConnectMessage();
@@ -368,10 +379,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           verboseTranscription: true,
         });
       } catch (e) {
-        const message =
-          'A websocket connection could not be established. Please try again.';
-        const error: VoiceError = { type: 'socket_error', message };
-        updateError(error);
+        // catching the thrown error here so we can return early from the connect function,
+        // but the error itself is handled in the `onClientError` callback on the client
         return;
       }
 
