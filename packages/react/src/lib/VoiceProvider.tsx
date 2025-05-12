@@ -289,21 +289,19 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   // Create a ref to store socket closing, which we will need on disconnect
   // when the consumer initiates the closure;
-  const socketCloseFnRef = useRef(() => {});
+  const socketDisconnectRef = useRef(() => {});
 
   // The disconnect function now handles all disconnection cases:
   // 1. If the consumer initiates the disconnection, we want to clean up all resources immediately
   //    and set the status to disconnected. This is the default case with no options.
-  // 2. If the socket closes normally, we want to clean up some resources,
+  // 2. If the closure is initiated by the server, we want to clean up some resources,
   //    set the status to disconnected, but wait on the queue being empty before stopping the player.
   //    In this case, skipSocketClose is set to true, since the closure is initiated by the client,
   //    and we are already in the onClose callback.
   // 3. If the socket closes with an error, we want to clean up resources immediately and set the status to error
-  //
-  // Not handled:
   // 4. If the socket closes abnormally, client will attempt reconnections.
   //    Disconnect will be called but do basically nothing
-  const disconnect = useCallback(
+  const disconnectAndCleanup = useCallback(
     (options?: {
       isError?: boolean;
       errorMessage?: string;
@@ -317,7 +315,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
       if (!options?.isReconnecting) {
         if (!options?.skipSocketClose) {
-          socketCloseFnRef.current();
+          socketDisconnectRef.current();
         }
 
         handleResourceCleanup(forceStop);
@@ -328,10 +326,19 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           setStatus({ value: 'disconnected' });
         }
       }
-      // If _is_ reconnecting, do none of that
+      // If _is_ reconnecting, do not do resource cleanup
     },
     [stopTimer, handleResourceCleanup],
   );
+
+  // This function is the only one exposed to the consumer;
+  // it refers to the default case of disconnectAndCleanup,
+  // which disconnects the socket and cleans up resources immediately;
+  // All other uses of disconnectAndCleanup, determined by arguments passed,
+  // are internal.
+  const disconnect = useCallback(() => {
+    disconnectAndCleanup();
+  }, [disconnectAndCleanup]);
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
@@ -388,11 +395,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       (event) => {
         messageStore.createDisconnectMessage(event);
 
-        // Abnormal closes will trigger reconnections
+        // Abnormal closure will trigger reconnections
         if (event.code === 1006 || event.code === 1001 || event.code === 1005) {
           setIsReconnecting(true);
         } else {
-          disconnect({
+          disconnectAndCleanup({
             isError: false,
             isReconnecting: false,
             skipSocketClose: true,
@@ -401,7 +408,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
         onClose.current?.(event);
       },
-      [messageStore, disconnect],
+      [messageStore, disconnectAndCleanup],
     ),
     onToolCall: props.onToolCall,
   });
@@ -417,11 +424,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   } = client;
 
   useEffect(() => {
-    socketCloseFnRef.current = () => {
-      if (client.readyState !== VoiceReadyState.CLOSED) {
-        client.disconnect();
-      }
-    };
+    socketDisconnectRef.current = client.disconnect;
   }, [client]);
 
   const mic = useMicrophone({
@@ -508,17 +511,17 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       status.value !== 'error' &&
       status.value !== 'disconnected'
     ) {
-      disconnect({
+      disconnectAndCleanup({
         isError: true,
         errorMessage: error.message,
         isReconnecting: false,
       });
     }
-  }, [error, status.value, disconnect]);
+  }, [error, status.value, disconnectAndCleanup]);
 
   useEffect(() => {
     return () => {
-      disconnect({ isError: false });
+      disconnectAndCleanup({ isError: false });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
