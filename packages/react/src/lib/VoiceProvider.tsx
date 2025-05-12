@@ -184,23 +184,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     messageHistoryLimit,
   });
 
-  const updateError = useCallback(
-    (err: VoiceError | null) => {
-      if (err !== null) {
-        if (
-          !error ||
-          error.message !== err.message ||
-          error.type !== err.type
-        ) {
-          setError(err);
-          onError.current?.(err);
-        }
-      } else {
-        setError(null);
-      }
-    },
-    [error],
-  );
+  const updateError = useCallback((err: VoiceError | null) => {
+    setError(err);
+    if (err !== null) {
+      onError.current?.(err);
+    }
+  }, []);
 
   const onClientError: NonNullable<
     Parameters<typeof useVoiceClient>[0]['onClientError']
