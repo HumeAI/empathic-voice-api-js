@@ -101,7 +101,6 @@ export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
-  onReconnected?: () => void;
   onToolCall?: ToolCallHandler;
   onAudioReceived?: (audioOutputMessage: AudioOutputMessage) => void;
   onAudioStart?: (clipId: string) => void;
@@ -162,9 +161,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const onClose = useRef(props.onClose ?? noop);
   onClose.current = props.onClose ?? noop;
-
-  const onReconnected = useRef(props.onReconnected ?? noop);
-  onReconnected.current = props.onReconnected ?? noop;
 
   const onMessage = useRef(props.onMessage ?? noop);
   onMessage.current = props.onMessage ?? noop;
