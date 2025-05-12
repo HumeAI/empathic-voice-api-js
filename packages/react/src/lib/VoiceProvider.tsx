@@ -215,20 +215,20 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       onAudioEnd.current(id);
     },
   });
-  const [shouldClosePlayer, setShouldClosePlayer] = useState(false);
+  const [shouldStopPlayer, setShouldStopPlayer] = useState(false);
 
   useEffect(() => {
     if (
-      shouldClosePlayer &&
+      shouldStopPlayer &&
       (player.queueLength === 0 || status.value === 'error')
     ) {
       player.stopAll();
-      setShouldClosePlayer(false);
+      setShouldStopPlayer(false);
     }
-  }, [shouldClosePlayer, player.queueLength, player, status.value]);
+  }, [shouldStopPlayer, player.queueLength, player, status.value]);
 
   const handleResourceCleanup = useCallback(() => {
-    setShouldClosePlayer(true);
+    setShouldStopPlayer(true);
     if (micCleanUpFnRef.current !== null) {
       micCleanUpFnRef.current();
     }
@@ -280,7 +280,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       startTimer();
       messageStore.createConnectMessage();
       props.onOpen?.();
-      setShouldClosePlayer(false);
+      setShouldStopPlayer(false);
     }, [messageStore, props, startTimer]),
     onClose: useCallback<
       NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
