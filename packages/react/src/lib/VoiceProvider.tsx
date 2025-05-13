@@ -241,12 +241,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
-  // isClientDisconnected indicates that the websocket client disconnected
+  // isWebsocketDisconnected indicates that the websocket disconnected
   // in a way that was not initiated by the user (e.g. network error)
-  const [isClientDisconnected, setIsClientDisconnected] = useState(false);
+  const [isWebsocketDisconnected, setIsWebsocketDisconnected] = useState(false);
   useEffect(() => {
     if (
-      isClientDisconnected &&
+      isWebsocketDisconnected &&
       (player.queueLength === 0 || status.value === 'error')
     ) {
       handleResourceCleanup();
@@ -256,7 +256,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     player.queueLength,
     player,
     status.value,
-    isClientDisconnected,
+    isWebsocketDisconnected,
     handleResourceCleanup,
     stopTimer,
   ]);
@@ -304,7 +304,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       [updateError],
     ),
     onOpen: useCallback(() => {
-      setIsClientDisconnected(false);
+      setIsWebsocketDisconnected(false);
       startTimer();
       messageStore.createConnectMessage();
       props.onOpen?.();
@@ -320,8 +320,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       [messageStore, stopTimer],
     ),
     onToolCall: props.onToolCall,
-    handleClientDisconnect: useCallback(() => {
-      setIsClientDisconnected(true);
+    handleWebsocketDisconnect: useCallback(() => {
+      // handleWebsocketDisconnect is called when the client disconnects
+      // without a user action to initiate the closure
+      setIsWebsocketDisconnected(true);
     }, []),
   });
 

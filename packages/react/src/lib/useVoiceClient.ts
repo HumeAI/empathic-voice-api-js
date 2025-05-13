@@ -56,7 +56,7 @@ export const useVoiceClient = (props: {
   onClientError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
-  handleClientDisconnect: () => void;
+  handleWebsocketDisconnect: () => void;
 }) => {
   const client = useRef<Hume.empathicVoice.chat.ChatSocket | null>(null);
 
@@ -91,10 +91,10 @@ export const useVoiceClient = (props: {
   const onClose = useRef<typeof props.onClose>(props.onClose);
   onClose.current = props.onClose;
 
-  const handleClientDisconnect = useRef<typeof props.handleClientDisconnect>(
-    props.handleClientDisconnect,
-  );
-  handleClientDisconnect.current = props.handleClientDisconnect;
+  const handleWebsocketDisconnect = useRef<
+    typeof props.handleWebsocketDisconnect
+  >(props.handleWebsocketDisconnect);
+  handleWebsocketDisconnect.current = props.handleWebsocketDisconnect;
 
   const connect = useCallback((config: SocketConfig) => {
     return new Promise((resolve, reject) => {
@@ -225,7 +225,7 @@ export const useVoiceClient = (props: {
   const sendSessionSettings = useCallback(
     (sessionSettings: Hume.empathicVoice.SessionSettings) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        handleClientDisconnect.current();
+        handleWebsocketDisconnect.current();
         return;
       }
       client.current?.sendSessionSettings(sessionSettings);
@@ -236,7 +236,7 @@ export const useVoiceClient = (props: {
   const sendAudio = useCallback(
     (arrayBuffer: ArrayBufferLike) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        handleClientDisconnect.current();
+        handleWebsocketDisconnect.current();
         return;
       }
       client.current?.socket?.send(arrayBuffer);
@@ -247,7 +247,7 @@ export const useVoiceClient = (props: {
   const sendUserInput = useCallback(
     (text: string) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        handleClientDisconnect.current();
+        handleWebsocketDisconnect.current();
         return;
       }
       client.current?.sendUserInput(text);
@@ -258,7 +258,7 @@ export const useVoiceClient = (props: {
   const sendAssistantInput = useCallback(
     (text: string) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        handleClientDisconnect.current();
+        handleWebsocketDisconnect.current();
         return;
       }
       client.current?.sendAssistantInput({
@@ -277,7 +277,7 @@ export const useVoiceClient = (props: {
         | Hume.empathicVoice.ToolErrorMessage,
     ) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        handleClientDisconnect.current();
+        handleWebsocketDisconnect.current();
         return;
       }
       if (toolMessage.type === 'tool_error') {
