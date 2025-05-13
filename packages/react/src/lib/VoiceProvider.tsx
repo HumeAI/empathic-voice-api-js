@@ -370,10 +370,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
             type: 'socket_error',
             message: message.message,
           };
-          updateError(error);
+          onError.current?.(error);
         }
       },
-      [messageStore, player, toolStatus, updateError],
+      [messageStore, player, toolStatus],
     ),
     onClientError,
     onToolCallError: useCallback(
