@@ -216,40 +216,28 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       onAudioEnd.current(id);
     },
   });
-  const [shouldStopPlayer, setShouldStopPlayer] = useState(false);
 
-  useEffect(() => {
-    if (
-      shouldStopPlayer &&
-      (player.queueLength === 0 || status.value === 'error')
-    ) {
-      player.stopAll();
-      setShouldStopPlayer(false);
+  const handleResourceCleanup = useCallback(() => {
+    player.stopAll();
+    if (micCleanUpFnRef.current !== null) {
+      micCleanUpFnRef.current();
     }
-  }, [shouldStopPlayer, player.queueLength, player, status.value]);
+    if (clearMessagesOnDisconnect) {
+      messageStore.clearMessages();
+    }
+    toolStatus.clearStore();
+    setIsPaused(false);
 
-  const handleResourceCleanup = useCallback(
-    (forceStop?: boolean) => {
-      if (forceStop) {
-        player.stopAll();
-      } else {
-        setShouldStopPlayer(true);
-      }
-      if (micCleanUpFnRef.current !== null) {
-        micCleanUpFnRef.current();
-      }
-      if (clearMessagesOnDisconnect) {
-        messageStore.clearMessages();
-      }
-      toolStatus.clearStore();
-      setIsPaused(false);
-
-      if (status.value !== 'error') {
-        setStatus({ value: 'disconnected' });
-      }
-    },
-    [clearMessagesOnDisconnect, toolStatus, status.value, player, messageStore],
-  );
+    if (status.value !== 'error') {
+      setStatus({ value: 'disconnected' });
+    }
+  }, [
+    player,
+    clearMessagesOnDisconnect,
+    toolStatus,
+    status.value,
+    messageStore,
+  ]);
 
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
@@ -299,7 +287,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       startTimer();
       messageStore.createConnectMessage();
       props.onOpen?.();
-      setShouldStopPlayer(false);
     }, [messageStore, props, startTimer]),
     onClose: useCallback<
       NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
@@ -307,12 +294,18 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       (event) => {
         stopTimer();
         messageStore.createDisconnectMessage(event);
-        handleResourceCleanup();
         onClose.current?.(event);
       },
-      [messageStore, stopTimer, handleResourceCleanup],
+      [messageStore, stopTimer],
     ),
     onToolCall: props.onToolCall,
+    disconnectFromCall: useCallback(() => {
+      handleResourceCleanup();
+      stopTimer();
+      if (status.value !== 'error') {
+        setStatus({ value: 'disconnected' });
+      }
+    }, [handleResourceCleanup, status.value, stopTimer]),
   });
 
   const {
@@ -427,8 +420,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
-    // Cleanup resources immediately
-    handleResourceCleanup(true);
+    handleResourceCleanup();
   }, [client, handleResourceCleanup]);
 
   const disconnect = useCallback(
