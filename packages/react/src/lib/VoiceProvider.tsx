@@ -364,8 +364,16 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         ) {
           toolStatus.addToStore(message);
         }
+
+        if (message.type === 'error') {
+          const error: VoiceError = {
+            type: 'socket_error',
+            message: message.message,
+          };
+          updateError(error);
+        }
       },
-      [messageStore, player, toolStatus],
+      [messageStore, player, toolStatus, updateError],
     ),
     onClientError,
     onToolCallError: useCallback(
