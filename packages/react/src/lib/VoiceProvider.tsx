@@ -91,7 +91,7 @@ export type VoiceContextType = {
   isPaused: boolean;
   volume: number;
   setVolume: (level: number) => void;
-  disconnectClient: () => void;
+  disconnectFromClient: () => void;
 };
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
@@ -156,6 +156,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const isMicrophoneError = error?.type === 'mic_error';
   const isSocketError = error?.type === 'socket_error';
   const isAudioError = error?.type === 'audio_error';
+
+  const connectRef = useRef(() => {});
 
   const onError = useRef(props.onError ?? noop);
   onError.current = props.onError ?? noop;
@@ -300,13 +302,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   //    In this case, skipSocketClose is set to true, since the closure is initiated by the client,
   //    and we are already in the onClose callback.
   // 3. If the socket closes with an error, we want to clean up resources immediately and set the status to error
-  // 4. If the socket closes abnormally, client will attempt reconnections.
-  //    Disconnect will be called but do basically nothing
+  // This function is not called when the socket is attempting to reconnect,
   const disconnectAndCleanup = useCallback(
     (options?: {
       isError?: boolean;
       errorMessage?: string;
-      isReconnecting?: boolean;
       skipSocketClose?: boolean;
     }) => {
       const consumerInitiated = options === undefined;
@@ -314,20 +314,17 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
       stopTimer();
 
-      if (!options?.isReconnecting) {
-        if (!options?.skipSocketClose) {
-          socketDisconnectRef.current();
-        }
-
-        handleResourceCleanup(forceStop);
-
-        if (options?.isError && options?.errorMessage) {
-          setStatus({ value: 'error', reason: options?.errorMessage });
-        } else if (!options?.isError) {
-          setStatus({ value: 'disconnected' });
-        }
+      if (!options?.skipSocketClose) {
+        socketDisconnectRef.current();
       }
-      // If _is_ reconnecting, do not do resource cleanup
+
+      handleResourceCleanup(forceStop);
+
+      if (options?.isError && options?.errorMessage) {
+        setStatus({ value: 'error', reason: options?.errorMessage });
+      } else if (!options?.isError) {
+        setStatus({ value: 'disconnected' });
+      }
     },
     [stopTimer, handleResourceCleanup],
   );
@@ -395,20 +392,19 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     >(
       (event) => {
         messageStore.createDisconnectMessage(event);
-
         if (event.willReconnect) {
+          stopTimer();
           setIsReconnecting(true);
         } else {
           disconnectAndCleanup({
             isError: false,
-            isReconnecting: false,
             skipSocketClose: true,
           });
         }
 
         onClose.current?.(event);
       },
-      [messageStore, disconnectAndCleanup],
+      [disconnectAndCleanup, messageStore, stopTimer],
     ),
     onToolCall: props.onToolCall,
   });
@@ -506,6 +502,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   );
 
   useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
+
+  useEffect(() => {
     if (
       error !== null &&
       status.value !== 'error' &&
@@ -514,7 +514,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       disconnectAndCleanup({
         isError: true,
         errorMessage: error.message,
-        isReconnecting: false,
       });
     }
   }, [error, status.value, disconnectAndCleanup]);
@@ -627,7 +626,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         isPaused,
         volume: player.volume,
         setVolume: player.setVolume,
-        disconnectClient: client.disconnect,
+        disconnectFromClient: client.disconnect,
       }) satisfies VoiceContextType,
     [
       client.disconnect,
