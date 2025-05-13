@@ -397,21 +397,15 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           setIsReconnecting(true);
         } else {
           disconnectAndCleanup({
-            isError: status.value === 'error',
-            errorMessage: status.value === 'error' ? status.reason : undefined,
+            isError: Boolean(error),
+            errorMessage: error?.message || 'Unknown error',
             skipSocketClose: true,
           });
         }
 
         onClose.current?.(event);
       },
-      [
-        messageStore,
-        stopTimer,
-        disconnectAndCleanup,
-        status.value,
-        status.reason,
-      ],
+      [messageStore, stopTimer, error, disconnectAndCleanup],
     ),
     onToolCall: props.onToolCall,
   });
