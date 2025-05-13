@@ -91,6 +91,7 @@ export type VoiceContextType = {
   isPaused: boolean;
   volume: number;
   setVolume: (level: number) => void;
+  disconnectClient: () => void;
 };
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
@@ -626,8 +627,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         isPaused,
         volume: player.volume,
         setVolume: player.setVolume,
+        disconnectClient: client.disconnect,
       }) satisfies VoiceContextType,
     [
+      client.disconnect,
       connect,
       disconnect,
       player.fft,
