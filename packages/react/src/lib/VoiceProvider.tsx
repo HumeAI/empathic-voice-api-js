@@ -35,10 +35,20 @@ import {
   UserTranscriptMessage,
 } from '../models/messages';
 
+export type MicErrorReason =
+  | 'mic_initialization_error'
+  | 'mic_closure_error'
+  | 'mime_types_not_supported';
+
 type VoiceError =
   | { type: 'socket_error'; message: string; error?: Error }
   | { type: 'audio_error'; message: string; error?: Error }
-  | { type: 'mic_error'; message: string; error?: Error };
+  | {
+      type: 'mic_error';
+      reason: MicErrorReason;
+      message: string;
+      error?: Error;
+    };
 
 type VoiceStatus =
   | {
@@ -271,8 +281,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         micStartFnRef.current?.(stream);
       })
       .catch((e) => {
+        console.log('e', e);
         const error: VoiceError = {
           type: 'mic_error',
+          reason: 'mic_initialization_error',
           message:
             e instanceof Error
               ? e.message
@@ -457,8 +469,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       [clientSendAudio, updateError],
     ),
     onError: useCallback(
-      (message) => {
-        updateError({ type: 'mic_error', message });
+      (message, reason) => {
+        updateError({ type: 'mic_error', reason, message });
       },
       [updateError],
     ),

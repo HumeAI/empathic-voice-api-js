@@ -6,12 +6,13 @@ import type { MeydaFeaturesObject } from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { generateEmptyFft } from './generateEmptyFft';
+import type { MicErrorReason } from './VoiceProvider';
 
 export type MicrophoneProps = {
   onAudioCaptured: (b: ArrayBuffer) => void;
   onStartRecording?: () => void;
   onStopRecording?: () => void;
-  onError: (message: string) => void;
+  onError: (message: string, reason: MicErrorReason) => void;
 };
 
 export const useMicrophone = (props: MicrophoneProps) => {
@@ -117,7 +118,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       setIsMuted(false);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
-      onError(`Error stopping microphone: ${message}`);
+      onError(`Error stopping microphone: ${message}`, 'mic_closure_error');
       console.log(e);
       void true;
     }
@@ -175,7 +176,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
     if (mimeTypeResult.success) {
       mimeTypeRef.current = mimeTypeResult.mimeType;
     } else {
-      onError(mimeTypeResult.error.message);
+      onError(mimeTypeResult.error.message, 'mime_types_not_supported');
     }
   }, [onError]);
 
