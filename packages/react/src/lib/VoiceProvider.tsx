@@ -42,23 +42,16 @@ export type SocketErrorReason =
   | 'received_assistant_error_message'
   | 'received_tool_call_error';
 
-export type AudioPlayerError =
-  | 'audio_player_initialization_error'
-  | 'audio_worklet_load_failure'
-  | 'audio_player_not_initialized'
-  | 'malformed_audio'
-  | 'audio_player_closure_error';
-
 export type AudioPlayerErrorReason =
-  | 'audio_player_initialization_error'
+  | 'audio_player_initialization_failure'
   | 'audio_worklet_load_failure'
   | 'audio_player_not_initialized'
   | 'malformed_audio'
-  | 'audio_player_closure_error';
+  | 'audio_player_closure_failure';
 
 export type MicErrorReason =
-  | 'mic_initialization_error'
-  | 'mic_closure_error'
+  | 'mic_initialization_failure'
+  | 'mic_closure_failure'
   | 'mime_types_not_supported';
 
 type VoiceError =
@@ -320,7 +313,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         console.log('e', e);
         const error: VoiceError = {
           type: 'mic_error',
-          reason: 'mic_initialization_error',
+          reason: 'mic_initialization_failure',
           message:
             e instanceof Error
               ? e.message
@@ -336,7 +329,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     } catch (e) {
       const error: VoiceError = {
         type: 'audio_error',
-        reason: 'audio_player_initialization_error',
+        reason: 'audio_player_initialization_failure',
         message:
           e instanceof Error
             ? e.message

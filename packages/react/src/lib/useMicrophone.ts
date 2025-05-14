@@ -118,7 +118,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       setIsMuted(false);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
-      onError(`Error stopping microphone: ${message}`, 'mic_closure_error');
+      onError(`Error stopping microphone: ${message}`, 'mic_closure_failure');
       console.log(e);
       void true;
     }

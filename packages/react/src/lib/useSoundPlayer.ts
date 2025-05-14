@@ -126,7 +126,7 @@ export const useSoundPlayer = (props: {
     } catch (e) {
       onError.current(
         'Failed to initialize audio player',
-        'audio_player_initialization_error',
+        'audio_player_initialization_failure',
       );
     }
   }, [loadAudioWorklet]);
