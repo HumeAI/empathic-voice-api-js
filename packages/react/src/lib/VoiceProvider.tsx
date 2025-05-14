@@ -35,14 +35,45 @@ import {
   UserTranscriptMessage,
 } from '../models/messages';
 
+export type SocketErrorReason =
+  | 'socket_connection_failure'
+  | 'failed_to_send_audio'
+  | 'failed_to_send_message'
+  | 'received_assistant_error_message'
+  | 'received_tool_call_error';
+
+export type AudioPlayerError =
+  | 'audio_player_initialization_error'
+  | 'audio_worklet_load_failure'
+  | 'audio_player_not_initialized'
+  | 'malformed_audio'
+  | 'audio_player_closure_error';
+
+export type AudioPlayerErrorReason =
+  | 'audio_player_initialization_error'
+  | 'audio_worklet_load_failure'
+  | 'audio_player_not_initialized'
+  | 'malformed_audio'
+  | 'audio_player_closure_error';
+
 export type MicErrorReason =
   | 'mic_initialization_error'
   | 'mic_closure_error'
   | 'mime_types_not_supported';
 
 type VoiceError =
-  | { type: 'socket_error'; message: string; error?: Error }
-  | { type: 'audio_error'; message: string; error?: Error }
+  | {
+      type: 'socket_error';
+      reason: SocketErrorReason;
+      message: string;
+      error?: Error;
+    }
+  | {
+      type: 'audio_error';
+      reason: AudioPlayerErrorReason;
+      message: string;
+      error?: Error;
+    }
   | {
       type: 'mic_error';
       reason: MicErrorReason;
@@ -213,7 +244,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     (msg, err) => {
       stopTimer();
       const message = `A websocket connection could not be established. Error message: ${msg ?? 'unknown'}`;
-      updateError({ type: 'socket_error', message, error: err });
+      updateError({
+        type: 'socket_error',
+        reason: 'socket_connection_failure',
+        message,
+        error: err,
+      });
     },
     [stopTimer, updateError],
   );
@@ -224,8 +260,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const micStartFnRef = useRef<null | ((stream: MediaStream) => void)>(null);
 
   const player = useSoundPlayer({
-    onError: (message) => {
-      updateError({ type: 'audio_error', message });
+    onError: (message, reason) => {
+      updateError({ type: 'audio_error', reason, message });
     },
     onPlayAudio: (id: string) => {
       messageStore.onPlayAudio(id);
@@ -300,6 +336,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     } catch (e) {
       const error: VoiceError = {
         type: 'audio_error',
+        reason: 'audio_player_initialization_error',
         message:
           e instanceof Error
             ? e.message
@@ -390,6 +427,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         if (message.type === 'error') {
           const error: VoiceError = {
             type: 'socket_error',
+            reason: 'received_assistant_error_message',
             message: message.message,
           };
           onError.current?.(error);
@@ -402,6 +440,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       (message: string, err?: Error) => {
         const error: VoiceError = {
           type: 'socket_error',
+          reason: 'received_tool_call_error',
           message,
           error: err,
         };
@@ -463,7 +502,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           clientSendAudio(arrayBuffer);
         } catch (e) {
           const message = e instanceof Error ? e.message : 'Unknown error';
-          updateError({ type: 'socket_error', message });
+          updateError({
+            type: 'socket_error',
+            reason: 'failed_to_send_audio',
+            message,
+          });
         }
       },
       [clientSendAudio, updateError],
@@ -489,7 +532,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       setIsPaused(true);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
-      updateError({ type: 'socket_error', message });
+      updateError({
+        type: 'socket_error',
+        reason: 'failed_to_send_message',
+        message,
+      });
     }
     clearQueue();
   }, [sendPauseAssistantMessage, clearQueue, updateError]);
@@ -500,7 +547,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       setIsPaused(false);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
-      updateError({ type: 'socket_error', message });
+      updateError({
+        type: 'socket_error',
+        reason: 'failed_to_send_message',
+        message,
+      });
     }
   }, [sendResumeAssistantMessage, updateError]);
 
@@ -562,7 +613,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         clientSendUserInput(text);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        updateError({ type: 'socket_error', message });
+        updateError({
+          type: 'socket_error',
+          reason: 'failed_to_send_message',
+          message,
+        });
       }
     },
     [clientSendUserInput, updateError],
@@ -574,7 +629,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         clientSendAssistantInput(text);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        updateError({ type: 'socket_error', message });
+        updateError({
+          type: 'socket_error',
+          reason: 'failed_to_send_message',
+          message,
+        });
       }
     },
     [clientSendAssistantInput, updateError],
@@ -586,7 +645,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         clientSendSessionSettings(sessionSettings);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        updateError({ type: 'socket_error', message });
+        updateError({
+          type: 'socket_error',
+          reason: 'failed_to_send_message',
+          message,
+        });
       }
     },
     [clientSendSessionSettings, updateError],
@@ -612,7 +675,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         clientSendToolMessage(message);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        updateError({ type: 'socket_error', message });
+        updateError({
+          type: 'socket_error',
+          reason: 'failed_to_send_message',
+          message,
+        });
       }
     },
     [clientSendToolMessage, updateError],
