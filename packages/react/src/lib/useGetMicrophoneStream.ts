@@ -6,7 +6,7 @@ import type { AudioConstraints } from '../models/connect-options';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';
 
-const useEncoding = () => {
+export const useGetMicrophoneStream = () => {
   const [permission, setPermission] = useState<PermissionStatus>('prompt');
 
   const getStream = useCallback(
@@ -32,5 +32,3 @@ const useEncoding = () => {
     permission,
   };
 };
-
-export { useEncoding };

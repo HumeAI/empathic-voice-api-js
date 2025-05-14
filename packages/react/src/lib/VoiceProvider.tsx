@@ -14,7 +14,7 @@ import React, {
 import { ConnectionMessage } from './connection-message';
 import { noop } from './noop';
 import { useCallDuration } from './useCallDuration';
-import { useEncoding } from './useEncoding';
+import { useGetMicrophoneStream } from './useGetMicrophoneStream';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
@@ -256,7 +256,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [clearMessagesOnDisconnect, toolStatus, player, messageStore],
   );
 
-  const { getStream } = useEncoding();
+  const { getStream } = useGetMicrophoneStream();
 
   const initializeMicrophone = useCallback(() => {
     // stop any currently running microphone stream
