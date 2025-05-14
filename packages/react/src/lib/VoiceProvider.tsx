@@ -310,7 +310,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         micStartFnRef.current?.(stream);
       })
       .catch((e) => {
-        console.log('e', e);
         const error: VoiceError = {
           type: 'mic_error',
           reason: 'mic_initialization_failure',
