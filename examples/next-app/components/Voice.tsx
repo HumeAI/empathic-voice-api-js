@@ -18,7 +18,7 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
       }}
       onError={(message) => {
         // eslint-disable-next-line no-console
-        console.error('onError', message);
+        console.log('onError', message);
       }}
       onAudioStart={(clipId) => {
         // eslint-disable-next-line no-console
