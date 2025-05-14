@@ -1,15 +1,13 @@
 // cspell:ignore dataavailable
 import { checkForAudioTracks, getAudioStream } from 'hume';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import type { AudioConstraints } from '../models/connect-options';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';
 
-const useEncoding = () => {
+export const useGetMicrophoneStream = () => {
   const [permission, setPermission] = useState<PermissionStatus>('prompt');
-
-  const streamRef = useRef<MediaStream | null>(null);
 
   const getStream = useCallback(
     async (audioConstraints: AudioConstraints = {}) => {
@@ -17,24 +15,20 @@ const useEncoding = () => {
         const stream = await getAudioStream(audioConstraints);
 
         setPermission('granted');
-        streamRef.current = stream;
 
         checkForAudioTracks(stream);
 
-        return 'granted' as const;
+        return stream;
       } catch (e) {
         setPermission('denied');
-        return 'denied' as const;
+        throw e;
       }
     },
     [],
   );
 
   return {
-    streamRef,
     getStream,
     permission,
   };
 };
-
-export { useEncoding };
