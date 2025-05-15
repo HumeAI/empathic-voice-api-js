@@ -548,7 +548,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   useEffect(() => {
     return () => {
-      disconnectAndCleanup();
+      disconnectAndCleanup({ isError: false });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
