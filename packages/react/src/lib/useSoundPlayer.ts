@@ -17,7 +17,6 @@ export const useSoundPlayer = (props: {
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [volume, setVolumeState] = useState<number>(1.0);
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
-  const [queueLength, setQueueLength] = useState(0);
 
   const audioContext = useRef<AudioContext | null>(null);
   const analyserNode = useRef<AnalyserNode | null>(null);
@@ -25,17 +24,7 @@ export const useSoundPlayer = (props: {
   const workletNode = useRef<AudioWorkletNode | null>(null);
   const isInitialized = useRef(false);
 
-  const clipQueue = useRef<
-    Array<{
-      id: string;
-      buffer: AudioBuffer;
-    }>
-  >([]);
-
   const isProcessing = useRef(false);
-  const currentlyPlayingAudioBuffer = useRef<AudioBufferSourceNode | null>(
-    null,
-  );
   const frequencyDataIntervalId = useRef<number | null>(null);
 
   const onPlayAudio = useRef<typeof props.onPlayAudio>(props.onPlayAudio);
@@ -47,6 +36,30 @@ export const useSoundPlayer = (props: {
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
 
+  /**
+   * Only for non-AudioWorklet mode.
+   * In non-AudioWorklet mode, audio clips are managed and played sequentially.
+   * When the current audio clip finishes, the next clip in the queue is played automatically.
+   * In AudioWorklet mode, audio processing and playback are handled by the worklet itself.
+   * In non-AudioWorklet, we must track the currently playing audio buffer
+   * in order to stop it when a new clip is added or when playback is manually stopped by the user.
+   */
+  const clipQueue = useRef<
+    Array<{
+      id: string;
+      buffer: AudioBuffer;
+    }>
+  >([]);
+  const [queueLength, setQueueLength] = useState(0);
+  const currentlyPlayingAudioBuffer = useRef<AudioBufferSourceNode | null>(
+    null,
+  );
+
+  /**
+   * Only for non-AudioWorklet mode.
+   * This function is called when the current audio clip ends.
+   * It will play the next clip in the queue if there is one.
+   */
   const playNextClip = useCallback(() => {
     if (analyserNode.current === null || audioContext.current === null) {
       onError.current(
@@ -69,8 +82,6 @@ export const useSoundPlayer = (props: {
     isProcessing.current = true;
     setIsPlaying(true);
 
-    // Use AudioBufferSourceNode for audio playback.
-    // Safari suffered a truncation issue using HTML5 audio playback
     const bufferSource = audioContext.current.createBufferSource();
 
     bufferSource.buffer = nextClip.buffer;
@@ -123,6 +134,9 @@ export const useSoundPlayer = (props: {
     };
   }, []);
 
+  /*
+   * Only for AudioWorklet mode, obviously.
+   */
   const loadAudioWorklet = useCallback(
     async (ctx: AudioContext, attemptNumber = 1): Promise<boolean> => {
       return ctx.audioWorklet
@@ -236,23 +250,26 @@ export const useSoundPlayer = (props: {
         setIsPlaying(true);
         onPlayAudio.current(message.id);
 
-        if (!props.enableAudioWorklet) {
-          clipQueue.current.push({
-            id: message.id,
-            buffer: audioBuffer,
-          });
-          setQueueLength(clipQueue.current.length);
-          // playNextClip will iterate the clipQueue upon finishing the playback of the current audio clip, so we can
-          // just call playNextClip here if it's the only one in the queue
-          if (clipQueue.current.length === 1) {
-            playNextClip();
-          }
-        } else {
+        if (props.enableAudioWorklet) {
+          // AudioWorklet mode
           const pcmData = audioBuffer.getChannelData(0);
           workletNode.current?.port.postMessage({
             type: 'audio',
             data: pcmData,
           });
+        } else if (!props.enableAudioWorklet) {
+          // Non-AudioWorklet mode
+          clipQueue.current.push({
+            id: message.id,
+            buffer: audioBuffer,
+          });
+          setQueueLength(clipQueue.current.length);
+          // playNextClip will iterate the clipQueue upon finishing
+          // the playback of the current audio clip,
+          // so we can just call playNextClip here if it's the only one in the queue
+          if (clipQueue.current.length === 1) {
+            playNextClip();
+          }
         }
       } catch (e) {
         const eMessage = e instanceof Error ? e.message : 'Unknown error';
@@ -277,6 +294,7 @@ export const useSoundPlayer = (props: {
     }
 
     if (props.enableAudioWorklet) {
+      // AudioWorklet mode
       workletNode.current?.port.postMessage({ type: 'fadeAndClear' });
       workletNode.current?.port.postMessage({ type: 'end' });
 
@@ -304,7 +322,8 @@ export const useSoundPlayer = (props: {
         workletNode.current.disconnect();
         workletNode.current = null;
       }
-    } else {
+    } else if (!props.enableAudioWorklet) {
+      // Non-AudioWorklet mode
       if (currentlyPlayingAudioBuffer.current) {
         currentlyPlayingAudioBuffer.current.disconnect();
         currentlyPlayingAudioBuffer.current = null;
@@ -316,15 +335,16 @@ export const useSoundPlayer = (props: {
 
   const clearQueue = useCallback(() => {
     if (props.enableAudioWorklet) {
+      // AudioWorklet mode
       workletNode.current?.port.postMessage({
         type: 'fadeAndClear',
       });
-    } else {
+    } else if (!props.enableAudioWorklet) {
+      // Non-AudioWorklet mode
       if (currentlyPlayingAudioBuffer.current) {
         currentlyPlayingAudioBuffer.current.stop();
         currentlyPlayingAudioBuffer.current = null;
       }
-
       clipQueue.current = [];
       setQueueLength(0);
     }
