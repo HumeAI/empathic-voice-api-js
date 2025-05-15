@@ -127,7 +127,9 @@ export type VoiceContextType = {
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
 
-export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
+export type VoiceProviderProps = PropsWithChildren<
+  Omit<SocketConfig, 'reconnectAttempts'>
+> & {
   sessionSettings?: Hume.empathicVoice.SessionSettings;
   onMessage?: (message: JSONMessage) => void;
   onError?: (err: VoiceError) => void;
@@ -240,6 +242,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const config = props;
 
+  const micStopFnRef = useRef<null | (() => void)>(null);
+
   const player = useSoundPlayer({
     onError: (message, reason) => {
       updateError({ type: 'audio_error', reason, message });
@@ -316,11 +320,20 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
     >(
       (event) => {
+        // cleanup also needs to happen on the onClose handler in the event that the
+        // websocket connection is closed by the server and not the user/client
         stopTimer();
         messageStore.createDisconnectMessage(event);
+        player.stopAll();
+        micStopFnRef.current?.();
+        if (clearMessagesOnDisconnect) {
+          messageStore.clearMessages();
+        }
+        toolStatus.clearStore();
+        setIsPaused(false);
         onClose.current?.(event);
       },
-      [messageStore, stopTimer],
+      [clearMessagesOnDisconnect, messageStore, player, stopTimer, toolStatus],
     ),
     onToolCall: props.onToolCall,
   });
@@ -358,6 +371,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       [updateError],
     ),
   });
+
+  useEffect(() => {
+    micStopFnRef.current = mic.stop;
+  }, [mic]);
 
   const { clearQueue } = player;
 
