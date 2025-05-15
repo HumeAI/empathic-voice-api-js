@@ -17,10 +17,6 @@ class BufferQueue {
     this._hasPushed = false;
   }
 
-  get size() {
-    return this._buffers.length;
-  }
-
   read() {
     if (!this._hasPushed) {
       return null;
@@ -89,7 +85,6 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
             this._fadeOutActive = false;
             this._fadeOutCounter = 0;
           }
-          this.port.postMessage({ type: 'queueLength', length: this._bq.size });
           break;
         case 'end':
           this._shouldStop = true;
@@ -123,7 +118,6 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
     const channels = output.length;
 
     const block = this._bq.read();
-    this.port.postMessage({ type: 'queueLength', length: this._bq.size });
 
     if (block) {
       for (let ch = 0; ch < channels; ch++) {
