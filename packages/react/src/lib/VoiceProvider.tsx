@@ -14,7 +14,7 @@ import React, {
 import { ConnectionMessage } from './connection-message';
 import { noop } from './noop';
 import { useCallDuration } from './useCallDuration';
-import { useEncoding } from './useEncoding';
+import { useGetMicrophoneStream } from './useGetMicrophoneStream';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
@@ -35,10 +35,43 @@ import {
   UserTranscriptMessage,
 } from '../models/messages';
 
+export type SocketErrorReason =
+  | 'socket_connection_failure'
+  | 'failed_to_send_audio'
+  | 'failed_to_send_message'
+  | 'received_assistant_error_message'
+  | 'received_tool_call_error';
+export type AudioPlayerErrorReason =
+  | 'audio_player_initialization_failure'
+  | 'audio_worklet_load_failure'
+  | 'audio_player_not_initialized'
+  | 'malformed_audio'
+  | 'audio_player_closure_failure';
+
+export type MicErrorReason =
+  | 'mic_permission_denied'
+  | 'mic_initialization_failure'
+  | 'mic_closure_failure'
+  | 'mime_types_not_supported';
 type VoiceError =
-  | { type: 'socket_error'; message: string; error?: Error }
-  | { type: 'audio_error'; message: string; error?: Error }
-  | { type: 'mic_error'; message: string; error?: Error };
+  | {
+      type: 'socket_error';
+      reason: SocketErrorReason;
+      message: string;
+      error?: Error;
+    }
+  | {
+      type: 'audio_error';
+      reason: AudioPlayerErrorReason;
+      message: string;
+      error?: Error;
+    }
+  | {
+      type: 'mic_error';
+      reason: MicErrorReason;
+      message: string;
+      error?: Error;
+    };
 
 type VoiceStatus =
   | {
@@ -195,7 +228,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     (msg, err) => {
       stopTimer();
       const message = `A websocket connection could not be established. Error message: ${msg ?? 'unknown'}`;
-      updateError({ type: 'socket_error', message, error: err });
+      updateError({
+        type: 'socket_error',
+        reason: 'socket_connection_failure',
+        message,
+        error: err,
+      });
     },
     [stopTimer, updateError],
   );
@@ -203,8 +241,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const config = props;
 
   const player = useSoundPlayer({
-    onError: (message) => {
-      updateError({ type: 'audio_error', message });
+    onError: (message, reason) => {
+      updateError({ type: 'audio_error', reason, message });
     },
     onPlayAudio: (id: string) => {
       messageStore.onPlayAudio(id);
@@ -215,7 +253,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
   });
 
-  const { streamRef, getStream, permission: micPermission } = useEncoding();
+  const { getStream } = useGetMicrophoneStream();
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
@@ -248,6 +286,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         if (message.type === 'error') {
           const error: VoiceError = {
             type: 'socket_error',
+            reason: 'received_assistant_error_message',
             message: message.message,
           };
           onError.current?.(error);
@@ -260,6 +299,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       (message: string, err?: Error) => {
         const error: VoiceError = {
           type: 'socket_error',
+          reason: 'received_tool_call_error',
           message,
           error: err,
         };
@@ -296,21 +336,24 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   } = client;
 
   const mic = useMicrophone({
-    streamRef,
     onAudioCaptured: useCallback(
       (arrayBuffer) => {
         try {
           clientSendAudio(arrayBuffer);
         } catch (e) {
           const message = e instanceof Error ? e.message : 'Unknown error';
-          updateError({ type: 'socket_error', message });
+          updateError({
+            type: 'socket_error',
+            reason: 'failed_to_send_audio',
+            message,
+          });
         }
       },
       [clientSendAudio, updateError],
     ),
     onError: useCallback(
-      (message) => {
-        updateError({ type: 'mic_error', message });
+      (message, reason) => {
+        updateError({ type: 'mic_error', reason, message });
       },
       [updateError],
     ),
@@ -324,7 +367,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       setIsPaused(true);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
-      updateError({ type: 'socket_error', message });
+      updateError({
+        type: 'socket_error',
+        reason: 'failed_to_send_message',
+        message,
+      });
     }
     clearQueue();
   }, [sendPauseAssistantMessage, clearQueue, updateError]);
@@ -335,7 +382,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       setIsPaused(false);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unknown error';
-      updateError({ type: 'socket_error', message });
+      updateError({
+        type: 'socket_error',
+        reason: 'failed_to_send_message',
+        message,
+      });
     }
   }, [sendResumeAssistantMessage, updateError]);
 
@@ -343,11 +394,23 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     async (options: ConnectOptions = {}) => {
       updateError(null);
       setStatus({ value: 'connecting' });
-      const permission = await getStream(options.audioConstraints);
 
-      if (permission === 'denied') {
-        const message = 'Microphone permission denied';
-        const error: VoiceError = { type: 'mic_error', message };
+      let stream: MediaStream | null = null;
+      try {
+        stream = await getStream(options.audioConstraints);
+      } catch (e) {
+        const isPermissionDeniedError =
+          e instanceof DOMException && e.name === 'NotAllowedError';
+        const error: VoiceError = {
+          type: 'mic_error',
+          reason: isPermissionDeniedError
+            ? 'mic_permission_denied'
+            : 'mic_initialization_failure',
+          message:
+            e instanceof Error
+              ? e.message
+              : 'The microphone could not be initialized.',
+        };
         updateError(error);
         return;
       }
@@ -363,27 +426,38 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return;
       }
 
-      try {
-        const [micPromise, playerPromise] = await Promise.allSettled([
-          mic.start(),
-          player.initPlayer(),
-        ]);
+      const [micPromise, playerPromise] = await Promise.allSettled([
+        mic.start(stream),
+        player.initPlayer(),
+      ]);
 
-        if (
-          micPromise.status === 'fulfilled' &&
-          playerPromise.status === 'fulfilled'
-        ) {
-          setStatus({ value: 'connected' });
-        }
-      } catch (e) {
-        const error: VoiceError = {
-          type: 'audio_error',
+      if (micPromise.status === 'rejected') {
+        updateError({
+          type: 'mic_error',
+          reason: 'mic_initialization_failure',
           message:
-            e instanceof Error
-              ? e.message
+            micPromise.reason instanceof Error
+              ? micPromise.reason.message
               : 'We could not connect to audio. Please try again.',
-        };
-        updateError(error);
+        });
+      }
+
+      if (playerPromise.status === 'rejected') {
+        updateError({
+          type: 'audio_error',
+          reason: 'audio_player_initialization_failure',
+          message:
+            playerPromise.reason instanceof Error
+              ? playerPromise.reason.message
+              : 'We could not connect to audio. Please try again.',
+        });
+      }
+
+      if (
+        micPromise.status === 'fulfilled' &&
+        playerPromise.status === 'fulfilled'
+      ) {
+        setStatus({ value: 'connected' });
       }
     },
     [client, config, getStream, mic, player, updateError],
@@ -411,10 +485,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const disconnect = useCallback(
     (disconnectOnError?: boolean) => {
-      if (micPermission === 'denied') {
-        setStatus({ value: 'error', reason: 'Microphone permission denied' });
-      }
-
       stopTimer();
 
       disconnectFromVoice();
@@ -425,7 +495,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         setStatus({ value: 'disconnected' });
       }
     },
-    [micPermission, stopTimer, disconnectFromVoice, status.value],
+    [stopTimer, disconnectFromVoice, status.value],
   );
 
   useEffect(() => {
@@ -454,7 +524,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         clientSendUserInput(text);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        updateError({ type: 'socket_error', message });
+        updateError({
+          type: 'socket_error',
+          reason: 'failed_to_send_message',
+          message,
+        });
       }
     },
     [clientSendUserInput, updateError],
@@ -466,7 +540,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         clientSendAssistantInput(text);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        updateError({ type: 'socket_error', message });
+        updateError({
+          type: 'socket_error',
+          reason: 'failed_to_send_message',
+          message,
+        });
       }
     },
     [clientSendAssistantInput, updateError],
@@ -478,7 +556,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         clientSendSessionSettings(sessionSettings);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        updateError({ type: 'socket_error', message });
+        updateError({
+          type: 'socket_error',
+          reason: 'failed_to_send_message',
+          message,
+        });
       }
     },
     [clientSendSessionSettings, updateError],
@@ -504,7 +586,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         clientSendToolMessage(message);
       } catch (e) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        updateError({ type: 'socket_error', message });
+        updateError({
+          type: 'socket_error',
+          reason: 'failed_to_send_message',
+          message,
+        });
       }
     },
     [clientSendToolMessage, updateError],
