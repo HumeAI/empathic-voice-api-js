@@ -15,13 +15,7 @@ export const useGetMicrophoneStream = () => {
       try {
         stream = await getAudioStream(audioConstraints);
       } catch (e) {
-        if (
-          e instanceof DOMException &&
-          'name' in e &&
-          e.name === 'NotAllowedError'
-        ) {
-          setPermission('denied');
-        }
+        setPermission('denied');
         throw e;
       }
 

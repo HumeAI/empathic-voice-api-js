@@ -50,7 +50,6 @@ export type AudioPlayerErrorReason =
   | 'audio_player_closure_failure';
 
 export type MicErrorReason =
-  | 'mic_permission_denied'
   | 'mic_initialization_failure'
   | 'mic_closure_failure'
   | 'mime_types_not_supported';
@@ -313,10 +312,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       .catch((e) => {
         const error: VoiceError = {
           type: 'mic_error',
-          reason:
-            e.name === 'NotAllowedError'
-              ? 'mic_permission_denied'
-              : 'mic_initialization_failure',
+          reason: 'mic_initialization_failure',
           message:
             e instanceof Error
               ? e.message
