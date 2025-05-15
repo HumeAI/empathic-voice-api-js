@@ -14,7 +14,7 @@ import React, {
 import { ConnectionMessage } from './connection-message';
 import { noop } from './noop';
 import { useCallDuration } from './useCallDuration';
-import { useGetMicrophoneStream } from './useGetMicrophoneStream';
+import { useEncoding } from './useEncoding';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
 import { useSoundPlayer } from './useSoundPlayer';
@@ -211,7 +211,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const config = props;
 
   const micStopFnRef = useRef<null | (() => void)>(null);
-  const micStartFnRef = useRef<null | ((stream: MediaStream) => void)>(null);
+  const micStartFnRef = useRef<null | (() => void)>(null);
 
   const player = useSoundPlayer({
     onError: (message) => {
@@ -256,7 +256,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [clearMessagesOnDisconnect, toolStatus, player, messageStore],
   );
 
-  const { getStream } = useGetMicrophoneStream();
+  const { streamRef, getStream, permission: micPermission } = useEncoding();
 
   const initializeMicrophone = useCallback(() => {
     // stop any currently running microphone stream
@@ -267,8 +267,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     // with a fresh stream with new audio headers (audio headers are only present
     // at the start of the stream).
     return getStream(connectOptions?.audioConstraints)
-      .then((stream) => {
-        micStartFnRef.current?.(stream);
+      .then(() => {
+        micStartFnRef.current?.();
       })
       .catch((e) => {
         const error: VoiceError = {
@@ -445,6 +445,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, [client]);
 
   const mic = useMicrophone({
+    streamRef,
     onAudioCaptured: useCallback(
       (arrayBuffer) => {
         try {
@@ -497,6 +498,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       updateError(null);
       setStatus({ value: 'connecting' });
       setConnectOptions(options);
+      const permission = await getStream(options.audioConstraints);
+
+      if (permission === 'denied') {
+        const message = 'Microphone permission denied';
+        const error: VoiceError = { type: 'mic_error', message };
+        updateError(error);
+        return;
+      }
 
       try {
         await client.connect({
@@ -517,7 +526,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       // calls "connect", and will not restart when the websocket connection disconnects
       // and automatically reconnects.
     },
-    [client, config, initializeAudioPlayer, updateError],
+    [client, config, getStream, initializeAudioPlayer, updateError],
   );
 
   useEffect(() => {
