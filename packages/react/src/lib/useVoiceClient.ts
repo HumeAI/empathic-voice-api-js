@@ -222,7 +222,7 @@ export const useVoiceClient = (props: {
   const sendSessionSettings = useCallback(
     (sessionSettings: Hume.empathicVoice.SessionSettings) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        throw new Error('Socket is not open');
+        return;
       }
       client.current?.sendSessionSettings(sessionSettings);
     },
@@ -232,7 +232,7 @@ export const useVoiceClient = (props: {
   const sendAudio = useCallback(
     (arrayBuffer: ArrayBufferLike) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        throw new Error('Socket is not open');
+        return;
       }
       client.current?.socket?.send(arrayBuffer);
     },
@@ -242,7 +242,7 @@ export const useVoiceClient = (props: {
   const sendUserInput = useCallback(
     (text: string) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        throw new Error('Socket is not open');
+        return;
       }
       client.current?.sendUserInput(text);
     },
@@ -252,7 +252,7 @@ export const useVoiceClient = (props: {
   const sendAssistantInput = useCallback(
     (text: string) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        throw new Error('Socket is not open');
+        return;
       }
       client.current?.sendAssistantInput({
         text,
@@ -270,7 +270,7 @@ export const useVoiceClient = (props: {
         | Hume.empathicVoice.ToolErrorMessage,
     ) => {
       if (readyState !== VoiceReadyState.OPEN) {
-        throw new Error('Socket is not open');
+        return;
       }
       if (toolMessage.type === 'tool_error') {
         client.current?.sendToolErrorMessage(toolMessage);
@@ -283,13 +283,13 @@ export const useVoiceClient = (props: {
 
   const sendPauseAssistantMessage = useCallback(() => {
     if (readyState !== VoiceReadyState.OPEN) {
-      throw new Error('Socket is not open');
+      return;
     }
     client.current?.pauseAssistant({});
   }, [readyState]);
   const sendResumeAssistantMessage = useCallback(() => {
     if (readyState !== VoiceReadyState.OPEN) {
-      throw new Error('Socket is not open');
+      return;
     }
     client.current?.resumeAssistant({});
   }, [readyState]);

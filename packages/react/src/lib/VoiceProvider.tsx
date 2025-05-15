@@ -41,6 +41,7 @@ export type SocketErrorReason =
   | 'failed_to_send_message'
   | 'received_assistant_error_message'
   | 'received_tool_call_error';
+
 export type AudioPlayerErrorReason =
   | 'audio_player_initialization_failure'
   | 'audio_worklet_load_failure'
@@ -53,6 +54,7 @@ export type MicErrorReason =
   | 'mic_initialization_failure'
   | 'mic_closure_failure'
   | 'mime_types_not_supported';
+
 type VoiceError =
   | {
       type: 'socket_error';
@@ -320,7 +322,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
     >(
       (event) => {
-        // cleanup also needs to happen on the onClose handler in the event that the
+        // onClose handler needs to handle resource cleanup in the event that the
         // websocket connection is closed by the server and not the user/client
         stopTimer();
         messageStore.createDisconnectMessage(event);
@@ -331,9 +333,20 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         }
         toolStatus.clearStore();
         setIsPaused(false);
+        if (!error) {
+          // if there's an error, keep the error status. otherwise, set status to disconnected
+          setStatus({ value: 'disconnected' });
+        }
         onClose.current?.(event);
       },
-      [clearMessagesOnDisconnect, messageStore, player, stopTimer, toolStatus],
+      [
+        clearMessagesOnDisconnect,
+        error,
+        messageStore,
+        player,
+        stopTimer,
+        toolStatus,
+      ],
     ),
     onToolCall: props.onToolCall,
   });
