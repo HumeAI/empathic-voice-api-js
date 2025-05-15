@@ -8,6 +8,7 @@ import type { AudioPlayerErrorReason } from './VoiceProvider';
 import type { AudioOutputMessage } from '../models/messages';
 
 export const useSoundPlayer = (props: {
+  enableAudioWorklet: boolean;
   onError: (message: string, reason: AudioPlayerErrorReason) => void;
   onPlayAudio: (id: string) => void;
   onStopAudio: (id: string) => void;
@@ -66,54 +67,53 @@ export const useSoundPlayer = (props: {
       const gain = initAudioContext.createGain();
 
       analyser.fftSize = 2048; // Must be a power of 2
-      analyser.connect(gain);
-      gain.connect(initAudioContext.destination);
-
       analyserNode.current = analyser;
       gainNode.current = gain;
 
-      const isWorkletLoaded = await loadAudioWorklet(initAudioContext);
-      if (!isWorkletLoaded) {
-        onError.current(
-          'Failed to load audio worklet',
-          'audio_worklet_load_failure',
+      analyser.connect(gain);
+      gain.connect(initAudioContext.destination);
+
+      if (props.enableAudioWorklet) {
+        const isWorkletLoaded = await loadAudioWorklet(initAudioContext);
+        if (!isWorkletLoaded) {
+          onError.current(
+            'Failed to load audio worklet',
+            'audio_worklet_load_failure',
+          );
+          return;
+        }
+
+        const worklet = new AudioWorkletNode(
+          initAudioContext,
+          'audio-processor',
         );
-        return;
+        worklet.connect(analyser);
+        workletNode.current = worklet;
+
+        worklet.port.onmessage = (e: MessageEvent) => {
+          const endedEvent = z
+            .object({ type: z.literal('ended') })
+            .safeParse(e.data);
+          if (endedEvent.success) {
+            setIsPlaying(false);
+            onStopAudio.current('stream');
+          }
+
+          const queueLengthEvent = z
+            .object({ type: z.literal('queueLength'), length: z.number() })
+            .safeParse(e.data);
+          if (queueLengthEvent.success) {
+            if (queueLengthEvent.data.length === 0) {
+              setIsPlaying(false);
+            }
+            setQueueLength(queueLengthEvent.data.length);
+          }
+        };
       }
 
-      const worklet = new AudioWorkletNode(initAudioContext, 'audio-processor');
-      worklet.connect(analyser);
-      workletNode.current = worklet;
-
-      worklet.port.onmessage = (e: MessageEvent) => {
-        const endedEvent = z
-          .object({
-            type: z.literal('ended'),
-          })
-          .safeParse(e.data);
-
-        if (endedEvent.success) {
-          setIsPlaying(false);
-          onStopAudio.current('stream');
-        }
-
-        const queueLengthEvent = z
-          .object({
-            type: z.literal('queueLength'),
-            length: z.number(),
-          })
-          .safeParse(e.data);
-        if (queueLengthEvent.success) {
-          if (queueLengthEvent.data.length === 0) {
-            setIsPlaying(false);
-          }
-          setQueueLength(queueLengthEvent.data.length);
-        }
-      };
-
       frequencyDataIntervalId.current = window.setInterval(() => {
-        const dataArray = new Uint8Array(analyser.frequencyBinCount); // frequencyBinCount is 1/2 of fftSize
-        analyser.getByteFrequencyData(dataArray); // Using getByteFrequencyData for performance
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        analyser.getByteFrequencyData(dataArray);
 
         const barkFrequencies = convertLinearFrequenciesToBark(
           dataArray,
@@ -129,36 +129,62 @@ export const useSoundPlayer = (props: {
         'audio_player_initialization_failure',
       );
     }
-  }, [loadAudioWorklet]);
+  }, [loadAudioWorklet, props.enableAudioWorklet]);
 
-  const addToQueue = useCallback(async (message: AudioOutputMessage) => {
-    if (!isInitialized.current || !audioContext.current) {
-      onError.current(
-        'Audio player has not been initialized',
-        'audio_player_not_initialized',
-      );
-      return;
-    }
+  const addToQueue = useCallback(
+    async (message: AudioOutputMessage) => {
+      if (!isInitialized.current || !audioContext.current) {
+        onError.current(
+          'Audio player has not been initialized',
+          'audio_player_not_initialized',
+        );
+        return;
+      }
 
-    try {
-      const blob = convertBase64ToBlob(message.data);
-      const arrayBuffer = await blob.arrayBuffer();
-      const audioBuffer =
-        await audioContext.current.decodeAudioData(arrayBuffer);
+      try {
+        const blob = convertBase64ToBlob(message.data);
+        const arrayBuffer = await blob.arrayBuffer();
+        const audioBuffer =
+          await audioContext.current.decodeAudioData(arrayBuffer);
 
-      const pcmData = audioBuffer.getChannelData(0);
-      workletNode.current?.port.postMessage({ type: 'audio', data: pcmData });
+        setIsPlaying(true);
+        onPlayAudio.current(message.id);
 
-      setIsPlaying(true);
-      onPlayAudio.current(message.id);
-    } catch (e) {
-      const eMessage = e instanceof Error ? e.message : 'Unknown error';
-      onError.current(
-        `Failed to add clip to queue: ${eMessage}`,
-        'malformed_audio',
-      );
-    }
-  }, []);
+        if (!props.enableAudioWorklet) {
+          const source = audioContext.current.createBufferSource();
+          source.buffer = audioBuffer;
+
+          if (analyserNode.current && gainNode.current) {
+            source.connect(analyserNode.current);
+            analyserNode.current.connect(gainNode.current);
+            gainNode.current.connect(audioContext.current.destination);
+          } else {
+            source.connect(audioContext.current.destination);
+          }
+
+          source.start();
+
+          source.onended = () => {
+            setIsPlaying(false);
+            onStopAudio.current(message.id);
+          };
+        } else {
+          const pcmData = audioBuffer.getChannelData(0);
+          workletNode.current?.port.postMessage({
+            type: 'audio',
+            data: pcmData,
+          });
+        }
+      } catch (e) {
+        const eMessage = e instanceof Error ? e.message : 'Unknown error';
+        onError.current(
+          `Failed to add clip to queue: ${eMessage}`,
+          'malformed_audio',
+        );
+      }
+    },
+    [props.enableAudioWorklet],
+  );
 
   const stopAll = useCallback(() => {
     isInitialized.current = false;
