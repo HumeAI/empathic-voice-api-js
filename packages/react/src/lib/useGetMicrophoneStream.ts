@@ -11,19 +11,18 @@ export const useGetMicrophoneStream = () => {
 
   const getStream = useCallback(
     async (audioConstraints: AudioConstraints = {}) => {
-      let stream;
       try {
-        stream = await getAudioStream(audioConstraints);
+        const stream = await getAudioStream(audioConstraints);
+
+        setPermission('granted');
+
+        checkForAudioTracks(stream);
+
+        return stream;
       } catch (e) {
         setPermission('denied');
         throw e;
       }
-
-      setPermission('granted');
-
-      checkForAudioTracks(stream);
-
-      return stream;
     },
     [],
   );

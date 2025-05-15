@@ -4,11 +4,10 @@ import z from 'zod';
 
 import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
-import type { AudioPlayerErrorReason } from './VoiceProvider';
 import type { AudioOutputMessage } from '../models/messages';
 
 export const useSoundPlayer = (props: {
-  onError: (message: string, reason: AudioPlayerErrorReason) => void;
+  onError: (message: string) => void;
   onPlayAudio: (id: string) => void;
   onStopAudio: (id: string) => void;
 }) => {
@@ -74,10 +73,7 @@ export const useSoundPlayer = (props: {
 
       const isWorkletLoaded = await loadAudioWorklet(initAudioContext);
       if (!isWorkletLoaded) {
-        onError.current(
-          'Failed to load audio worklet',
-          'audio_worklet_load_failure',
-        );
+        onError.current('Failed to load audio worklet');
         return;
       }
 
@@ -124,19 +120,13 @@ export const useSoundPlayer = (props: {
 
       isInitialized.current = true;
     } catch (e) {
-      onError.current(
-        'Failed to initialize audio player',
-        'audio_player_initialization_failure',
-      );
+      onError.current('Failed to initialize audio player');
     }
   }, [loadAudioWorklet]);
 
   const addToQueue = useCallback(async (message: AudioOutputMessage) => {
     if (!isInitialized.current || !audioContext.current) {
-      onError.current(
-        'Audio player has not been initialized',
-        'audio_player_not_initialized',
-      );
+      onError.current('Audio player has not been initialized');
       return;
     }
 
@@ -153,10 +143,7 @@ export const useSoundPlayer = (props: {
       onPlayAudio.current(message.id);
     } catch (e) {
       const eMessage = e instanceof Error ? e.message : 'Unknown error';
-      onError.current(
-        `Failed to add clip to queue: ${eMessage}`,
-        'malformed_audio',
-      );
+      onError.current(`Failed to add clip to queue: ${eMessage}`);
     }
   }, []);
 
