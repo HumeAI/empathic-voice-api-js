@@ -190,11 +190,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, []);
 
   const onClientError: NonNullable<
-    Parameters<typeof useVoiceClient>[0]['onClientError']
+    Parameters<typeof useVoiceClient>[0]['onError']
   > = useCallback(
-    (msg, err) => {
+    (message, err) => {
       stopTimer();
-      const message = `A websocket connection could not be established. Error message: ${msg ?? 'unknown'}`;
       updateError({ type: 'socket_error', message, error: err });
     },
     [stopTimer, updateError],
@@ -271,18 +270,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       },
       [messageStore, player, toolStatus],
     ),
-    onClientError,
-    onToolCallError: useCallback(
-      (message: string, err?: Error) => {
-        const error: VoiceError = {
-          type: 'socket_error',
-          message,
-          error: err,
-        };
-        updateError(error);
-      },
-      [updateError],
-    ),
+    onError: onClientError,
     onOpen: useCallback(() => {
       startTimer();
       messageStore.createConnectMessage();
@@ -370,7 +358,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         const message = 'Microphone permission denied';
         const error: VoiceError = { type: 'mic_error', message };
         updateError(error);
-        return;
+        return Promise.reject(new Error(message));
       }
 
       try {
@@ -379,9 +367,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           verboseTranscription: true,
         });
       } catch (e) {
-        // catching the thrown error here so we can return early from the connect function,
-        // but the error itself is handled in the `onClientError` callback on the client
-        return;
+        const message = 'We could not connect to the voice. Please try again.';
+        const error: VoiceError = { type: 'socket_error', message };
+        updateError(error);
+        return Promise.reject(new Error(message));
       }
 
       try {
