@@ -92,7 +92,6 @@ export type VoiceContextType = {
   isMuted: boolean;
   isAudioMuted: boolean;
   isPlaying: boolean;
-  isReconnecting: boolean;
   messages: (JSONMessage | ConnectionMessage)[];
   lastVoiceMessage: AssistantTranscriptMessage | null;
   lastUserMessage: UserTranscriptMessage | null;
@@ -130,7 +129,9 @@ export type VoiceContextType = {
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
 
-export type VoiceProviderProps = PropsWithChildren<SocketConfig> & {
+export type VoiceProviderProps = PropsWithChildren<
+  Omit<SocketConfig, 'reconnectAttempts'>
+> & {
   sessionSettings?: Hume.empathicVoice.SessionSettings;
   onMessage?: (message: JSONMessage) => void;
   onError?: (err: VoiceError) => void;
@@ -182,11 +183,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   });
 
   const [isPaused, setIsPaused] = useState(false);
-  const [isReconnecting, setIsReconnecting] = useState(false);
-
-  const [connectOptions, setConnectOptions] = useState<ConnectOptions | null>(
-    null,
-  );
 
   // error handling
   const [error, setError] = useState<VoiceError | null>(null);
@@ -194,8 +190,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const isMicrophoneError = error?.type === 'mic_error';
   const isSocketError = error?.type === 'socket_error';
   const isAudioError = error?.type === 'audio_error';
-
-  const connectRef = useRef(() => {});
 
   const onError = useRef(props.onError ?? noop);
   onError.current = props.onError ?? noop;
@@ -251,7 +245,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const config = props;
 
   const micStopFnRef = useRef<null | (() => void)>(null);
-  const micStartFnRef = useRef<null | ((stream: MediaStream) => void)>(null);
 
   const player = useSoundPlayer({
     onError: (message, reason) => {
@@ -265,132 +258,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       onAudioEnd.current(id);
     },
   });
-  const [shouldStopPlayer, setShouldStopPlayer] = useState(false);
-
-  useEffect(() => {
-    if (
-      shouldStopPlayer &&
-      (player.queueLength === 0 || status.value === 'error')
-    ) {
-      player.stopAll();
-      setShouldStopPlayer(false);
-    }
-  }, [shouldStopPlayer, player.queueLength, player, status.value]);
-
-  const handleResourceCleanup = useCallback(
-    (forceStop?: boolean) => {
-      if (forceStop) {
-        player.stopAll();
-      } else {
-        setShouldStopPlayer(true);
-      }
-      if (micStopFnRef.current !== null) {
-        micStopFnRef.current();
-      }
-      if (clearMessagesOnDisconnect) {
-        messageStore.clearMessages();
-      }
-      toolStatus.clearStore();
-      setIsPaused(false);
-    },
-    [clearMessagesOnDisconnect, toolStatus, player, messageStore],
-  );
 
   const { getStream } = useGetMicrophoneStream();
-
-  const initializeMicrophone = useCallback(() => {
-    // stop any currently running microphone stream
-    micStopFnRef.current?.();
-
-    // then start the microphone.
-    // we need to call getStream here to ensure that the microphone is initialized
-    // with a fresh stream with new audio headers (audio headers are only present
-    // at the start of the stream).
-    return getStream(connectOptions?.audioConstraints)
-      .then((stream) => {
-        micStartFnRef.current?.(stream);
-      })
-      .catch((e) => {
-        const error: VoiceError = {
-          type: 'mic_error',
-          reason:
-            e.name === 'NotAllowedError'
-              ? 'mic_permission_denied'
-              : 'mic_initialization_failure',
-          message:
-            e instanceof Error
-              ? e.message
-              : 'The microphone could not be initialized.',
-        };
-        updateError(error);
-      });
-  }, [getStream, connectOptions, updateError]);
-
-  const initializeAudioPlayer = useCallback(() => {
-    try {
-      return player.initPlayer();
-    } catch (e) {
-      const error: VoiceError = {
-        type: 'audio_error',
-        reason: 'audio_player_initialization_failure',
-        message:
-          e instanceof Error
-            ? e.message
-            : 'The audio player could not be initialized.',
-      };
-      updateError(error);
-    }
-  }, [player, updateError]);
-
-  // Create a ref to store socket closing, which we will need on disconnect
-  // when the consumer initiates the closure;
-  const socketDisconnectRef = useRef(() => {});
-
-  // The disconnect function now handles all disconnection cases:
-  // 1. If the consumer initiates the disconnection, we want to clean up all resources immediately
-  //    and set the status to disconnected. This is the default case with no options.
-  // 2. If the closure is initiated by the server, we want to clean up some resources,
-  //    set the status to disconnected, but wait on the queue being empty before stopping the player.
-  //    In this case, skipSocketClose is set to true, since the closure is initiated by the client,
-  //    and we are already in the onClose callback.
-  // 3. If the socket closes with an error, we want to clean up resources immediately and set the status to error
-  // This function is not called when the socket is attempting to reconnect,
-  const disconnectAndCleanup = useCallback(
-    (options?: {
-      isError?: boolean;
-      errorMessage?: string;
-      skipSocketClose?: boolean;
-    }) => {
-      const consumerInitiated = options === undefined;
-      const forceStop = consumerInitiated || options?.isError;
-
-      stopTimer();
-
-      if (!options?.skipSocketClose) {
-        socketDisconnectRef.current();
-      }
-
-      handleResourceCleanup(forceStop);
-
-      setConnectOptions(null);
-
-      if (options?.isError && options?.errorMessage) {
-        setStatus({ value: 'error', reason: options?.errorMessage });
-      } else if (!options?.isError) {
-        setStatus({ value: 'disconnected' });
-      }
-    },
-    [stopTimer, handleResourceCleanup],
-  );
-
-  // This function is the only one exposed to the consumer;
-  // it refers to the default case of disconnectAndCleanup,
-  // which disconnects the socket and cleans up resources immediately;
-  // All other uses of disconnectAndCleanup, determined by arguments passed,
-  // are internal.
-  const disconnect = useCallback(() => {
-    disconnectAndCleanup();
-  }, [disconnectAndCleanup]);
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
@@ -446,33 +315,38 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     ),
     onOpen: useCallback(() => {
       startTimer();
-      void initializeMicrophone().then(() => {
-        messageStore.createConnectMessage();
-        setIsReconnecting(false);
-        props.onOpen?.();
-        setShouldStopPlayer(false);
-        setStatus({ value: 'connected' });
-      });
-    }, [initializeMicrophone, messageStore, props, startTimer]),
+      messageStore.createConnectMessage();
+      props.onOpen?.();
+    }, [messageStore, props, startTimer]),
     onClose: useCallback<
       NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
     >(
       (event) => {
+        // onClose handler needs to handle resource cleanup in the event that the
+        // websocket connection is closed by the server and not the user/client
+        stopTimer();
         messageStore.createDisconnectMessage(event);
-        if (event.willReconnect) {
-          stopTimer();
-          setIsReconnecting(true);
-        } else {
-          disconnectAndCleanup({
-            isError: Boolean(error),
-            errorMessage: error?.message || 'Unknown error',
-            skipSocketClose: true,
-          });
+        player.stopAll();
+        micStopFnRef.current?.();
+        if (clearMessagesOnDisconnect) {
+          messageStore.clearMessages();
         }
-
+        toolStatus.clearStore();
+        setIsPaused(false);
+        if (!error) {
+          // if there's an error, keep the error status. otherwise, set status to disconnected
+          setStatus({ value: 'disconnected' });
+        }
         onClose.current?.(event);
       },
-      [messageStore, stopTimer, error, disconnectAndCleanup],
+      [
+        clearMessagesOnDisconnect,
+        error,
+        messageStore,
+        player,
+        stopTimer,
+        toolStatus,
+      ],
     ),
     onToolCall: props.onToolCall,
   });
@@ -486,10 +360,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     sendPauseAssistantMessage,
     sendResumeAssistantMessage,
   } = client;
-
-  useEffect(() => {
-    socketDisconnectRef.current = client.disconnect;
-  }, [client]);
 
   const mic = useMicrophone({
     onAudioCaptured: useCallback(
@@ -516,7 +386,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   });
 
   useEffect(() => {
-    micStartFnRef.current = mic.start;
     micStopFnRef.current = mic.stop;
   }, [mic]);
 
@@ -555,7 +424,26 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     async (options: ConnectOptions = {}) => {
       updateError(null);
       setStatus({ value: 'connecting' });
-      setConnectOptions(options);
+
+      let stream: MediaStream | null = null;
+      try {
+        stream = await getStream(options.audioConstraints);
+      } catch (e) {
+        const isPermissionDeniedError =
+          e instanceof DOMException && e.name === 'NotAllowedError';
+        const error: VoiceError = {
+          type: 'mic_error',
+          reason: isPermissionDeniedError
+            ? 'mic_permission_denied'
+            : 'mic_initialization_failure',
+          message:
+            e instanceof Error
+              ? e.message
+              : 'The microphone could not be initialized.',
+        };
+        updateError(error);
+        return;
+      }
 
       try {
         await client.connect({
@@ -568,20 +456,77 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return;
       }
 
-      await initializeAudioPlayer();
+      const [micPromise, playerPromise] = await Promise.allSettled([
+        mic.start(stream),
+        player.initPlayer(),
+      ]);
 
-      // mic is initialized in the onOpen callback of the websocket client because the
-      // microphone stream needs to be initialized every time a new websocket connection is made.
-      // if we initialize the microphone here, the mic stream will only start when the user
-      // calls "connect", and will not restart when the websocket connection disconnects
-      // and automatically reconnects.
+      if (micPromise.status === 'rejected') {
+        updateError({
+          type: 'mic_error',
+          reason: 'mic_initialization_failure',
+          message:
+            micPromise.reason instanceof Error
+              ? micPromise.reason.message
+              : 'We could not connect to audio. Please try again.',
+        });
+      }
+
+      if (playerPromise.status === 'rejected') {
+        updateError({
+          type: 'audio_error',
+          reason: 'audio_player_initialization_failure',
+          message:
+            playerPromise.reason instanceof Error
+              ? playerPromise.reason.message
+              : 'We could not connect to audio. Please try again.',
+        });
+      }
+
+      if (
+        micPromise.status === 'fulfilled' &&
+        playerPromise.status === 'fulfilled'
+      ) {
+        setStatus({ value: 'connected' });
+      }
     },
-    [client, config, initializeAudioPlayer, updateError],
+    [client, config, getStream, mic, player, updateError],
   );
 
-  useEffect(() => {
-    connectRef.current = connect;
-  }, [connect]);
+  const disconnectFromVoice = useCallback(() => {
+    if (client.readyState !== VoiceReadyState.CLOSED) {
+      client.disconnect();
+    }
+    player.stopAll();
+    mic.stop();
+    if (clearMessagesOnDisconnect) {
+      messageStore.clearMessages();
+    }
+    toolStatus.clearStore();
+    setIsPaused(false);
+  }, [
+    client,
+    player,
+    mic,
+    clearMessagesOnDisconnect,
+    toolStatus,
+    messageStore,
+  ]);
+
+  const disconnect = useCallback(
+    (disconnectOnError?: boolean) => {
+      stopTimer();
+
+      disconnectFromVoice();
+
+      if (status.value !== 'error' && !disconnectOnError) {
+        // if status was 'error', keep the error status so we can show the error message to the end user.
+        // otherwise, set status to 'disconnected'
+        setStatus({ value: 'disconnected' });
+      }
+    },
+    [stopTimer, disconnectFromVoice, status.value],
+  );
 
   useEffect(() => {
     if (
@@ -589,16 +534,16 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       status.value !== 'error' &&
       status.value !== 'disconnected'
     ) {
-      disconnectAndCleanup({
-        isError: true,
-        errorMessage: error.message,
-      });
+      // If the status is ever set to `error`, disconnect the voice.
+      setStatus({ value: 'error', reason: error.message });
+      disconnectFromVoice();
     }
-  }, [error, status.value, disconnectAndCleanup]);
+  }, [status.value, disconnect, disconnectFromVoice, error]);
 
   useEffect(() => {
+    // disconnect from socket when the voice provider component unmounts
     return () => {
-      disconnectAndCleanup();
+      disconnectFromVoice();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -691,7 +636,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         isMuted: mic.isMuted,
         isAudioMuted: player.isAudioMuted,
         isPlaying: player.isPlaying,
-        isReconnecting,
         messages: messageStore.messages,
         lastVoiceMessage: messageStore.lastVoiceMessage,
         lastUserMessage: messageStore.lastUserMessage,
@@ -757,7 +701,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       callDurationTimestamp,
       toolStatus.store,
       isPaused,
-      isReconnecting,
     ],
   );
 

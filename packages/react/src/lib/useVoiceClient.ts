@@ -104,7 +104,10 @@ export const useVoiceClient = (props: {
             },
       );
 
-      client.current = hume.empathicVoice.chat.connect(config);
+      client.current = hume.empathicVoice.chat.connect({
+        ...config,
+        reconnectAttempts: 0,
+      });
 
       client.current.on('message', (message) => {
         if (message.type === 'audio_output') {
@@ -284,7 +287,6 @@ export const useVoiceClient = (props: {
     }
     client.current?.pauseAssistant({});
   }, [readyState]);
-
   const sendResumeAssistantMessage = useCallback(() => {
     if (readyState !== VoiceReadyState.OPEN) {
       return;
