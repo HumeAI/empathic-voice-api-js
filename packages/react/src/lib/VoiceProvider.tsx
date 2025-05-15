@@ -149,10 +149,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [isReconnecting, setIsReconnecting] = useState(false);
 
-  const [connectOptions, setConnectOptions] = useState<ConnectOptions | null>(
-    null,
-  );
-
   // error handling
   const [error, setError] = useState<VoiceError | null>(null);
   const isError = error !== null;
@@ -210,7 +206,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const config = props;
 
-  const micStopFnRef = useRef<null | (() => void)>(null);
+  const micCleanUpFnRef = useRef<null | (() => void)>(null);
   const micStartFnRef = useRef<null | (() => void)>(null);
 
   const player = useSoundPlayer({
@@ -244,8 +240,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       } else {
         setShouldStopPlayer(true);
       }
-      if (micStopFnRef.current !== null) {
-        micStopFnRef.current();
+      if (micCleanUpFnRef.current !== null) {
+        micCleanUpFnRef.current();
       }
       if (clearMessagesOnDisconnect) {
         messageStore.clearMessages();
@@ -258,44 +254,40 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
-  const initializeMicrophone = useCallback(() => {
-    // stop any currently running microphone stream
-    micStopFnRef.current?.();
+  const initializeResources = useCallback(
+    async (options: ConnectOptions = {}) => {
+      if (micStartFnRef.current === null) {
+        return false;
+      }
 
-    // then start the microphone.
-    // we need to call getStream here to ensure that the microphone is initialized
-    // with a fresh stream with new audio headers (audio headers are only present
-    // at the start of the stream).
-    return getStream(connectOptions?.audioConstraints)
-      .then(() => {
-        micStartFnRef.current?.();
-      })
-      .catch((e) => {
+      try {
+        const [micPromise, playerPromise] = await Promise.allSettled([
+          micStartFnRef.current(),
+          player.initPlayer(),
+        ]);
+
+        if (
+          micPromise.status === 'fulfilled' &&
+          playerPromise.status === 'fulfilled'
+        ) {
+          setStatus({ value: 'connected' });
+          return true;
+        }
+        return false;
+      } catch (e) {
         const error: VoiceError = {
-          type: 'mic_error',
+          type: 'audio_error',
           message:
             e instanceof Error
               ? e.message
-              : 'The microphone could not be initialized.',
+              : 'We could not connect to audio. Please try again.',
         };
         updateError(error);
-      });
-  }, [getStream, connectOptions, updateError]);
-
-  const initializeAudioPlayer = useCallback(() => {
-    try {
-      return player.initPlayer();
-    } catch (e) {
-      const error: VoiceError = {
-        type: 'audio_error',
-        message:
-          e instanceof Error
-            ? e.message
-            : 'The audio player could not be initialized.',
-      };
-      updateError(error);
-    }
-  }, [player, updateError]);
+        return false;
+      }
+    },
+    [player, updateError],
+  );
 
   // Create a ref to store socket closing, which we will need on disconnect
   // when the consumer initiates the closure;
@@ -326,8 +318,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       }
 
       handleResourceCleanup(forceStop);
-
-      setConnectOptions(null);
 
       if (options?.isError && options?.errorMessage) {
         setStatus({ value: 'error', reason: options?.errorMessage });
@@ -391,14 +381,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     ),
     onOpen: useCallback(() => {
       startTimer();
-      void initializeMicrophone().then(() => {
-        messageStore.createConnectMessage();
-        setIsReconnecting(false);
-        props.onOpen?.();
-        setShouldStopPlayer(false);
-        setStatus({ value: 'connected' });
-      });
-    }, [initializeMicrophone, messageStore, props, startTimer]),
+      messageStore.createConnectMessage();
+      setIsReconnecting(false);
+      props.onOpen?.();
+      setShouldStopPlayer(false);
+    }, [messageStore, props, startTimer]),
     onClose: useCallback<
       NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
     >(
@@ -459,7 +446,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   useEffect(() => {
     micStartFnRef.current = mic.start;
-    micStopFnRef.current = mic.stop;
+    micCleanUpFnRef.current = mic.stop;
   }, [mic]);
 
   const { clearQueue } = player;
@@ -489,7 +476,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     async (options: ConnectOptions = {}) => {
       updateError(null);
       setStatus({ value: 'connecting' });
-      setConnectOptions(options);
       const permission = await getStream(options.audioConstraints);
 
       if (permission === 'denied') {
@@ -510,15 +496,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return;
       }
 
-      await initializeAudioPlayer();
-
-      // mic is initialized in the onOpen callback of the websocket client because the
-      // microphone stream needs to be initialized every time a new websocket connection is made.
-      // if we initialize the microphone here, the mic stream will only start when the user
-      // calls "connect", and will not restart when the websocket connection disconnects
-      // and automatically reconnects.
+      await initializeResources(options);
     },
-    [client, config, getStream, initializeAudioPlayer, updateError],
+    [client, config, getStream, initializeResources, updateError],
   );
 
   useEffect(() => {
