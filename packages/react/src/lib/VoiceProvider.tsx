@@ -247,7 +247,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const micStopFnRef = useRef<null | (() => void)>(null);
 
   const player = useSoundPlayer({
-    enableAudioWorklet: true,
+    enableAudioWorklet: false,
     onError: (message, reason) => {
       updateError({ type: 'audio_error', reason, message });
     },
