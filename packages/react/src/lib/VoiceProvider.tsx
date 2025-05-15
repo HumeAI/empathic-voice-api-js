@@ -228,28 +228,21 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
   }, [shouldStopPlayer, player.queueLength, player, status.value]);
 
-  const handleResourceCleanup = useCallback(
-    (forceStop?: boolean) => {
-      if (forceStop) {
-        player.stopAll();
-      } else {
-        setShouldStopPlayer(true);
-      }
-      if (micCleanUpFnRef.current !== null) {
-        micCleanUpFnRef.current();
-      }
-      if (clearMessagesOnDisconnect) {
-        messageStore.clearMessages();
-      }
-      toolStatus.clearStore();
-      setIsPaused(false);
+  const handleResourceCleanup = useCallback(() => {
+    setShouldStopPlayer(true);
+    if (micCleanUpFnRef.current !== null) {
+      micCleanUpFnRef.current();
+    }
+    if (clearMessagesOnDisconnect) {
+      messageStore.clearMessages();
+    }
+    toolStatus.clearStore();
+    setIsPaused(false);
 
-      if (status.value !== 'error') {
-        setStatus({ value: 'disconnected' });
-      }
-    },
-    [clearMessagesOnDisconnect, toolStatus, status.value, player, messageStore],
-  );
+    if (status.value !== 'error') {
+      setStatus({ value: 'disconnected' });
+    }
+  }, [clearMessagesOnDisconnect, messageStore, toolStatus, status.value]);
 
   const { streamRef, getStream, permission: micPermission } = useEncoding();
 
@@ -427,8 +420,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
-    // Cleanup resources immediately
-    handleResourceCleanup(true);
+    handleResourceCleanup();
   }, [client, handleResourceCleanup]);
 
   const disconnect = useCallback(
