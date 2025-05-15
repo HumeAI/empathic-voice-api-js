@@ -25,7 +25,17 @@ export const useSoundPlayer = (props: {
   const workletNode = useRef<AudioWorkletNode | null>(null);
   const isInitialized = useRef(false);
 
+  const clipQueue = useRef<
+    Array<{
+      id: string;
+      buffer: AudioBuffer;
+    }>
+  >([]);
+
   const isProcessing = useRef(false);
+  const currentlyPlayingAudioBuffer = useRef<AudioBufferSourceNode | null>(
+    null,
+  );
   const frequencyDataIntervalId = useRef<number | null>(null);
 
   const onPlayAudio = useRef<typeof props.onPlayAudio>(props.onPlayAudio);
@@ -36,6 +46,82 @@ export const useSoundPlayer = (props: {
 
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
+
+  const playNextClip = useCallback(() => {
+    if (analyserNode.current === null || audioContext.current === null) {
+      onError.current(
+        'Audio player is not initialized',
+        'audio_player_initialization_failure',
+      );
+      return;
+    }
+
+    if (clipQueue.current.length === 0 || isProcessing.current) {
+      setQueueLength(0);
+      return;
+    }
+
+    const nextClip = clipQueue.current.shift();
+    setQueueLength(clipQueue.current.length);
+
+    if (!nextClip) return;
+
+    isProcessing.current = true;
+    setIsPlaying(true);
+
+    // Use AudioBufferSourceNode for audio playback.
+    // Safari suffered a truncation issue using HTML5 audio playback
+    const bufferSource = audioContext.current.createBufferSource();
+
+    bufferSource.buffer = nextClip.buffer;
+
+    bufferSource.connect(analyserNode.current);
+
+    currentlyPlayingAudioBuffer.current = bufferSource;
+
+    const updateFrequencyData = () => {
+      try {
+        const bufferSampleRate = bufferSource.buffer?.sampleRate;
+
+        if (!analyserNode.current || typeof bufferSampleRate === 'undefined')
+          return;
+
+        const dataArray = new Uint8Array(
+          analyserNode.current.frequencyBinCount,
+        ); // frequencyBinCount is 1/2 of fftSize
+        analyserNode.current.getByteFrequencyData(dataArray); // Using getByteFrequencyData for performance
+
+        const barkFrequencies = convertLinearFrequenciesToBark(
+          dataArray,
+          bufferSampleRate,
+        );
+        setFft(() => barkFrequencies);
+      } catch (e) {
+        setFft(generateEmptyFft());
+      }
+    };
+
+    frequencyDataIntervalId.current = window.setInterval(
+      updateFrequencyData,
+      5,
+    );
+
+    bufferSource.start(0);
+    onPlayAudio.current(nextClip.id);
+
+    bufferSource.onended = () => {
+      if (frequencyDataIntervalId.current) {
+        clearInterval(frequencyDataIntervalId.current);
+      }
+      setFft(generateEmptyFft());
+      bufferSource.disconnect();
+      isProcessing.current = false;
+      setIsPlaying(false);
+      onStopAudio.current(nextClip.id);
+      currentlyPlayingAudioBuffer.current = null;
+      playNextClip();
+    };
+  }, []);
 
   const loadAudioWorklet = useCallback(
     async (ctx: AudioContext, attemptNumber = 1): Promise<boolean> => {
@@ -151,23 +237,16 @@ export const useSoundPlayer = (props: {
         onPlayAudio.current(message.id);
 
         if (!props.enableAudioWorklet) {
-          const source = audioContext.current.createBufferSource();
-          source.buffer = audioBuffer;
-
-          if (analyserNode.current && gainNode.current) {
-            source.connect(analyserNode.current);
-            analyserNode.current.connect(gainNode.current);
-            gainNode.current.connect(audioContext.current.destination);
-          } else {
-            source.connect(audioContext.current.destination);
+          clipQueue.current.push({
+            id: message.id,
+            buffer: audioBuffer,
+          });
+          setQueueLength(clipQueue.current.length);
+          // playNextClip will iterate the clipQueue upon finishing the playback of the current audio clip, so we can
+          // just call playNextClip here if it's the only one in the queue
+          if (clipQueue.current.length === 1) {
+            playNextClip();
           }
-
-          source.start();
-
-          source.onended = () => {
-            setIsPlaying(false);
-            onStopAudio.current(message.id);
-          };
         } else {
           const pcmData = audioBuffer.getChannelData(0);
           workletNode.current?.port.postMessage({
@@ -183,7 +262,7 @@ export const useSoundPlayer = (props: {
         );
       }
     },
-    [props.enableAudioWorklet],
+    [playNextClip, props.enableAudioWorklet],
   );
 
   const stopAll = useCallback(() => {
@@ -197,46 +276,63 @@ export const useSoundPlayer = (props: {
       window.clearInterval(frequencyDataIntervalId.current);
     }
 
-    workletNode.current?.port.postMessage({ type: 'fadeAndClear' });
-    workletNode.current?.port.postMessage({ type: 'end' });
+    if (props.enableAudioWorklet) {
+      workletNode.current?.port.postMessage({ type: 'fadeAndClear' });
+      workletNode.current?.port.postMessage({ type: 'end' });
 
-    if (analyserNode.current) {
-      analyserNode.current.disconnect();
-      analyserNode.current = null;
-    }
+      if (analyserNode.current) {
+        analyserNode.current.disconnect();
+        analyserNode.current = null;
+      }
 
-    if (audioContext.current) {
-      void audioContext.current
-        .close()
-        .then(() => {
-          audioContext.current = null;
-        })
-        .catch(() => {
-          // .close() rejects if the audio context is already closed.
-          // Therefore, we just need to catch the error, but we don't need to
-          // do anything with it.
-          return null;
-        });
-    }
+      if (audioContext.current) {
+        void audioContext.current
+          .close()
+          .then(() => {
+            audioContext.current = null;
+          })
+          .catch(() => {
+            // .close() rejects if the audio context is already closed.
+            // Therefore, we just need to catch the error, but we don't need to
+            // do anything with it.
+            return null;
+          });
+      }
 
-    if (workletNode.current) {
-      workletNode.current.port.close();
-      workletNode.current.disconnect();
-      workletNode.current = null;
+      if (workletNode.current) {
+        workletNode.current.port.close();
+        workletNode.current.disconnect();
+        workletNode.current = null;
+      }
+    } else {
+      if (currentlyPlayingAudioBuffer.current) {
+        currentlyPlayingAudioBuffer.current.disconnect();
+        currentlyPlayingAudioBuffer.current = null;
+      }
     }
 
     setFft(generateEmptyFft());
-  }, []);
+  }, [props.enableAudioWorklet]);
 
   const clearQueue = useCallback(() => {
-    workletNode.current?.port.postMessage({
-      type: 'fadeAndClear',
-    });
+    if (props.enableAudioWorklet) {
+      workletNode.current?.port.postMessage({
+        type: 'fadeAndClear',
+      });
+    } else {
+      if (currentlyPlayingAudioBuffer.current) {
+        currentlyPlayingAudioBuffer.current.stop();
+        currentlyPlayingAudioBuffer.current = null;
+      }
+
+      clipQueue.current = [];
+      setQueueLength(0);
+    }
 
     isProcessing.current = false;
     setIsPlaying(false);
     setFft(generateEmptyFft());
-  }, []);
+  }, [props.enableAudioWorklet]);
 
   const setVolume = useCallback(
     (newLevel: number) => {
