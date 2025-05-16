@@ -15,6 +15,7 @@ describe('useSoundPlayer', () => {
         onError: mockOnError,
         onPlayAudio: mockOnPlayAudio,
         onStopAudio: mockOnStopAudio,
+        enableAudioWorklet: true,
       }),
     );
 
