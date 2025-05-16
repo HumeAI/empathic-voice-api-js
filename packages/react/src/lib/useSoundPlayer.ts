@@ -167,11 +167,11 @@ export const useSoundPlayer = (props: {
       const gain = initAudioContext.createGain();
 
       analyser.fftSize = 2048; // Must be a power of 2
-      analyserNode.current = analyser;
-      gainNode.current = gain;
-
       analyser.connect(gain);
       gain.connect(initAudioContext.destination);
+
+      analyserNode.current = analyser;
+      gainNode.current = gain;
 
       if (props.enableAudioWorklet) {
         const isWorkletLoaded = await loadAudioWorklet(initAudioContext);
@@ -209,20 +209,21 @@ export const useSoundPlayer = (props: {
             setQueueLength(queueLengthEvent.data.length);
           }
         };
+
+        frequencyDataIntervalId.current = window.setInterval(() => {
+          const dataArray = new Uint8Array(analyser.frequencyBinCount);
+          analyser.getByteFrequencyData(dataArray);
+
+          const barkFrequencies = convertLinearFrequenciesToBark(
+            dataArray,
+            initAudioContext.sampleRate,
+          );
+          setFft(() => barkFrequencies);
+        }, 5);
+        isInitialized.current = true;
+      } else {
+        isInitialized.current = true;
       }
-
-      frequencyDataIntervalId.current = window.setInterval(() => {
-        const dataArray = new Uint8Array(analyser.frequencyBinCount);
-        analyser.getByteFrequencyData(dataArray);
-
-        const barkFrequencies = convertLinearFrequenciesToBark(
-          dataArray,
-          initAudioContext.sampleRate,
-        );
-        setFft(() => barkFrequencies);
-      }, 5);
-
-      isInitialized.current = true;
     } catch (e) {
       onError.current(
         'Failed to initialize audio player',
@@ -247,9 +248,6 @@ export const useSoundPlayer = (props: {
         const audioBuffer =
           await audioContext.current.decodeAudioData(arrayBuffer);
 
-        setIsPlaying(true);
-        onPlayAudio.current(message.id);
-
         if (props.enableAudioWorklet) {
           // AudioWorklet mode
           const pcmData = audioBuffer.getChannelData(0);
@@ -257,6 +255,8 @@ export const useSoundPlayer = (props: {
             type: 'audio',
             data: pcmData,
           });
+          setIsPlaying(true);
+          onPlayAudio.current(message.id);
         } else if (!props.enableAudioWorklet) {
           // Non-AudioWorklet mode
           clipQueue.current.push({
@@ -288,6 +288,7 @@ export const useSoundPlayer = (props: {
     setIsPlaying(false);
     setIsAudioMuted(false);
     setVolumeState(1.0);
+    setFft(generateEmptyFft());
 
     if (frequencyDataIntervalId.current) {
       window.clearInterval(frequencyDataIntervalId.current);
@@ -297,25 +298,6 @@ export const useSoundPlayer = (props: {
       // AudioWorklet mode
       workletNode.current?.port.postMessage({ type: 'fadeAndClear' });
       workletNode.current?.port.postMessage({ type: 'end' });
-
-      if (analyserNode.current) {
-        analyserNode.current.disconnect();
-        analyserNode.current = null;
-      }
-
-      if (audioContext.current) {
-        void audioContext.current
-          .close()
-          .then(() => {
-            audioContext.current = null;
-          })
-          .catch(() => {
-            // .close() rejects if the audio context is already closed.
-            // Therefore, we just need to catch the error, but we don't need to
-            // do anything with it.
-            return null;
-          });
-      }
 
       if (workletNode.current) {
         workletNode.current.port.close();
@@ -328,9 +310,29 @@ export const useSoundPlayer = (props: {
         currentlyPlayingAudioBuffer.current.disconnect();
         currentlyPlayingAudioBuffer.current = null;
       }
+
+      clipQueue.current = [];
+      setQueueLength(0);
     }
 
-    setFft(generateEmptyFft());
+    if (analyserNode.current) {
+      analyserNode.current.disconnect();
+      analyserNode.current = null;
+    }
+
+    if (audioContext.current) {
+      void audioContext.current
+        .close()
+        .then(() => {
+          audioContext.current = null;
+        })
+        .catch(() => {
+          // .close() rejects if the audio context is already closed.
+          // Therefore, we just need to catch the error, but we don't need to
+          // do anything with it.
+          return null;
+        });
+    }
   }, [props.enableAudioWorklet]);
 
   const clearQueue = useCallback(() => {
