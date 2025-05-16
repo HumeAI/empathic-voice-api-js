@@ -6,7 +6,7 @@ import type { AudioConstraints } from '../models/connect-options';
 
 type PermissionStatus = 'prompt' | 'granted' | 'denied';
 
-export const useGetMicrophoneStream = () => {
+export const useMicrophoneStream = () => {
   const [permission, setPermission] = useState<PermissionStatus>('prompt');
   const currentStream = useRef<MediaStream | null>(null);
 
