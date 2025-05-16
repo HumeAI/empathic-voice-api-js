@@ -290,11 +290,20 @@ export const ExampleComponent = () => {
             .with('connecting', () => (
               <>
                 {callDuration}
+
                 <button
                   className="cursor-not-allowed rounded border border-neutral-500 p-2"
                   disabled
                 >
                   Connecting...
+                </button>
+                <button
+                  className="rounded border border-red-500 p-2 text-red-500"
+                  onClick={() => {
+                    disconnect();
+                  }}
+                >
+                  Disconnect
                 </button>
               </>
             ))
