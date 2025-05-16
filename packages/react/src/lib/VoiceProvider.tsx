@@ -14,9 +14,9 @@ import React, {
 import { ConnectionMessage } from './connection-message';
 import { noop } from './noop';
 import { useCallDuration } from './useCallDuration';
-import { useGetMicrophoneStream } from './useGetMicrophoneStream';
 import { useMessages } from './useMessages';
 import { useMicrophone } from './useMicrophone';
+import { useMicrophoneStream } from './useMicrophoneStream';
 import { useSoundPlayer } from './useSoundPlayer';
 import { useToolStatus } from './useToolStatus';
 import {
@@ -259,7 +259,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
   });
 
-  const { getStream, stopStream } = useGetMicrophoneStream();
+  const { getStream, stopStream } = useMicrophoneStream();
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {

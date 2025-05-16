@@ -1,4 +1,5 @@
 export * from './lib/connection-message';
+export * from './lib/useMicrophoneStream';
 export * from './lib/useMicrophone';
 export * from './lib/useSoundPlayer';
 export * from './lib/useVoiceClient';
