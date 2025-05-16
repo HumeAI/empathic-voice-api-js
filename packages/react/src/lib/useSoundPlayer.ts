@@ -62,16 +62,16 @@ export const useSoundPlayer = (props: {
    * It will play the next clip in the queue if there is one.
    */
   const playNextClip = useCallback(() => {
+    if (clipQueue.current.length === 0 || isProcessing.current) {
+      setQueueLength(0);
+      return;
+    }
+
     if (analyserNode.current === null || audioContext.current === null) {
       onError.current(
         'Audio player is not initialized',
         'audio_player_initialization_failure',
       );
-      return;
-    }
-
-    if (clipQueue.current.length === 0 || isProcessing.current) {
-      setQueueLength(0);
       return;
     }
 
