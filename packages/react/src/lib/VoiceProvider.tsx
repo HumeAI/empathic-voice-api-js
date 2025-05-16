@@ -348,6 +348,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         error,
         messageStore,
         player,
+        stopStream,
         stopTimer,
         toolStatus,
       ],
@@ -514,6 +515,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, [
     client,
     player,
+    stopStream,
     mic,
     clearMessagesOnDisconnect,
     toolStatus,

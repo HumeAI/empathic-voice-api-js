@@ -6,6 +6,7 @@ import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
 import type { AudioPlayerErrorReason } from './VoiceProvider';
 import type { AudioOutputMessage } from '../models/messages';
+import { loadAudioWorklet } from '../utils/loadAudioWorklet';
 
 export const useSoundPlayer = (props: {
   enableAudioWorklet: boolean;
@@ -134,28 +135,6 @@ export const useSoundPlayer = (props: {
     };
   }, []);
 
-  /*
-   * Only for AudioWorklet mode, obviously.
-   */
-  const loadAudioWorklet = useCallback(
-    async (ctx: AudioContext, attemptNumber = 1): Promise<boolean> => {
-      return ctx.audioWorklet
-        .addModule(
-          'https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet-20250507.js',
-        )
-        .then(() => {
-          return true;
-        })
-        .catch(() => {
-          if (attemptNumber >= 10) {
-            return false;
-          }
-          return loadAudioWorklet(ctx, attemptNumber + 1);
-        });
-    },
-    [],
-  );
-
   const initPlayer = useCallback(async () => {
     try {
       const initAudioContext = new AudioContext();
@@ -230,7 +209,7 @@ export const useSoundPlayer = (props: {
         'audio_player_initialization_failure',
       );
     }
-  }, [loadAudioWorklet, props.enableAudioWorklet]);
+  }, [props.enableAudioWorklet]);
 
   const addToQueue = useCallback(
     async (message: AudioOutputMessage) => {
