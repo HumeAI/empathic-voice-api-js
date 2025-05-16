@@ -259,7 +259,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
   });
 
-  const { getStream } = useGetMicrophoneStream();
+  const { getStream, stopStream } = useGetMicrophoneStream();
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
@@ -327,6 +327,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         stopTimer();
         messageStore.createDisconnectMessage(event);
         player.stopAll();
+        stopStream();
         micStopFnRef.current?.();
         if (clearMessagesOnDisconnect) {
           messageStore.clearMessages();
@@ -498,6 +499,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       client.disconnect();
     }
     player.stopAll();
+    // call stopStream separately because the user could stop the
+    // the connection before the microphone is initialized
+    stopStream();
     mic.stop();
     if (clearMessagesOnDisconnect) {
       messageStore.clearMessages();
