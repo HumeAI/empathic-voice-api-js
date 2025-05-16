@@ -154,6 +154,7 @@ export type VoiceProviderProps = PropsWithChildren<
    * @description The maximum number of messages to keep in memory.
    */
   messageHistoryLimit?: number;
+  enableAudioWorklet?: boolean;
 };
 
 export const useVoice = () => {
@@ -170,6 +171,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   messageHistoryLimit = 100,
   sessionSettings,
   verboseTranscription = true,
+  enableAudioWorklet = true,
   ...props
 }) => {
   const {
@@ -247,6 +249,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const micStopFnRef = useRef<null | (() => void)>(null);
 
   const player = useSoundPlayer({
+    enableAudioWorklet,
     onError: (message, reason) => {
       updateError({ type: 'audio_error', reason, message });
     },
@@ -345,6 +348,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         error,
         messageStore,
         player,
+        stopStream,
         stopTimer,
         toolStatus,
       ],
@@ -511,6 +515,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, [
     client,
     player,
+    stopStream,
     mic,
     clearMessagesOnDisconnect,
     toolStatus,
