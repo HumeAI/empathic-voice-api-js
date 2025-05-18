@@ -183,6 +183,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const [status, setStatus] = useState<VoiceStatus>({
     value: 'disconnected',
   });
+  const isConnectingRef = useRef(false);
 
   const [isPaused, setIsPaused] = useState(false);
 
@@ -427,8 +428,17 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const connect = useCallback(
     async (options: ConnectOptions = {}) => {
+      if (isConnectingRef.current || status.value === 'connected') {
+        console.warn(
+          'Already connected or connecting to a chat. Ignoring duplicate connection attempt.',
+        );
+
+        return;
+      }
+
       updateError(null);
       setStatus({ value: 'connecting' });
+      isConnectingRef.current = true;
 
       let stream: MediaStream | null = null;
       try {
@@ -493,9 +503,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         playerPromise.status === 'fulfilled'
       ) {
         setStatus({ value: 'connected' });
+        isConnectingRef.current = false;
       }
     },
-    [client, config, getStream, mic, player, updateError],
+    [client, config, getStream, mic, player, status.value, updateError],
   );
 
   const disconnectFromVoice = useCallback(() => {
