@@ -329,6 +329,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         // onClose handler needs to handle resource cleanup in the event that the
         // websocket connection is closed by the server and not the user/client
         stopTimer();
+        isConnectingRef.current = false;
         messageStore.createDisconnectMessage(event);
         player.stopAll();
         stopStream();
@@ -510,6 +511,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   );
 
   const disconnectFromVoice = useCallback(() => {
+    isConnectingRef.current = false;
+
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
