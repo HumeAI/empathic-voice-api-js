@@ -183,6 +183,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const [status, setStatus] = useState<VoiceStatus>({
     value: 'disconnected',
   });
+  const isConnectingRef = useRef(false);
 
   const [isPaused, setIsPaused] = useState(false);
 
@@ -328,6 +329,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         // onClose handler needs to handle resource cleanup in the event that the
         // websocket connection is closed by the server and not the user/client
         stopTimer();
+        isConnectingRef.current = false;
         messageStore.createDisconnectMessage(event);
         player.stopAll();
         stopStream();
@@ -427,8 +429,16 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const connect = useCallback(
     async (options: ConnectOptions = {}) => {
+      if (isConnectingRef.current || status.value === 'connected') {
+        console.warn(
+          'Already connected or connecting to a chat. Ignoring duplicate connection attempt.',
+        );
+        return;
+      }
+
       updateError(null);
       setStatus({ value: 'connecting' });
+      isConnectingRef.current = true;
 
       let stream: MediaStream | null = null;
       try {
@@ -456,11 +466,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           verboseTranscription: true,
         });
       } catch (e) {
-        // catching the thrown error here so we can return early from the connect function,
-        // but the error itself is handled in the `onClientError` callback on the client
+        // catching the thrown error here so we can return early from the connect function.
+        // Any errors themselves are handled in the `onClientError` callback on the client,
+        // except for the AbortController case, which we don't need to call onClientError for
+        // because cancellations are intentional, and not network errors.
         return;
       }
-
       const [micPromise, playerPromise] = await Promise.allSettled([
         mic.start(stream),
         player.initPlayer(),
@@ -493,15 +504,19 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         playerPromise.status === 'fulfilled'
       ) {
         setStatus({ value: 'connected' });
+        isConnectingRef.current = false;
       }
     },
-    [client, config, getStream, mic, player, updateError],
+    [client, config, getStream, mic, player, status.value, updateError],
   );
 
   const disconnectFromVoice = useCallback(() => {
+    isConnectingRef.current = false;
+
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
+
     player.stopAll();
     // call stopStream separately because the user could stop the
     // the connection before the microphone is initialized
