@@ -1,4 +1,5 @@
 import { Hume, HumeClient } from 'hume';
+import type { CloseEvent } from 'hume/core';
 import { useCallback, useRef, useState } from 'react';
 import { type Simplify } from 'type-fest';
 
@@ -55,7 +56,7 @@ export const useVoiceClient = (props: {
   onToolCallError?: (message: string, error?: Error) => void;
   onClientError?: (message: string, error?: Error) => void;
   onOpen?: () => void;
-  onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
+  onClose?: (event: CloseEvent, consumerInitiatedClosure: boolean) => void;
 }) => {
   const connectAbortController = useRef<AbortController | null>(null);
 
@@ -64,6 +65,7 @@ export const useVoiceClient = (props: {
   const [readyState, setReadyState] = useState<VoiceReadyState>(
     VoiceReadyState.IDLE,
   );
+  const consumerInitiated = useRef(false);
 
   // this pattern might look hacky but it allows us to use the latest props
   // in callbacks set up inside useEffect without re-rendering the useEffect
@@ -227,8 +229,9 @@ export const useVoiceClient = (props: {
       });
 
       socket.on('close', (event) => {
+        const consumerInitiatedClosure = consumerInitiated.current ?? false;
         signal.removeEventListener('abort', abortHandler);
-        onClose.current?.(event);
+        onClose.current?.(event, consumerInitiatedClosure);
         setReadyState(VoiceReadyState.CLOSED);
       });
 
@@ -247,6 +250,7 @@ export const useVoiceClient = (props: {
     connectAbortController.current?.abort();
     connectAbortController.current = null;
     setReadyState(VoiceReadyState.IDLE);
+    consumerInitiated.current = true;
     client.current?.close();
   }, []);
 
