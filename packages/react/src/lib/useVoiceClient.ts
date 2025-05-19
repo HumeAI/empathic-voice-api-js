@@ -57,6 +57,8 @@ export const useVoiceClient = (props: {
   onOpen?: () => void;
   onClose?: Hume.empathicVoice.chat.ChatSocket.EventHandlers['close'];
 }) => {
+  const connectAbortController = useRef<AbortController | null>(null);
+
   const client = useRef<Hume.empathicVoice.chat.ChatSocket | null>(null);
 
   const [readyState, setReadyState] = useState<VoiceReadyState>(
@@ -91,7 +93,18 @@ export const useVoiceClient = (props: {
   onClose.current = props.onClose;
 
   const connect = useCallback((config: SocketConfig) => {
-    return new Promise((resolve, reject) => {
+    // Abort previous attempt if any
+    connectAbortController.current?.abort();
+
+    const controller = new AbortController();
+    const signal = controller.signal;
+    connectAbortController.current = controller;
+
+    return new Promise<VoiceReadyState>((resolve, reject) => {
+      if (signal.aborted) {
+        reject(new Error('Connection attempt has already been aborted'));
+      }
+
       const hume = new HumeClient(
         config.auth.type === 'apiKey'
           ? {
@@ -104,12 +117,25 @@ export const useVoiceClient = (props: {
             },
       );
 
-      client.current = hume.empathicVoice.chat.connect({
+      const socket = hume.empathicVoice.chat.connect({
         ...config,
         reconnectAttempts: 0,
       });
 
-      client.current.on('message', (message) => {
+      client.current = socket;
+
+      const abortHandler = () => {
+        socket.close();
+        reject(new Error('Connection attempt has been aborted'));
+      };
+
+      signal.addEventListener('abort', abortHandler);
+
+      socket.on('message', (message) => {
+        if (signal.aborted) {
+          return;
+        }
+
         if (message.type === 'audio_output') {
           const messageWithReceivedAt = { ...message, receivedAt: new Date() };
           onAudioMessage.current?.(messageWithReceivedAt);
@@ -119,6 +145,7 @@ export const useVoiceClient = (props: {
         if (message.type === 'chat_metadata') {
           onOpen.current?.();
           setReadyState(VoiceReadyState.OPEN);
+          signal.removeEventListener('abort', abortHandler);
           resolve(VoiceReadyState.OPEN);
         }
 
@@ -183,9 +210,9 @@ export const useVoiceClient = (props: {
                 // if valid send it to the socket
                 // otherwise, report error
                 if (response.type === 'tool_response') {
-                  client.current?.sendToolResponseMessage(response);
+                  socket.sendToolResponseMessage(response);
                 } else if (response.type === 'tool_error') {
-                  client.current?.sendToolErrorMessage(response);
+                  socket.sendToolErrorMessage(response);
                 } else {
                   onToolCallError.current?.('Invalid response from tool call');
                 }
@@ -199,12 +226,14 @@ export const useVoiceClient = (props: {
         return;
       });
 
-      client.current.on('close', (event) => {
+      socket.on('close', (event) => {
+        signal.removeEventListener('abort', abortHandler);
         onClose.current?.(event);
         setReadyState(VoiceReadyState.CLOSED);
       });
 
-      client.current.on('error', (e) => {
+      socket.on('error', (e) => {
+        signal.removeEventListener('abort', abortHandler);
         const message = e instanceof Error ? e.message : 'Unknown error';
         onClientError.current?.(message, e instanceof Error ? e : undefined);
         reject(e);
@@ -215,6 +244,8 @@ export const useVoiceClient = (props: {
   }, []);
 
   const disconnect = useCallback(() => {
+    connectAbortController.current?.abort();
+    connectAbortController.current = null;
     setReadyState(VoiceReadyState.IDLE);
     client.current?.close();
   }, []);

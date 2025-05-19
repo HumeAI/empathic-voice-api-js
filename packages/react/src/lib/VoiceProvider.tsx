@@ -433,7 +433,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         console.warn(
           'Already connected or connecting to a chat. Ignoring duplicate connection attempt.',
         );
-
         return;
       }
 
@@ -467,11 +466,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           verboseTranscription: true,
         });
       } catch (e) {
-        // catching the thrown error here so we can return early from the connect function,
-        // but the error itself is handled in the `onClientError` callback on the client
+        // catching the thrown error here so we can return early from the connect function.
+        // Any errors themselves are handled in the `onClientError` callback on the client,
+        // except for the AbortController case, which we don't need to call onClientError for
+        // because cancellations are intentional, and not network errors.
         return;
       }
-
       const [micPromise, playerPromise] = await Promise.allSettled([
         mic.start(stream),
         player.initPlayer(),
@@ -516,6 +516,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
+
     player.stopAll();
     // call stopStream separately because the user could stop the
     // the connection before the microphone is initialized
