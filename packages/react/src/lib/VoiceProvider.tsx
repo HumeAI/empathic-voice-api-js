@@ -1,4 +1,5 @@
 import { type Hume } from 'hume';
+import { CloseEvent } from 'hume/core';
 import React, {
   createContext,
   FC,
@@ -323,15 +324,16 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       props.onOpen?.();
     }, [messageStore, props, startTimer]),
     onClose: useCallback<
-      NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
+      (event: CloseEvent, consumerInitiatedClosure: boolean) => void
     >(
-      (event) => {
+      (event, consumerInitiatedClosure) => {
         // onClose handler needs to handle resource cleanup in the event that the
         // websocket connection is closed by the server and not the user/client
         stopTimer();
         isConnectingRef.current = false;
         messageStore.createDisconnectMessage(event);
-        player.stopAll();
+        const waitForQueue = !consumerInitiatedClosure;
+        player.stopAll(waitForQueue);
         stopStream();
         micStopFnRef.current?.();
         if (clearMessagesOnDisconnect) {
