@@ -284,12 +284,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
-      console.log('onAudioMessage', resourceStatusRef.current);
       if (
         resourceStatusRef.current.audioPlayer === 'disconnecting' ||
         resourceStatusRef.current.audioPlayer === 'disconnected'
       ) {
-        console.log('not adding to queue');
         // disconnection in progress, and resources are being cleaned up.
         // ignore the message
         return;
@@ -299,12 +297,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
     onMessage: useCallback(
       (message: JSONMessage) => {
-        console.log('onMessage', resourceStatusRef.current);
         if (
           resourceStatusRef.current.audioPlayer === 'disconnecting' ||
           resourceStatusRef.current.audioPlayer === 'disconnected'
         ) {
-          console.log('not adding message');
           // disconnection in progress, and resources are being cleaned up.
           // ignore the message
           return;
@@ -356,7 +352,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       [updateError],
     ),
     onOpen: useCallback(() => {
-      console.log('onOpen: websocket connection opened');
       startTimer();
       messageStore.createConnectMessage();
       props.onOpen?.();
@@ -365,7 +360,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       NonNullable<Hume.empathicVoice.chat.ChatSocket.EventHandlers['close']>
     >(
       (event) => {
-        console.log('onClose: websocket connection closed');
         // onClose handler needs to handle resource cleanup in the event that the
         // websocket connection is closed by the server and not the user/client
         stopTimer();
@@ -380,18 +374,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         setIsPaused(false);
 
         if (resourceStatusRef.current.audioPlayer === 'connected') {
-          console.log(
-            'Stopping audio player because the server initiated the disconnect',
-          );
           void player.stopAll().then(() => {
             resourceStatusRef.current.audioPlayer = 'disconnected';
           });
         }
 
         if (resourceStatusRef.current.mic === 'connected') {
-          console.log(
-            'Stopping microphone because the server initiated the disconnect',
-          );
           stopStream();
           void micStopFnRef.current?.().then(() => {
             resourceStatusRef.current.mic = 'disconnected';
@@ -493,21 +481,15 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
   }, [sendResumeAssistantMessage, updateError]);
 
-  const checkShouldConnect = useCallback(() => {
+  const checkShouldContinueConnecting = useCallback(() => {
     // This check exists because if the user disconnects while the
     // connection is in progress, we need to stop the connection
     // attempt and prevent audio resources from being initialized.
-    if (isConnectingRef.current === false) {
-      console.warn('Connection was canceled.');
-      return false;
-    }
-    return true;
+    return isConnectingRef.current !== false;
   }, []);
 
   const connect = useCallback(
     async (options: ConnectOptions = {}) => {
-      console.log('--------- CALLED CONNECT ---------');
-
       if (isConnectingRef.current || status.value === 'connected') {
         console.warn(
           'Already connected or connecting to a chat. Ignoring duplicate connection attempt.',
@@ -545,12 +527,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
       // Audio Player - must initialize before connecting to the socket
       // because it needs to exist by the time the socket is ready to send audio data
-      if (!checkShouldConnect()) {
-        console.warn('Connection was canceled. stop connection');
+      if (!checkShouldContinueConnecting()) {
+        console.warn('Connection attempt was canceled. Stopping connection.');
         return;
       }
-
-      console.log('Connecting audio player ...');
       try {
         await player.initPlayer();
       } catch (e) {
@@ -566,17 +546,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return;
       }
       resourceStatusRef.current.audioPlayer = 'connected';
-      console.log('Audio player connected', resourceStatusRef.current);
 
       // WEBSOCKET - needs to be connected before the microphone is initialized
       // because a connection needs to be established before the microphone can start sending
       // the audio stream
-      if (!checkShouldConnect()) {
-        console.warn('Connection was canceled. stop connection');
+      if (!checkShouldContinueConnecting()) {
+        console.warn('Connection attempt was canceled. Stopping connection.');
         return;
       }
-
-      console.log('Connecting to socket ...');
       try {
         await client.connect({
           ...config,
@@ -592,14 +569,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       // we can set resourceStatusRef.current.socket here because `client.connect` resolves
       // at the same time as when the onOpen callback is called
       resourceStatusRef.current.socket = 'connected';
-      console.log('Socket connected!', resourceStatusRef.current);
 
       // MICROPHONE - initialized last
-      if (!checkShouldConnect()) {
-        console.warn('Connection was canceled. stop connection');
+      if (!checkShouldContinueConnecting()) {
+        console.warn('Connection attempt was canceled. Stopping connection.');
         return;
       }
-      console.log('Connecting microphone ...');
       try {
         mic.start(stream);
       } catch (e) {
@@ -615,7 +590,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return;
       }
       resourceStatusRef.current.mic = 'connected';
-      console.log('Microphone connected!', resourceStatusRef.current);
 
       // Everything is now initialized (socket, audio player, microphone),
       // so set the global connected status
@@ -623,7 +597,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isConnectingRef.current = false;
     },
     [
-      checkShouldConnect,
+      checkShouldContinueConnecting,
       client,
       config,
       getStream,
@@ -650,14 +624,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     // MICROPHONE - shut this down before shutting down the websocket
     // call stopStream separately because the user could stop the
     // the connection before the microphone is initialized
-    console.log('Stopping microphone ...');
     stopStream();
     await mic.stop();
     resourceStatusRef.current.mic = 'disconnected';
-    console.log('Microphone stopped', resourceStatusRef.current);
 
     // WEBSOCKET - shut this down before shutting down the audio player
-    console.log('Disconnecting from socket ...');
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
@@ -666,10 +637,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     // onClose signals that the socket is actually disconnected.
 
     // AUDIO PLAYER
-    console.log('Stopping audio player ...');
     await player.stopAll();
     resourceStatusRef.current.audioPlayer = 'disconnected';
-    console.log('Audio player stopped', resourceStatusRef.current);
 
     // Clean up other state variables that are synchronous
     if (clearMessagesOnDisconnect) {
@@ -677,7 +646,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
     toolStatus.clearStore();
     setIsPaused(false);
-    console.log('Fully shut down?', resourceStatusRef.current);
   }, [
     stopTimer,
     client,
@@ -692,7 +660,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   // `disconnect` is the function that the end user calls to disconnect a call
   const disconnect = useCallback(
     async (disconnectOnError?: boolean) => {
-      console.log('--------- CALLED DISCONNECT ---------');
       await disconnectAndCleanUpResources();
 
       if (status.value !== 'error' && !disconnectOnError) {
@@ -712,7 +679,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     ) {
       // If the status is ever set to `error`, disconnect the voice.
       setStatus({ value: 'error', reason: error.message });
-      console.log('--------- DISCONNECTING BECAUSE OF AN ERROR ---------');
       void disconnectAndCleanUpResources();
     }
   }, [status.value, disconnect, disconnectAndCleanUpResources, error]);
