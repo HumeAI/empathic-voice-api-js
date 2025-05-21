@@ -315,6 +315,25 @@ export const useSoundPlayer = (props: {
     }
   }, [props.enableAudioWorklet]);
 
+  const stopAllWithRetries = async (maxAttempts = 3, delayMs = 500) => {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await stopAll();
+        return;
+      } catch (e) {
+        if (attempt < maxAttempts) {
+          await new Promise((res) => setTimeout(res, delayMs));
+        } else {
+          const message = e instanceof Error ? e.message : 'Unknown error';
+          onError.current?.(
+            `Failed to stop audio player after ${maxAttempts} attempts: ${message}`,
+            'audio_player_closure_failure',
+          );
+        }
+      }
+    }
+  };
+
   const clearQueue = useCallback(() => {
     if (props.enableAudioWorklet) {
       // AudioWorklet mode
@@ -375,7 +394,7 @@ export const useSoundPlayer = (props: {
     isAudioMuted,
     muteAudio,
     unmuteAudio,
-    stopAll,
+    stopAll: stopAllWithRetries,
     clearQueue,
     volume,
     setVolume,

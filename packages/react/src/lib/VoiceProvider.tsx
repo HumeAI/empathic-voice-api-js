@@ -383,7 +383,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           console.log(
             'Stopping audio player because the server initiated the disconnect',
           );
-          // TODO: retries?
           void player.stopAll().then(() => {
             resourceStatusRef.current.audioPlayer = 'disconnected';
           });
@@ -394,7 +393,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
             'Stopping microphone because the server initiated the disconnect',
           );
           stopStream();
-          // TODO: retries?
           void micStopFnRef.current?.().then(() => {
             resourceStatusRef.current.mic = 'disconnected';
           });
@@ -496,9 +494,11 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, [sendResumeAssistantMessage, updateError]);
 
   const checkShouldConnect = useCallback(() => {
-    // TODO: clean this up
+    // This check exists because if the user disconnects while the
+    // connection is in progress, we need to stop the connection
+    // attempt and prevent audio resources from being initialized.
     if (isConnectingRef.current === false) {
-      console.warn('Connection was canceled. stop connection');
+      console.warn('Connection was canceled.');
       return false;
     }
     return true;
@@ -545,36 +545,27 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
       // Audio Player - must initialize before connecting to the socket
       // because it needs to exist by the time the socket is ready to send audio data
-      await new Promise((resolve) => {
-        setTimeout(() => {
-          console.log('5 second sleep is over');
-          resolve(true);
-        }, 5000);
-      });
       if (!checkShouldConnect()) {
         console.warn('Connection was canceled. stop connection');
         return;
       }
 
-      console.log('Connecting audio player now');
-      // TODO: no Promise.allSetttled
-      const [playerPromise] = await Promise.allSettled([player.initPlayer()]);
-
-      if (playerPromise.status === 'rejected') {
+      console.log('Connecting audio player ...');
+      try {
+        await player.initPlayer();
+      } catch (e) {
         resourceStatusRef.current.audioPlayer = 'disconnected';
         updateError({
           type: 'audio_error',
           reason: 'audio_player_initialization_failure',
           message:
-            playerPromise.reason instanceof Error
-              ? playerPromise.reason.message
+            e instanceof Error
+              ? e.message
               : 'We could not connect to the audio player. Please try again.',
         });
+        return;
       }
-
-      if (playerPromise.status === 'fulfilled') {
-        resourceStatusRef.current.audioPlayer = 'connected';
-      }
+      resourceStatusRef.current.audioPlayer = 'connected';
       console.log('Audio player connected', resourceStatusRef.current);
 
       // WEBSOCKET - needs to be connected before the microphone is initialized
@@ -584,6 +575,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         console.warn('Connection was canceled. stop connection');
         return;
       }
+
+      console.log('Connecting to socket ...');
       try {
         await client.connect({
           ...config,
@@ -599,13 +592,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       // we can set resourceStatusRef.current.socket here because `client.connect` resolves
       // at the same time as when the onOpen callback is called
       resourceStatusRef.current.socket = 'connected';
+      console.log('Socket connected!', resourceStatusRef.current);
 
       // MICROPHONE - initialized last
       if (!checkShouldConnect()) {
         console.warn('Connection was canceled. stop connection');
         return;
       }
-      console.log('Connecting microphone now');
+      console.log('Connecting microphone ...');
       try {
         mic.start(stream);
       } catch (e) {
@@ -621,10 +615,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return;
       }
       resourceStatusRef.current.mic = 'connected';
+      console.log('Microphone connected!', resourceStatusRef.current);
 
       // Everything is now initialized (socket, audio player, microphone),
       // so set the global connected status
-      console.log('Microphone connected', resourceStatusRef.current);
       setStatus({ value: 'connected' });
       isConnectingRef.current = false;
     },
@@ -656,12 +650,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     // MICROPHONE - shut this down before shutting down the websocket
     // call stopStream separately because the user could stop the
     // the connection before the microphone is initialized
+    console.log('Stopping microphone ...');
     stopStream();
-    // TODO: try/catch + retries if this fails
     await mic.stop();
     resourceStatusRef.current.mic = 'disconnected';
+    console.log('Microphone stopped', resourceStatusRef.current);
 
     // WEBSOCKET - shut this down before shutting down the audio player
+    console.log('Disconnecting from socket ...');
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
@@ -670,9 +666,10 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     // onClose signals that the socket is actually disconnected.
 
     // AUDIO PLAYER
-    // TODO: try/catch + retries if this fails
+    console.log('Stopping audio player ...');
     await player.stopAll();
     resourceStatusRef.current.audioPlayer = 'disconnected';
+    console.log('Audio player stopped', resourceStatusRef.current);
 
     // Clean up other state variables that are synchronous
     if (clearMessagesOnDisconnect) {
@@ -680,6 +677,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
     toolStatus.clearStore();
     setIsPaused(false);
+    console.log('Fully shut down?', resourceStatusRef.current);
   }, [
     stopTimer,
     client,

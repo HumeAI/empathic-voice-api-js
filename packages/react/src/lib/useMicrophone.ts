@@ -90,38 +90,51 @@ export const useMicrophone = (props: MicrophoneProps) => {
   );
 
   const stop = useCallback(async () => {
-    try {
-      if (currentAnalyzer.current) {
-        currentAnalyzer.current.stop();
-        currentAnalyzer.current = null;
-      }
-
-      if (audioContext.current) {
-        await audioContext.current
-          .close()
-          .then(() => {
-            audioContext.current = null;
-          })
-          .catch(() => {
-            // .close() rejects if the audio context is already closed.
-            // Therefore, we just need to catch the error, but we don't need to
-            // do anything with it.
-            return null;
-          });
-      }
-
-      recorder.current?.stop();
-      recorder.current?.removeEventListener('dataavailable', dataHandler);
-      recorder.current = null;
-      currentStream.current?.getTracks().forEach((track) => track.stop());
-
-      setIsMuted(false);
-    } catch (e) {
-      const message = e instanceof Error ? e.message : 'Unknown error';
-      onError(`Error stopping microphone: ${message}`, 'mic_closure_failure');
-      void true;
+    if (currentAnalyzer.current) {
+      currentAnalyzer.current.stop();
+      currentAnalyzer.current = null;
     }
-  }, [dataHandler, onError]);
+
+    if (audioContext.current) {
+      await audioContext.current
+        .close()
+        .then(() => {
+          audioContext.current = null;
+        })
+        .catch(() => {
+          // .close() rejects if the audio context is already closed.
+          // Therefore, we just need to catch the error, but we don't need to
+          // do anything with it.
+          return null;
+        });
+    }
+
+    recorder.current?.stop();
+    recorder.current?.removeEventListener('dataavailable', dataHandler);
+    recorder.current = null;
+    currentStream.current?.getTracks().forEach((track) => track.stop());
+
+    setIsMuted(false);
+  }, [dataHandler]);
+
+  const stopMicWithRetries = async (maxAttempts = 3, delayMs = 500) => {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await stop();
+        return;
+      } catch (e) {
+        if (attempt < maxAttempts) {
+          await new Promise((res) => setTimeout(res, delayMs));
+        } else {
+          const message = e instanceof Error ? e.message : 'Unknown error';
+          onError?.(
+            `Failed to stop mic after ${maxAttempts} attempts: ${message}`,
+            'mic_closure_failure',
+          );
+        }
+      }
+    }
+  };
 
   const mute = useCallback(() => {
     if (currentAnalyzer.current) {
@@ -181,7 +194,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
 
   return {
     start,
-    stop,
+    stop: stopMicWithRetries,
     mute,
     unmute,
     isMuted,
