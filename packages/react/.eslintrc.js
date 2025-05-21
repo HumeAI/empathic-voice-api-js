@@ -21,5 +21,6 @@ module.exports = {
   rules: {
     'no-console': 'off',
     'no-unused-vars': 'off',
+    '@typescript-eslint/no-floating-promises': 'error',
   },
 };

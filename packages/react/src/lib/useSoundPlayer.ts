@@ -124,6 +124,7 @@ export const useSoundPlayer = (props: {
     bufferSource.onended = () => {
       if (frequencyDataIntervalId.current) {
         clearInterval(frequencyDataIntervalId.current);
+        frequencyDataIntervalId.current = null;
       }
       setFft(generateEmptyFft());
       bufferSource.disconnect();
@@ -261,7 +262,7 @@ export const useSoundPlayer = (props: {
     [playNextClip, props.enableAudioWorklet],
   );
 
-  const stopAll = useCallback(() => {
+  const stopAll = useCallback(async () => {
     isInitialized.current = false;
     isProcessing.current = false;
     setIsPlaying(false);
@@ -300,7 +301,7 @@ export const useSoundPlayer = (props: {
     }
 
     if (audioContext.current) {
-      void audioContext.current
+      await audioContext.current
         .close()
         .then(() => {
           audioContext.current = null;
@@ -313,6 +314,25 @@ export const useSoundPlayer = (props: {
         });
     }
   }, [props.enableAudioWorklet]);
+
+  const stopAllWithRetries = async (maxAttempts = 3, delayMs = 500) => {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await stopAll();
+        return;
+      } catch (e) {
+        if (attempt < maxAttempts) {
+          await new Promise((res) => setTimeout(res, delayMs));
+        } else {
+          const message = e instanceof Error ? e.message : 'Unknown error';
+          onError.current?.(
+            `Failed to stop audio player after ${maxAttempts} attempts: ${message}`,
+            'audio_player_closure_failure',
+          );
+        }
+      }
+    }
+  };
 
   const clearQueue = useCallback(() => {
     if (props.enableAudioWorklet) {
@@ -374,7 +394,7 @@ export const useSoundPlayer = (props: {
     isAudioMuted,
     muteAudio,
     unmuteAudio,
-    stopAll,
+    stopAll: stopAllWithRetries,
     clearQueue,
     volume,
     setVolume,
