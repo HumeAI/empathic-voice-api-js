@@ -261,7 +261,7 @@ export const useSoundPlayer = (props: {
     [playNextClip, props.enableAudioWorklet],
   );
 
-  const stopAll = useCallback(() => {
+  const stopAll = useCallback(async () => {
     isInitialized.current = false;
     isProcessing.current = false;
     setIsPlaying(false);
@@ -300,7 +300,7 @@ export const useSoundPlayer = (props: {
     }
 
     if (audioContext.current) {
-      void audioContext.current
+      await audioContext.current
         .close()
         .then(() => {
           audioContext.current = null;

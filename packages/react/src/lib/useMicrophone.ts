@@ -89,7 +89,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
     [dataHandler, mimeTypeRef],
   );
 
-  const stop = useCallback(() => {
+  const stop = useCallback(async () => {
     try {
       if (currentAnalyzer.current) {
         currentAnalyzer.current.stop();
@@ -97,7 +97,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       }
 
       if (audioContext.current) {
-        void audioContext.current
+        await audioContext.current
           .close()
           .then(() => {
             audioContext.current = null;

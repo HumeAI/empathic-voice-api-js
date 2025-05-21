@@ -184,6 +184,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     value: 'disconnected',
   });
   const isConnectingRef = useRef(false);
+  const isDisconnectingRef = useRef(false);
 
   const [isPaused, setIsPaused] = useState(false);
 
@@ -267,7 +268,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
-      player.addToQueue(message);
+      void player.addToQueue(message);
       onAudioReceived.current(message);
     },
     onMessage: useCallback(
@@ -330,20 +331,28 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         // websocket connection is closed by the server and not the user/client
         stopTimer();
         isConnectingRef.current = false;
+        isDisconnectingRef.current = true;
         messageStore.createDisconnectMessage(event);
-        player.stopAll();
-        stopStream();
-        micStopFnRef.current?.();
         if (clearMessagesOnDisconnect) {
           messageStore.clearMessages();
         }
         toolStatus.clearStore();
         setIsPaused(false);
-        if (!error) {
-          // if there's an error, keep the error status. otherwise, set status to disconnected
-          setStatus({ value: 'disconnected' });
-        }
-        onClose.current?.(event);
+
+        void player
+          .stopAll()
+          .then(() => {
+            stopStream();
+            return micStopFnRef.current?.();
+          })
+          .then(() => {
+            if (!error) {
+              // if there's an error, keep the error status. otherwise, set status to disconnected
+              setStatus({ value: 'disconnected' });
+            }
+            isDisconnectingRef.current = false;
+            onClose.current?.(event);
+          });
       },
       [
         clearMessagesOnDisconnect,
@@ -510,24 +519,30 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [client, config, getStream, mic, player, status.value, updateError],
   );
 
-  const disconnectFromVoice = useCallback(() => {
+  const disconnectFromVoice = useCallback(async () => {
+    isDisconnectingRef.current = true;
     isConnectingRef.current = false;
+    stopTimer();
 
     if (client.readyState !== VoiceReadyState.CLOSED) {
       client.disconnect();
     }
 
-    player.stopAll();
-    // call stopStream separately because the user could stop the
-    // the connection before the microphone is initialized
-    stopStream();
-    mic.stop();
     if (clearMessagesOnDisconnect) {
       messageStore.clearMessages();
     }
     toolStatus.clearStore();
     setIsPaused(false);
+
+    await player.stopAll();
+    // call stopStream separately because the user could stop the
+    // the connection before the microphone is initialized
+    stopStream();
+    await mic.stop();
+
+    isDisconnectingRef.current = false;
   }, [
+    stopTimer,
     client,
     player,
     stopStream,
@@ -538,10 +553,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   ]);
 
   const disconnect = useCallback(
-    (disconnectOnError?: boolean) => {
-      stopTimer();
-
-      disconnectFromVoice();
+    async (disconnectOnError?: boolean) => {
+      await disconnectFromVoice();
 
       if (status.value !== 'error' && !disconnectOnError) {
         // if status was 'error', keep the error status so we can show the error message to the end user.
@@ -549,7 +562,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         setStatus({ value: 'disconnected' });
       }
     },
-    [stopTimer, disconnectFromVoice, status.value],
+    [disconnectFromVoice, status.value],
   );
 
   useEffect(() => {
@@ -560,14 +573,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     ) {
       // If the status is ever set to `error`, disconnect the voice.
       setStatus({ value: 'error', reason: error.message });
-      disconnectFromVoice();
+      void disconnectFromVoice();
     }
   }, [status.value, disconnect, disconnectFromVoice, error]);
 
   useEffect(() => {
     // disconnect from socket when the voice provider component unmounts
     return () => {
-      disconnectFromVoice();
+      void disconnectFromVoice();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
