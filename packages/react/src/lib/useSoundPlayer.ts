@@ -124,6 +124,7 @@ export const useSoundPlayer = (props: {
     bufferSource.onended = () => {
       if (frequencyDataIntervalId.current) {
         clearInterval(frequencyDataIntervalId.current);
+        frequencyDataIntervalId.current = null;
       }
       setFft(generateEmptyFft());
       bufferSource.disconnect();
