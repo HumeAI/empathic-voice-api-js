@@ -297,15 +297,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
     onMessage: useCallback(
       (message: JSONMessage) => {
-        if (
-          resourceStatusRef.current.audioPlayer === 'disconnecting' ||
-          resourceStatusRef.current.audioPlayer === 'disconnected'
-        ) {
-          // disconnection in progress, and resources are being cleaned up.
-          // ignore the message
-          return;
-        }
-
         // store message
         messageStore.onMessage(message);
 
