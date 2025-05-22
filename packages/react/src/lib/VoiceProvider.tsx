@@ -93,7 +93,7 @@ type ResourceStatus =
 
 export type VoiceContextType = {
   connect: (options?: ConnectOptions) => Promise<void>;
-  disconnect: () => void;
+  disconnect: () => Promise<void>;
   fft: number[];
   isMuted: boolean;
   isAudioMuted: boolean;
