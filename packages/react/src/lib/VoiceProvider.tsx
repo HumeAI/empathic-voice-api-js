@@ -190,6 +190,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     value: 'disconnected',
   });
   const isConnectingRef = useRef(false);
+  const isDisconnectingRef = useRef(false);
 
   // stores information about whether certain resources are being disconnected
   const resourceStatusRef = useRef<{
@@ -239,6 +240,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     messageHistoryLimit,
   });
 
+  const checkAreAllResourcesDisconnected = useCallback(() => {
+    return (
+      resourceStatusRef.current.mic === 'disconnected' &&
+      resourceStatusRef.current.audioPlayer === 'disconnected' &&
+      resourceStatusRef.current.socket === 'disconnected'
+    );
+  }, []);
+
   const updateError = useCallback((err: VoiceError | null) => {
     setError(err);
     if (err !== null) {
@@ -284,10 +293,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
-      if (
-        resourceStatusRef.current.audioPlayer === 'disconnecting' ||
-        resourceStatusRef.current.audioPlayer === 'disconnected'
-      ) {
+      if (isDisconnectingRef.current) {
         // disconnection in progress, and resources are being cleaned up.
         // ignore the message
         return;
@@ -297,6 +303,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
     onMessage: useCallback(
       (message: JSONMessage) => {
+        if (isDisconnectingRef.current) {
+          // disconnection in progress, and resources are being cleaned up.
+          // ignore the message
+          return;
+        }
+
         // store message
         messageStore.onMessage(message);
 
@@ -355,6 +367,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         // websocket connection is closed by the server and not the user/client
         stopTimer();
         isConnectingRef.current = false;
+        isDisconnectingRef.current = true;
         resourceStatusRef.current.socket = 'disconnected';
 
         messageStore.createDisconnectMessage(event);
@@ -364,31 +377,42 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         toolStatus.clearStore();
         setIsPaused(false);
 
+        const resourceShutdownFns = [];
         if (resourceStatusRef.current.audioPlayer === 'connected') {
-          void player.stopAll().then(() => {
-            resourceStatusRef.current.audioPlayer = 'disconnected';
-          });
+          resourceShutdownFns.push(player.stopAll());
         }
-
         if (resourceStatusRef.current.mic === 'connected') {
-          stopStream();
-          void micStopFnRef.current?.().then(() => {
-            resourceStatusRef.current.mic = 'disconnected';
-          });
+          resourceShutdownFns.push(micStopFnRef.current?.());
         }
 
-        if (!error) {
-          // if there's an error, keep the error status. otherwise, set status to disconnected
-          setStatus({ value: 'disconnected' });
+        if (resourceShutdownFns.length > 0) {
+          void Promise.all(resourceShutdownFns).then(() => {
+            resourceStatusRef.current.audioPlayer = 'disconnected';
+            resourceStatusRef.current.mic = 'disconnected';
+            // if audio player and mic were connected at the time the socket
+            // shut down, we can assume that the connection was closed by
+            // the server, and not the user. Therefore, set the status
+            // to 'disconnected'
+            setStatus({ value: 'disconnected' });
+            if (checkAreAllResourcesDisconnected()) {
+              isDisconnectingRef.current = false;
+            }
+            onClose.current?.(event);
+          });
+        } else {
+          // if audio player and mic were not connected at the time the socket,
+          // no need to setStatus because the user initiated the disconnect.
+          if (checkAreAllResourcesDisconnected()) {
+            isDisconnectingRef.current = false;
+          }
+          onClose.current?.(event);
         }
-        onClose.current?.(event);
       },
       [
+        checkAreAllResourcesDisconnected,
         clearMessagesOnDisconnect,
-        error,
         messageStore,
         player,
-        stopStream,
         stopTimer,
         toolStatus,
       ],
@@ -602,6 +626,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   // `disconnectAndCleanUpResources`: Internal function that is called to actually disconnect
   // from the socket, audio player, and microphone.
   const disconnectAndCleanUpResources = useCallback(async () => {
+    isDisconnectingRef.current = true;
+
     resourceStatusRef.current.socket = 'disconnecting';
     resourceStatusRef.current.audioPlayer = 'disconnecting';
     resourceStatusRef.current.mic = 'disconnecting';
@@ -612,8 +638,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
     stopTimer();
 
-    // MICROPHONE - shut this down before shutting down the websocket
-    // call stopStream separately because the user could stop the
+    // MICROPHONE - shut this down before shutting down the websocket.
+    // Call stopStream separately because the user could stop the
     // the connection before the microphone is initialized
     stopStream();
     await mic.stop();
@@ -637,14 +663,19 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
     toolStatus.clearStore();
     setIsPaused(false);
+
+    if (checkAreAllResourcesDisconnected()) {
+      isDisconnectingRef.current = false;
+    }
   }, [
     stopTimer,
-    client,
-    player,
     stopStream,
     mic,
+    client,
+    player,
     clearMessagesOnDisconnect,
     toolStatus,
+    checkAreAllResourcesDisconnected,
     messageStore,
   ]);
 
@@ -663,12 +694,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   );
 
   useEffect(() => {
-    if (
-      error !== null &&
-      status.value !== 'error' &&
-      status.value !== 'disconnected'
-    ) {
-      // If the status is ever set to `error`, disconnect the voice.
+    if (error !== null && status.value !== 'error') {
+      // If the status is ever set to `error`, disconnect the call
+      // and clean up resources.
       setStatus({ value: 'error', reason: error.message });
       void disconnectAndCleanUpResources();
     }

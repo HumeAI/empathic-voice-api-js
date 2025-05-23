@@ -76,6 +76,10 @@ export const ExampleComponent = () => {
   return (
     <div>
       <div className={'flex flex-col gap-4 font-light'}>
+        <div>
+          <div className={'text-sm font-medium uppercase'}>Status</div>
+          <div>{status.value}</div>
+        </div>
         <div className="flex max-w-sm flex-col gap-4">
           {match(status.value)
             .with('connected', () => (

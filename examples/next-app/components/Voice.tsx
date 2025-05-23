@@ -30,6 +30,10 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
         hostname={process.env.NEXT_PUBLIC_HUME_VOICE_HOSTNAME || 'api.hume.ai'}
         messageHistoryLimit={10}
         enableAudioWorklet={enableAudioWorklet}
+        onOpen={() => {
+          // eslint-disable-next-line no-console
+          console.log('onOpen');
+        }}
         onMessage={(message) => {
           // eslint-disable-next-line no-console
           console.log('message', message);
@@ -145,6 +149,8 @@ export const Voice = ({ accessToken }: { accessToken: string }) => {
         }, [])}
         configId={process.env.NEXT_PUBLIC_HUME_VOICE_WEATHER_CONFIG_ID}
         onClose={(event) => {
+          // eslint-disable-next-line no-console
+          console.log('onClose', event);
           const niceClosure = 1000;
           const code = event.code;
 
