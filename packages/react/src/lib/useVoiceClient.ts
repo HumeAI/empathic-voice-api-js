@@ -159,7 +159,10 @@ export const useVoiceClient = (props: {
           message.type === 'chat_metadata' ||
           message.type === 'assistant_end'
         ) {
-          const messageWithReceivedAt = { ...message, receivedAt: new Date() };
+          const messageWithReceivedAt = {
+            ...message,
+            receivedAt: new Date(),
+          };
           onMessage.current?.(messageWithReceivedAt);
           return;
         }
