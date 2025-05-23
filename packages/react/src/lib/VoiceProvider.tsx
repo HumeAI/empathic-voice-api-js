@@ -190,6 +190,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     value: 'disconnected',
   });
   const isConnectingRef = useRef(false);
+  const isDisconnectingRef = useRef(false);
 
   // stores information about whether certain resources are being disconnected
   const resourceStatusRef = useRef<{
@@ -239,6 +240,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     messageHistoryLimit,
   });
 
+  const checkAreAllResourcesDisconnected = useCallback(() => {
+    return (
+      resourceStatusRef.current.mic === 'disconnected' &&
+      resourceStatusRef.current.audioPlayer === 'disconnected' &&
+      resourceStatusRef.current.socket === 'disconnected'
+    );
+  }, []);
+
   const updateError = useCallback((err: VoiceError | null) => {
     setError(err);
     if (err !== null) {
@@ -284,10 +293,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
-      if (
-        resourceStatusRef.current.audioPlayer === 'disconnecting' ||
-        resourceStatusRef.current.audioPlayer === 'disconnected'
-      ) {
+      if (isDisconnectingRef.current) {
         // disconnection in progress, and resources are being cleaned up.
         // ignore the message
         return;
@@ -297,6 +303,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
     onMessage: useCallback(
       (message: JSONMessage) => {
+        if (isDisconnectingRef.current) {
+          // disconnection in progress, and resources are being cleaned up.
+          // ignore the message
+          return;
+        }
+
         // store message
         messageStore.onMessage(message);
 
@@ -355,6 +367,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         // websocket connection is closed by the server and not the user/client
         stopTimer();
         isConnectingRef.current = false;
+        isDisconnectingRef.current = true;
         resourceStatusRef.current.socket = 'disconnected';
 
         messageStore.createDisconnectMessage(event);
@@ -381,15 +394,28 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
             // the server, and not the user. Therefore, set the status
             // to 'disconnected'
             setStatus({ value: 'disconnected' });
+            if (checkAreAllResourcesDisconnected()) {
+              isDisconnectingRef.current = false;
+            }
             onClose.current?.(event);
           });
         } else {
           // if audio player and mic were not connected at the time the socket,
           // no need to setStatus because the user initiated the disconnect.
+          if (checkAreAllResourcesDisconnected()) {
+            isDisconnectingRef.current = false;
+          }
           onClose.current?.(event);
         }
       },
-      [clearMessagesOnDisconnect, messageStore, player, stopTimer, toolStatus],
+      [
+        checkAreAllResourcesDisconnected,
+        clearMessagesOnDisconnect,
+        messageStore,
+        player,
+        stopTimer,
+        toolStatus,
+      ],
     ),
     onToolCall: props.onToolCall,
   });
@@ -600,6 +626,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   // `disconnectAndCleanUpResources`: Internal function that is called to actually disconnect
   // from the socket, audio player, and microphone.
   const disconnectAndCleanUpResources = useCallback(async () => {
+    isDisconnectingRef.current = true;
+
     resourceStatusRef.current.socket = 'disconnecting';
     resourceStatusRef.current.audioPlayer = 'disconnecting';
     resourceStatusRef.current.mic = 'disconnecting';
@@ -635,14 +663,19 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     }
     toolStatus.clearStore();
     setIsPaused(false);
+
+    if (checkAreAllResourcesDisconnected()) {
+      isDisconnectingRef.current = false;
+    }
   }, [
     stopTimer,
-    client,
-    player,
     stopStream,
     mic,
+    client,
+    player,
     clearMessagesOnDisconnect,
     toolStatus,
+    checkAreAllResourcesDisconnected,
     messageStore,
   ]);
 
