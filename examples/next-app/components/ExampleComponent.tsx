@@ -117,7 +117,7 @@ export const ExampleComponent = () => {
                 <button
                   className="rounded border border-neutral-500 p-2"
                   onClick={() => {
-                    disconnect();
+                    void disconnect();
                   }}
                 >
                   Disconnect
@@ -300,7 +300,7 @@ export const ExampleComponent = () => {
                 <button
                   className="rounded border border-red-500 p-2 text-red-500"
                   onClick={() => {
-                    disconnect();
+                    void disconnect();
                   }}
                 >
                   Disconnect
