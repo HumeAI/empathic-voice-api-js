@@ -239,6 +239,14 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     messageHistoryLimit,
   });
 
+  const checkIsDisconnected = useCallback(() => {
+    return (
+      resourceStatusRef.current.mic === 'disconnected' ||
+      resourceStatusRef.current.audioPlayer === 'disconnected' ||
+      resourceStatusRef.current.socket === 'disconnected'
+    );
+  }, []);
+
   const checkIsDisconnecting = useCallback(() => {
     return (
       resourceStatusRef.current.mic === 'disconnecting' ||
@@ -292,7 +300,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
   const client = useVoiceClient({
     onAudioMessage: (message: AudioOutputMessage) => {
-      if (checkIsDisconnecting()) {
+      if (checkIsDisconnecting() || checkIsDisconnected()) {
         // disconnection in progress, and resources are being cleaned up.
         // ignore the message
         return;
@@ -302,7 +310,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
     onMessage: useCallback(
       (message: JSONMessage) => {
-        if (checkIsDisconnecting()) {
+        if (checkIsDisconnecting() || checkIsDisconnected()) {
           // disconnection in progress, and resources are being cleaned up.
           // ignore the message
           return;
@@ -338,7 +346,13 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
           onError.current?.(error);
         }
       },
-      [checkIsDisconnecting, messageStore, player, toolStatus],
+      [
+        checkIsDisconnected,
+        checkIsDisconnecting,
+        messageStore,
+        player,
+        toolStatus,
+      ],
     ),
     onClientError,
     onToolCallError: useCallback(
