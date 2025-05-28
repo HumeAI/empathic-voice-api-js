@@ -511,13 +511,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return;
       }
 
-      if (checkIsDisconnecting()) {
-        console.warn(
-          'Currently disconnecting from a chat. Cannot connect until the previous call is disconnected.',
-        );
-        return;
-      }
-
       updateError(null);
       setStatus({ value: 'connecting' });
       resourceStatusRef.current.socket = 'connecting';
@@ -618,7 +611,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isConnectingRef.current = false;
     },
     [
-      checkIsDisconnecting,
       checkShouldContinueConnecting,
       client,
       config,
