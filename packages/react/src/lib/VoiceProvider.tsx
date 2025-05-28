@@ -618,6 +618,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       isConnectingRef.current = false;
     },
     [
+      checkIsDisconnecting,
       checkShouldContinueConnecting,
       client,
       config,
@@ -651,7 +652,12 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
 
     // WEBSOCKET - shut this down before shutting down the audio player
     if (client.readyState !== VoiceReadyState.CLOSED) {
+      // socket is open, so close it. resourceStatusRef will be set to 'disconnected'
+      // in the onClose callback of the websocket client.
       client.disconnect();
+    } else {
+      // socket is already closed, so ensure that the socket status is appropriately set
+      resourceStatusRef.current.socket = 'disconnected';
     }
     // resourceStatusRef.current.socket is not set to 'disconnected' here,
     // but rather in the onClose callback of the client. This is because
