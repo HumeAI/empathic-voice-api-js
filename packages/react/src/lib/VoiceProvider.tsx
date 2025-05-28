@@ -710,14 +710,15 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   useEffect(() => {
     // disconnect from socket when the voice provider component unmounts
     return () => {
-      void disconnectAndCleanUpResources();
-      setStatus({ value: 'disconnected' });
-      isConnectingRef.current = false;
-      resourceStatusRef.current = {
-        mic: 'disconnected',
-        audioPlayer: 'disconnected',
-        socket: 'disconnected',
-      };
+      void disconnectAndCleanUpResources().then(() => {
+        setStatus({ value: 'disconnected' });
+        isConnectingRef.current = false;
+        resourceStatusRef.current = {
+          mic: 'disconnected',
+          audioPlayer: 'disconnected',
+          socket: 'disconnected',
+        };
+      });
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
