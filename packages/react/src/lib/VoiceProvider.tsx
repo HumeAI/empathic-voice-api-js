@@ -285,6 +285,9 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   const player = useSoundPlayer({
     enableAudioWorklet,
     onError: (message, reason) => {
+      if (checkIsDisconnecting() || checkIsDisconnected()) {
+        return;
+      }
       updateError({ type: 'audio_error', reason, message });
     },
     onPlayAudio: (id: string) => {
