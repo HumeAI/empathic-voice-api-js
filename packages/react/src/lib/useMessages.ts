@@ -35,6 +35,7 @@ export const useMessages = ({
   );
 
   const createConnectMessage = useCallback(() => {
+    setChatMetadata(null);
     setMessages((prev) =>
       prev.concat([
         {
@@ -145,6 +146,7 @@ export const useMessages = ({
     setLastVoiceMessage(null);
     setLastUserMessage(null);
     setVoiceMessageMap({});
+    setChatMetadata(null);
   }, []);
 
   return {
