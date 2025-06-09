@@ -160,7 +160,7 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
     }
 
     if (this._shouldStop) {
-      this.port.postMessage({ type: 'ended' });
+      this.port.postMessage({ type: 'worklet_closed' });
       return false;
     }
 

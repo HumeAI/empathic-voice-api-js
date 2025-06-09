@@ -37,6 +37,8 @@ export const useSoundPlayer = (props: {
   const onError = useRef<typeof props.onError>(props.onError);
   onError.current = props.onError;
 
+  const isWorkletActive = useRef(false);
+
   /**
    * Only for non-AudioWorklet mode.
    * In non-AudioWorklet mode, audio clips are managed and played sequentially.
@@ -137,6 +139,8 @@ export const useSoundPlayer = (props: {
   }, []);
 
   const initPlayer = useCallback(async () => {
+    isWorkletActive.current = true;
+
     try {
       const initAudioContext = new AudioContext();
       audioContext.current = initAudioContext;
@@ -187,6 +191,13 @@ export const useSoundPlayer = (props: {
               setIsPlaying(false);
             }
             setQueueLength(queueLengthEvent.data.length);
+          }
+
+          const closedEvent = z
+            .object({ type: z.literal('worklet_closed') })
+            .safeParse(e.data);
+          if (closedEvent.success) {
+            isWorkletActive.current = false;
           }
         };
 
@@ -278,6 +289,26 @@ export const useSoundPlayer = (props: {
       // AudioWorklet mode
       workletNode.current?.port.postMessage({ type: 'fadeAndClear' });
       workletNode.current?.port.postMessage({ type: 'end' });
+
+      // We use this loop to make sure the worklet has been closed before we consider
+      // the player to be successfully stopped. The audio worklet asynchronously emits
+      // the 'worklet_closed' message in order to confirm that it has been closed successfully.
+      // If you close the worklet before the fade-out, the user may hear a small audio
+      // artifact when the call ends.
+      // (Reference the `_fadeOutDurationMs` constant in `audio-worklet.js`
+      // to see how long it takes for the worklet to close - the current default is 300ms.)
+      let closed = 0;
+      while (closed < 5) {
+        if (isWorkletActive.current === false) {
+          break;
+        }
+        closed += 1;
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      // In the unlikely event that the worklet is still active after 500ms,
+      // something went wrong in the worklet code, and the worklet failed to close.
+      // So we should reset isWorkletActive to false anyway.
+      isWorkletActive.current = false;
 
       if (workletNode.current) {
         workletNode.current.port.close();
