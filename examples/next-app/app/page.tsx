@@ -1,17 +1,6 @@
 import { fetchAccessToken } from 'hume';
-import dynamic from 'next/dynamic';
-import type { FC, PropsWithChildren } from 'react';
 
 import { Voice } from '@/components/Voice';
-
-const NoOp: FC<PropsWithChildren<Record<never, never>>> = ({ children }) => (
-  <>{children}</>
-);
-
-const NoSSR = dynamic(
-  () => new Promise<typeof NoOp>((resolve) => resolve(NoOp)),
-  { ssr: false },
-);
 
 export default async function Home() {
   const accessToken = await fetchAccessToken({
@@ -23,13 +12,11 @@ export default async function Home() {
     <div className={'p-6'}>
       <h1 className={'my-4 text-lg font-medium'}>Hume EVI React Example</h1>
 
-      <NoSSR>
-        {accessToken ? (
-          <Voice accessToken={accessToken} />
-        ) : (
-          <div>Missing API Key</div>
-        )}
-      </NoSSR>
+      {accessToken ? (
+        <Voice accessToken={accessToken} />
+      ) : (
+        <div>Missing API Key</div>
+      )}
     </div>
   );
 }
