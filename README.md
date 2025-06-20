@@ -1,33 +1,46 @@
 <div align="center">
   <img src="https://storage.googleapis.com/hume-public-logos/hume/hume-banner.png">
-  <h1>Hume AI EVI Typescript SDK</h1>
+  <h1>Hume React SDK</h1>
   <p>
-    <strong>Integrate Hume's Empathic Voice Interface in your web application</strong>
+    <strong>Integrate Hume AI in your React application</strong>
   </p>
 </div>
 
 ## Getting started
 
-This monorepo contains multiple packages for using the Hume Empathic Voice Interface within browser based web applications.
+This monorepo contains packages for adding Hume AI to your React applications.
 
-| Package | Version | README | npm URL |
-| :--- | :--- | :--- | :--- |
-| [@humeai/voice-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react) | ![https://img.shields.io/npm/v/%40humeai%2Fvoice-react](https://img.shields.io/npm/v/%40humeai%2Fvoice-react) | [README](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react/README.md) | <https://npmjs.com/package/@humeai/voice-react> |
-| [@humeai/voice-embed](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed) |  ![https://img.shields.io/npm/v/%40humeai%2Fvoice-embed](https://img.shields.io/npm/v/%40humeai%2Fvoice-embed)| [README](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed/README.md) | <https://npmjs.com/package/@humeai/voice-embed> |
-| [@humeai/voice-embed-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react) |  ![https://img.shields.io/npm/v/%40humeai%2Fvoice-embed-react](https://img.shields.io/npm/v/%40humeai%2Fvoice-embed-react)| [README](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react/README.md) | <https://npmjs.com/package/@humeai/voice-embed-react> |
+| Package | Version | README | npm URL | Supports |
+| :--- | :--- | :--- | :--- | :--- |
+| [@humeai/voice-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react) | ![https://img.shields.io/npm/v/%40humeai%2Fvoice-react](https://img.shields.io/npm/v/%40humeai%2Fvoice-react) | [README](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/react/README.md) | <https://npmjs.com/package/@humeai/voice-react> | Empathic Voice Interface (EVI) |
+| [@humeai/voice-embed](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed) |  ![https://img.shields.io/npm/v/%40humeai%2Fvoice-embed](https://img.shields.io/npm/v/%40humeai%2Fvoice-embed)| [README](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed/README.md) | <https://npmjs.com/package/@humeai/voice-embed> | Empathic Voice Interface (EVI) |
+| [@humeai/voice-embed-react](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react) |  ![https://img.shields.io/npm/v/%40humeai%2Fvoice-embed-react](https://img.shields.io/npm/v/%40humeai%2Fvoice-embed-react)| [README](https://github.com/HumeAI/empathic-voice-api-js/tree/main/packages/embed-react/README.md) | <https://npmjs.com/package/@humeai/voice-embed-react> | Empathic Voice Interface (EVI) |
 
-> [!IMPORTANT]  
-> `@humeai/voice` has been deprecated and replaced with `hume`
->
-> - GitHub: <https://github.com/humeai/hume-typescript-sdk>
-> - npm: <https://npmjs.com/package/hume>
+Not using React? Check out our other SDKs:
 
-More information on how to use the EVI API may be found in [our documentation site](https://dev.hume.ai/docs/empathic-voice-interface-evi/overview).
+- [TypeScript SDK](https://github.com/HumeAI/hume-typescript-sdk)
+- [Python SDK](https://github.com/HumeAI/hume-python-sdk)
 
-## Example applications
+Or, integrate with the API directly
 
-- [Next.js example](https://github.com/HumeAI/empathic-voice-api-js/tree/main/examples/next-app)
-- [Embedded widget parent page example](https://github.com/HumeAI/empathic-voice-api-js/tree/main/examples/vite-app-embed)
+- [API Documentation](https://dev.hume.ai)
+
+## One-click deploy templates
+
+<table>
+  <tr>
+    <td>
+      <img src="https://github.com/HumeAI/hume-evi-next-js-starter/raw/main/preview.png" width="300"/>
+    </td>
+    <td>
+     <strong>EVI Next.js Starter (Vercel)</strong>
+     <p>
+     A starter template for building an Empathic Voice Interface (EVI) using Next.js.
+     </p>
+     <a href="https://vercel.com/templates/ai/empathic-voice-interface-starter" alt="Deploy to vercel"><img src="https://vercel.com/button"/></a>
+    </td>
+  </tr>
+</table>
 
 ## Local development
 
