@@ -16,7 +16,6 @@ const isNever = (_n: never) => {
 export type SocketConfig = {
   auth: AuthStrategy;
   hostname?: string;
-  protocol?: 'ws' | 'wss';
 } & Hume.empathicVoice.chat.Chat.ConnectArgs;
 
 export enum VoiceReadyState {
@@ -106,19 +105,17 @@ export const useVoiceClient = (props: {
         reject(new Error('Connection attempt has already been aborted'));
       }
 
-      const protocol = config.protocol || 'wss';
       const hostname = config.hostname || 'api.hume.ai';
-      const environment = `${protocol}://${hostname}`;
 
       const hume = new HumeClient(
         config.auth.type === 'apiKey'
           ? {
               apiKey: config.auth.value,
-              environment,
+              environment: hostname,
             }
           : {
               accessToken: config.auth.value,
-              environment,
+              environment: hostname,
             },
       );
 
