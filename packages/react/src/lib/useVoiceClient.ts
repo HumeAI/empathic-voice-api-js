@@ -108,16 +108,17 @@ export const useVoiceClient = (props: {
 
       const protocol = config.protocol || 'wss';
       const hostname = config.hostname || 'api.hume.ai';
+      const environment = `${protocol}://${hostname}`;
 
       const hume = new HumeClient(
         config.auth.type === 'apiKey'
           ? {
               apiKey: config.auth.value,
-              environment: config.hostname,
+              environment,
             }
           : {
               accessToken: config.auth.value,
-              environment: `${protocol}://${hostname}`,
+              environment,
             },
       );
 
