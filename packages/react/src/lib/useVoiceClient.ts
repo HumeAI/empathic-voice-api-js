@@ -18,6 +18,17 @@ export type SocketConfig = {
   hostname?: string;
 } & Hume.empathicVoice.chat.Chat.ConnectArgs;
 
+export type AudioConstraints = {
+  echoCancellation?: boolean;
+  noiseSuppression?: boolean;
+  autoGainControl?: boolean;
+};
+
+export type ConnectOptions = Omit<SocketConfig, 'reconnectAttempts'> & {
+  audioConstraints?: AudioConstraints;
+  sessionSettings: Hume.empathicVoice.SessionSettings;
+};
+
 export enum VoiceReadyState {
   IDLE = 'idle',
   CONNECTING = 'connecting',
@@ -92,161 +103,176 @@ export const useVoiceClient = (props: {
   const onClose = useRef<typeof props.onClose>(props.onClose);
   onClose.current = props.onClose;
 
-  const connect = useCallback((config: SocketConfig) => {
-    // Abort previous attempt if any
-    connectAbortController.current?.abort();
+  const connect = useCallback(
+    (
+      config: SocketConfig,
+      sessionSettings: Hume.empathicVoice.SessionSettings,
+    ) => {
+      // Abort previous attempt if any
+      connectAbortController.current?.abort();
 
-    const controller = new AbortController();
-    const signal = controller.signal;
-    connectAbortController.current = controller;
+      const controller = new AbortController();
+      const signal = controller.signal;
+      connectAbortController.current = controller;
 
-    return new Promise<VoiceReadyState>((resolve, reject) => {
-      if (signal.aborted) {
-        reject(new Error('Connection attempt has already been aborted'));
-      }
-
-      const hostname = config.hostname || 'api.hume.ai';
-
-      const hume = new HumeClient(
-        config.auth.type === 'apiKey'
-          ? {
-              apiKey: config.auth.value,
-              environment: hostname,
-            }
-          : {
-              accessToken: config.auth.value,
-              environment: hostname,
-            },
-      );
-
-      const socket = hume.empathicVoice.chat.connect({
-        ...config,
-        reconnectAttempts: 0,
-      });
-
-      client.current = socket;
-
-      const abortHandler = () => {
-        socket.close();
-        reject(new Error('Connection attempt has been aborted'));
-      };
-
-      signal.addEventListener('abort', abortHandler);
-
-      socket.on('message', (message) => {
+      return new Promise<VoiceReadyState>((resolve, reject) => {
         if (signal.aborted) {
-          return;
+          reject(new Error('Connection attempt has already been aborted'));
         }
 
-        if (message.type === 'audio_output') {
-          const messageWithReceivedAt = { ...message, receivedAt: new Date() };
-          onAudioMessage.current?.(messageWithReceivedAt);
-          return;
-        }
+        const hostname = config.hostname || 'api.hume.ai';
 
-        if (message.type === 'chat_metadata') {
-          onOpen.current?.();
-          setReadyState(VoiceReadyState.OPEN);
-          signal.removeEventListener('abort', abortHandler);
-          resolve(VoiceReadyState.OPEN);
-        }
+        const hume = new HumeClient(
+          config.auth.type === 'apiKey'
+            ? {
+                apiKey: config.auth.value,
+                environment: hostname,
+              }
+            : {
+                accessToken: config.auth.value,
+                environment: hostname,
+              },
+        );
 
-        if (
-          message.type === 'assistant_message' ||
-          message.type === 'user_message' ||
-          message.type === 'user_interruption' ||
-          message.type === 'error' ||
-          message.type === 'tool_response' ||
-          message.type === 'tool_error' ||
-          message.type === 'chat_metadata' ||
-          message.type === 'assistant_end'
-        ) {
-          const messageWithReceivedAt = {
-            ...message,
-            receivedAt: new Date(),
-          };
-          onMessage.current?.(messageWithReceivedAt);
-          return;
-        }
+        const socket = hume.empathicVoice.chat.connect({
+          ...config,
+          reconnectAttempts: 0,
+        });
 
-        if (message.type === 'tool_call') {
-          const messageWithReceivedAt = { ...message, receivedAt: new Date() };
-          onMessage.current?.(messageWithReceivedAt);
+        client.current = socket;
 
-          // only pass tool call messages for user defined tools
-          if (message.toolType === Hume.empathicVoice.ToolType.Function) {
-            void onToolCall
-              .current?.(
-                {
-                  ...messageWithReceivedAt,
-                  // we have to do this because even though we are using the correct
-                  // enum on line 30 for the type definition
-                  // fern exports an interface and a value using the same `ToolType`
-                  // identifier so the type comparisons will always fail
-                  toolType: 'function',
-                },
-                {
-                  success: (content: unknown) => ({
-                    type: 'tool_response',
-                    toolCallId: messageWithReceivedAt.toolCallId,
-                    content: JSON.stringify(content),
-                  }),
-                  error: ({
-                    error,
-                    code,
-                    level,
-                    content,
-                  }: {
-                    error: string;
-                    code: string;
-                    level: string;
-                    content: string;
-                  }) => ({
-                    type: 'tool_error',
-                    toolCallId: messageWithReceivedAt.toolCallId,
-                    error,
-                    code,
-                    level: level !== null ? 'warn' : undefined, // level can only be warn
-                    content,
-                  }),
-                },
-              )
-              .then((response) => {
-                // if valid send it to the socket
-                // otherwise, report error
-                if (response.type === 'tool_response') {
-                  socket.sendToolResponseMessage(response);
-                } else if (response.type === 'tool_error') {
-                  socket.sendToolErrorMessage(response);
-                } else {
-                  onToolCallError.current?.('Invalid response from tool call');
-                }
-              });
+        const abortHandler = () => {
+          socket.close();
+          reject(new Error('Connection attempt has been aborted'));
+        };
+
+        signal.addEventListener('abort', abortHandler);
+
+        socket.on('message', (message) => {
+          if (signal.aborted) {
+            return;
           }
+
+          if (message.type === 'audio_output') {
+            const messageWithReceivedAt = {
+              ...message,
+              receivedAt: new Date(),
+            };
+            onAudioMessage.current?.(messageWithReceivedAt);
+            return;
+          }
+
+          if (message.type === 'chat_metadata') {
+            onOpen.current?.();
+            setReadyState(VoiceReadyState.OPEN);
+            signal.removeEventListener('abort', abortHandler);
+            socket.sendSessionSettings(sessionSettings);
+            resolve(VoiceReadyState.OPEN);
+          }
+
+          if (
+            message.type === 'assistant_message' ||
+            message.type === 'user_message' ||
+            message.type === 'user_interruption' ||
+            message.type === 'error' ||
+            message.type === 'tool_response' ||
+            message.type === 'tool_error' ||
+            message.type === 'chat_metadata' ||
+            message.type === 'assistant_end'
+          ) {
+            const messageWithReceivedAt = {
+              ...message,
+              receivedAt: new Date(),
+            };
+            onMessage.current?.(messageWithReceivedAt);
+            return;
+          }
+
+          if (message.type === 'tool_call') {
+            const messageWithReceivedAt = {
+              ...message,
+              receivedAt: new Date(),
+            };
+            onMessage.current?.(messageWithReceivedAt);
+
+            // only pass tool call messages for user defined tools
+            if (message.toolType === Hume.empathicVoice.ToolType.Function) {
+              void onToolCall
+                .current?.(
+                  {
+                    ...messageWithReceivedAt,
+                    // we have to do this because even though we are using the correct
+                    // enum on line 30 for the type definition
+                    // fern exports an interface and a value using the same `ToolType`
+                    // identifier so the type comparisons will always fail
+                    toolType: 'function',
+                  },
+                  {
+                    success: (content: unknown) => ({
+                      type: 'tool_response',
+                      toolCallId: messageWithReceivedAt.toolCallId,
+                      content: JSON.stringify(content),
+                    }),
+                    error: ({
+                      error,
+                      code,
+                      level,
+                      content,
+                    }: {
+                      error: string;
+                      code: string;
+                      level: string;
+                      content: string;
+                    }) => ({
+                      type: 'tool_error',
+                      toolCallId: messageWithReceivedAt.toolCallId,
+                      error,
+                      code,
+                      level: level !== null ? 'warn' : undefined, // level can only be warn
+                      content,
+                    }),
+                  },
+                )
+                .then((response) => {
+                  // if valid send it to the socket
+                  // otherwise, report error
+                  if (response.type === 'tool_response') {
+                    socket.sendToolResponseMessage(response);
+                  } else if (response.type === 'tool_error') {
+                    socket.sendToolErrorMessage(response);
+                  } else {
+                    onToolCallError.current?.(
+                      'Invalid response from tool call',
+                    );
+                  }
+                });
+            }
+            return;
+          }
+
+          // asserts that all message types are handled
+          isNever(message);
           return;
-        }
+        });
 
-        // asserts that all message types are handled
-        isNever(message);
-        return;
+        socket.on('close', (event) => {
+          signal.removeEventListener('abort', abortHandler);
+          onClose.current?.(event);
+          setReadyState(VoiceReadyState.CLOSED);
+        });
+
+        socket.on('error', (e) => {
+          signal.removeEventListener('abort', abortHandler);
+          const message = e instanceof Error ? e.message : 'Unknown error';
+          onClientError.current?.(message, e instanceof Error ? e : undefined);
+          reject(e);
+        });
+
+        setReadyState(VoiceReadyState.CONNECTING);
       });
-
-      socket.on('close', (event) => {
-        signal.removeEventListener('abort', abortHandler);
-        onClose.current?.(event);
-        setReadyState(VoiceReadyState.CLOSED);
-      });
-
-      socket.on('error', (e) => {
-        signal.removeEventListener('abort', abortHandler);
-        const message = e instanceof Error ? e.message : 'Unknown error';
-        onClientError.current?.(message, e instanceof Error ? e : undefined);
-        reject(e);
-      });
-
-      setReadyState(VoiceReadyState.CONNECTING);
-    });
-  }, []);
+    },
+    [],
+  );
 
   const disconnect = useCallback(() => {
     connectAbortController.current?.abort();
