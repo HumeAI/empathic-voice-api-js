@@ -20,11 +20,11 @@ import { useMicrophoneStream } from './useMicrophoneStream';
 import { useSoundPlayer } from './useSoundPlayer';
 import { useToolStatus } from './useToolStatus';
 import {
-  ConnectOptions,
   ToolCallHandler,
   useVoiceClient,
   VoiceReadyState,
 } from './useVoiceClient';
+import { ConnectOptions } from '../models/connect-options';
 import {
   AssistantTranscriptMessage,
   AudioOutputMessage,

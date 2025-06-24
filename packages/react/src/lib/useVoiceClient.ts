@@ -18,17 +18,6 @@ export type SocketConfig = {
   hostname?: string;
 } & Hume.empathicVoice.chat.Chat.ConnectArgs;
 
-export type AudioConstraints = {
-  echoCancellation?: boolean;
-  noiseSuppression?: boolean;
-  autoGainControl?: boolean;
-};
-
-export type ConnectOptions = Omit<SocketConfig, 'reconnectAttempts'> & {
-  audioConstraints?: AudioConstraints;
-  sessionSettings: Hume.empathicVoice.SessionSettings;
-};
-
 export enum VoiceReadyState {
   IDLE = 'idle',
   CONNECTING = 'connecting',
