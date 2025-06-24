@@ -20,7 +20,6 @@ import { useMicrophoneStream } from './useMicrophoneStream';
 import { useSoundPlayer } from './useSoundPlayer';
 import { useToolStatus } from './useToolStatus';
 import {
-  SocketConfig,
   ToolCallHandler,
   useVoiceClient,
   VoiceReadyState,
@@ -92,7 +91,7 @@ type ResourceStatus =
   | 'disconnected';
 
 export type VoiceContextType = {
-  connect: (options?: ConnectOptions) => Promise<void>;
+  connect: (options: ConnectOptions) => Promise<void>;
   disconnect: () => Promise<void>;
   fft: number[];
   isMuted: boolean;
@@ -135,10 +134,7 @@ export type VoiceContextType = {
 
 const VoiceContext = createContext<VoiceContextType | null>(null);
 
-export type VoiceProviderProps = PropsWithChildren<
-  Omit<SocketConfig, 'reconnectAttempts'>
-> & {
-  sessionSettings?: Hume.empathicVoice.SessionSettings;
+export type VoiceProviderProps = PropsWithChildren<{
   onMessage?: (message: JSONMessage) => void;
   onError?: (err: VoiceError) => void;
   onOpen?: () => void;
@@ -161,7 +157,7 @@ export type VoiceProviderProps = PropsWithChildren<
    */
   messageHistoryLimit?: number;
   enableAudioWorklet?: boolean;
-};
+}>;
 
 export const useVoice = () => {
   const ctx = useContext(VoiceContext);
@@ -175,8 +171,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   children,
   clearMessagesOnDisconnect = true,
   messageHistoryLimit = 100,
-  sessionSettings,
-  verboseTranscription = true,
   enableAudioWorklet = true,
   ...props
 }) => {
@@ -506,7 +500,8 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
   }, []);
 
   const connect = useCallback(
-    async (options: ConnectOptions = {}) => {
+    async (options: ConnectOptions) => {
+      const { audioConstraints, sessionSettings, ...socketConfig } = options;
       if (isConnectingRef.current || status.value === 'connected') {
         console.warn(
           'Already connected or connecting to a chat. Ignoring duplicate connection attempt.',
@@ -572,10 +567,13 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         return;
       }
       try {
-        await client.connect({
-          ...config,
-          verboseTranscription: true,
-        });
+        await client.connect(
+          {
+            ...socketConfig,
+            verboseTranscription: socketConfig.verboseTranscription ?? true,
+          },
+          sessionSettings,
+        );
       } catch (e) {
         // catching the thrown error here so we can return early from the connect function.
         // Any errors themselves are handled in the `onClientError` callback on the client,
@@ -616,7 +614,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     [
       checkShouldContinueConnecting,
       client,
-      config,
       getStream,
       mic,
       player,
@@ -777,19 +774,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
     },
     [clientSendSessionSettings, updateError],
   );
-
-  useEffect(() => {
-    if (
-      // checking against resourceStatusRef.current.socket instead of client.readyState
-      // because the client.readyState is updated asynchronously and so may be a render
-      // cycle behind
-      resourceStatusRef.current.socket === 'connected' &&
-      sessionSettings !== undefined &&
-      Object.keys(sessionSettings).length > 0
-    ) {
-      sendSessionSettings(sessionSettings);
-    }
-  }, [client.readyState, sendSessionSettings, sessionSettings]);
 
   const sendToolMessage = useCallback(
     (

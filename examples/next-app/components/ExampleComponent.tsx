@@ -14,7 +14,7 @@ import {
 } from '@/components/Select';
 import { Waveform } from '@/components/Waveform';
 
-export const ExampleComponent = () => {
+export const ExampleComponent = ({ accessToken }: { accessToken: string }) => {
   const {
     connect,
     disconnect,
@@ -71,6 +71,30 @@ export const ExampleComponent = () => {
       <div className={'text-sm font-medium uppercase'}>Call duration</div>
       <div>{callDurationTimestamp ?? 'n/a'}</div>
     </div>
+  );
+
+  const connectArgs = {
+    auth: {
+      type: 'accessToken' as const,
+      value: accessToken,
+    },
+    hostname: process.env.NEXT_PUBLIC_HUME_VOICE_HOSTNAME || 'api.hume.ai',
+    configId: process.env.NEXT_PUBLIC_HUME_VOICE_WEATHER_CONFIG_ID,
+    sessionSettings: {
+      type: 'session_settings' as const,
+      builtinTools: [{ name: 'web_search' as const }],
+    },
+  };
+
+  const connectButton = (
+    <button
+      className="rounded border border-neutral-500 p-2"
+      onClick={() => {
+        void connect(connectArgs);
+      }}
+    >
+      Connect to voice
+    </button>
   );
 
   return (
@@ -280,15 +304,7 @@ export const ExampleComponent = () => {
             .with('disconnected', () => (
               <>
                 {callDuration}
-
-                <button
-                  className="rounded border border-neutral-500 p-2"
-                  onClick={() => {
-                    void connect();
-                  }}
-                >
-                  Connect to voice
-                </button>
+                {connectButton}
               </>
             ))
             .with('connecting', () => (
@@ -314,16 +330,7 @@ export const ExampleComponent = () => {
             .with('error', () => (
               <div className="flex flex-col gap-4">
                 {callDuration}
-
-                <button
-                  className="rounded border border-neutral-500 p-2"
-                  onClick={() => {
-                    void connect();
-                  }}
-                >
-                  Connect to voice
-                </button>
-
+                {connectButton}
                 <div>
                   <span className="text-red-500">{status.reason}</span>
                 </div>
