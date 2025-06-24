@@ -570,7 +570,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         await client.connect(
           {
             ...socketConfig,
-            verboseTranscription: options.verboseTranscription ?? true,
+            verboseTranscription: socketConfig.verboseTranscription ?? true,
           },
           sessionSettings,
         );
@@ -712,7 +712,6 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         };
       });
     };
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
