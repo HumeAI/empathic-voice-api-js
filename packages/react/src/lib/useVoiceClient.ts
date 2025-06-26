@@ -95,7 +95,7 @@ export const useVoiceClient = (props: {
   const connect = useCallback(
     (
       config: SocketConfig,
-      sessionSettings: Hume.empathicVoice.SessionSettings,
+      sessionSettings?: Hume.empathicVoice.SessionSettings,
     ) => {
       // Abort previous attempt if any
       connectAbortController.current?.abort();
@@ -155,7 +155,9 @@ export const useVoiceClient = (props: {
             onOpen.current?.();
             setReadyState(VoiceReadyState.OPEN);
             signal.removeEventListener('abort', abortHandler);
-            socket.sendSessionSettings(sessionSettings);
+            if (sessionSettings) {
+              socket.sendSessionSettings(sessionSettings);
+            }
             resolve(VoiceReadyState.OPEN);
           }
 
