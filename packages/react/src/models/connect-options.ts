@@ -10,5 +10,5 @@ export type AudioConstraints = {
 
 export type ConnectOptions = Omit<SocketConfig, 'reconnectAttempts'> & {
   audioConstraints?: AudioConstraints;
-  sessionSettings: Hume.empathicVoice.SessionSettings;
+  sessionSettings?: Hume.empathicVoice.SessionSettings;
 };
