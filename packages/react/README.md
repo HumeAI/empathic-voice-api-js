@@ -130,7 +130,7 @@ export function StartCallButton() {
         onClick={() => {
           void connect({
             auth: { type: 'accessToken', value: '<YOUR_ACCESS_TOKEN>' },
-            configId: '<YOUR_CONFIG_ID>'
+            configId: '<YOUR_CONFIG_ID>',
             // other configuration props go here
           });
         }}
@@ -303,22 +303,22 @@ The number of assistant audio clips that are queued up, including the clip that 
 
 ```ts
 export type ConnectOptions = {
-  /* Authentication strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`.
+  /** Authentication strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`.
  */
   auth: AuthStrategy;
-  // Hostname of the Hume API. If not provided this value will default to `"api.hume.ai"`.
+  /** Hostname of the Hume API. If not provided this value will default to `"api.hume.ai"`. */
   hostname?: string;
-  // If you have a configuration ID with voice presets, pass the config ID here.
+  /** If you have a configuration ID with voice presets, pass the config ID here. */
   configId?: string;
-  // If you wish to use a specific version of your config, pass in the version ID here.
+  /** If you wish to use a specific version of your config, pass in the version ID here. */
   configVersion?: string;
-  // A flag to enable verbose transcription. When `true`, unfinalized user transcripts are sent to the client as interim UserMessage messages, which makes the assistant more sensitive to interruptions. Defaults to `true`.
+  /** A flag to enable verbose transcription. When `true`, unfinalized user transcripts are sent to the client as interim UserMessage messages, which makes the assistant more sensitive to interruptions. Defaults to `true`. */
   verboseTranscription?: boolean;
-  // Include a chat group ID, which enables the chat to continue from a previous chat group.
+  /** Include a chat group ID, which enables the chat to continue from a previous chat group. */
   resumedChatGroupId?: string;
   /** Custom audio constraints passed to navigator.getUserMedia to get the microphone stream */
   audioConstraints?: AudioConstraints;
-  /** Session settings to be sent immediately once the connection to EVI is established */
+  /** Session settings to be sent immediately once the connection to EVI is established. See documentation for details: https://dev.hume.ai/docs/empathic-voice-interface-evi/configuration/session-settings */
   sessionSettings?: Hume.empathicVoice.SessionSettings;
 };
 ```
