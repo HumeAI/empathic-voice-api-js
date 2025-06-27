@@ -51,6 +51,7 @@ export const useSoundPlayer = (props: {
     Array<{
       id: string;
       buffer: AudioBuffer;
+      index: number;
     }>
   >([]);
   const [queueLength, setQueueLength] = useState(0);
@@ -121,7 +122,9 @@ export const useSoundPlayer = (props: {
     );
 
     bufferSource.start(0);
-    onPlayAudio.current(nextClip.id);
+    if (nextClip.index === 0) {
+      onPlayAudio.current(nextClip.id);
+    }
 
     bufferSource.onended = () => {
       if (frequencyDataIntervalId.current) {
@@ -175,6 +178,21 @@ export const useSoundPlayer = (props: {
         workletNode.current = worklet;
 
         worklet.port.onmessage = (e: MessageEvent) => {
+          const playingEvent = z
+            .object({
+              type: z.literal('start_clip'),
+              id: z.string(),
+              index: z.number(),
+            })
+            .safeParse(e.data);
+
+          if (playingEvent.success) {
+            if (playingEvent.data.index === 0) {
+              onPlayAudio.current(playingEvent.data.id);
+            }
+            setIsPlaying(true);
+          }
+
           const endedEvent = z
             .object({ type: z.literal('ended') })
             .safeParse(e.data);
@@ -245,14 +263,15 @@ export const useSoundPlayer = (props: {
           workletNode.current?.port.postMessage({
             type: 'audio',
             data: pcmData,
+            id: message.id,
+            index: message.index,
           });
-          setIsPlaying(true);
-          onPlayAudio.current(message.id);
         } else if (!props.enableAudioWorklet) {
           // Non-AudioWorklet mode
           clipQueue.current.push({
             id: message.id,
             buffer: audioBuffer,
+            index: message.index,
           });
           setQueueLength(clipQueue.current.length);
           // playNextClip will iterate the clipQueue upon finishing
