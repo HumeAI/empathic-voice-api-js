@@ -51,6 +51,7 @@ export const useSoundPlayer = (props: {
     Array<{
       id: string;
       buffer: AudioBuffer;
+      index: number;
     }>
   >([]);
   const [queueLength, setQueueLength] = useState(0);
@@ -121,7 +122,9 @@ export const useSoundPlayer = (props: {
     );
 
     bufferSource.start(0);
-    onPlayAudio.current(nextClip.id);
+    if (nextClip.index === 0) {
+      onPlayAudio.current(nextClip.id);
+    }
 
     bufferSource.onended = () => {
       if (frequencyDataIntervalId.current) {
@@ -247,12 +250,15 @@ export const useSoundPlayer = (props: {
             data: pcmData,
           });
           setIsPlaying(true);
-          onPlayAudio.current(message.id);
+          if (message.index === 0) {
+            onPlayAudio.current(message.id);
+          }
         } else if (!props.enableAudioWorklet) {
           // Non-AudioWorklet mode
           clipQueue.current.push({
             id: message.id,
             buffer: audioBuffer,
+            index: message.index,
           });
           setQueueLength(clipQueue.current.length);
           // playNextClip will iterate the clipQueue upon finishing

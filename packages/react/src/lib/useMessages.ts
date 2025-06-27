@@ -119,6 +119,7 @@ export const useMessages = ({
 
   const onPlayAudio = useCallback(
     (id: string) => {
+      console.log('onPlayAudio', id);
       const matchingTranscript = voiceMessageMap[id];
       if (matchingTranscript) {
         sendMessageToParent?.(matchingTranscript);
