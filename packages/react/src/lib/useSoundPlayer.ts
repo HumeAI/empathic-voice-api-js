@@ -178,6 +178,21 @@ export const useSoundPlayer = (props: {
         workletNode.current = worklet;
 
         worklet.port.onmessage = (e: MessageEvent) => {
+          const playingEvent = z
+            .object({
+              type: z.literal('start_clip'),
+              id: z.string(),
+              index: z.number(),
+            })
+            .safeParse(e.data);
+
+          if (playingEvent.success) {
+            if (playingEvent.data.index === 0) {
+              onPlayAudio.current(playingEvent.data.id);
+            }
+            setIsPlaying(true);
+          }
+
           const endedEvent = z
             .object({ type: z.literal('ended') })
             .safeParse(e.data);
@@ -248,11 +263,9 @@ export const useSoundPlayer = (props: {
           workletNode.current?.port.postMessage({
             type: 'audio',
             data: pcmData,
+            id: message.id,
+            index: message.index,
           });
-          setIsPlaying(true);
-          if (message.index === 0) {
-            onPlayAudio.current(message.id);
-          }
         } else if (!props.enableAudioWorklet) {
           // Non-AudioWorklet mode
           clipQueue.current.push({
