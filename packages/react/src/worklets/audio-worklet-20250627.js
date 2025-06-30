@@ -5,8 +5,8 @@ class BufferQueue {
     this._hasPushed = false;
   }
 
-  push(buffer) {
-    this._buffers.push(buffer);
+  push({ buffer, id, index }) {
+    this._buffers.push({ buffer, id, index });
     this._length += buffer.length;
     this._hasPushed = true;
   }
@@ -35,10 +35,15 @@ class BufferQueue {
     const needed = 128;
     const output = new Float32Array(needed);
 
+    let currentId = null;
+    let currentIndex = null;
+
     if (this._length > 0 && this._length < needed) {
       let offset = 0;
       while (this._buffers.length && offset < this._length) {
-        const buf = this._buffers[0];
+        const { buffer: buf, id, index } = this._buffers[0];
+        currentId = id;
+        currentIndex = index;
         const take = Math.min(buf.length, this._length - offset);
         output.set(buf.subarray(0, take), offset);
 
@@ -53,27 +58,35 @@ class BufferQueue {
 
       this._length = 0;
       this._hasPushed = false;
-      return output;
+      return { buffer: output, id: currentId, index: currentIndex };
     }
 
     let offset = 0;
 
     while (offset < needed) {
-      const buf = this._buffers[0];
+      const { buffer: buf, id, index } = this._buffers[0];
+
+      if (currentId === null) {
+        currentId = id;
+      }
+      if (currentIndex === null) {
+        currentIndex = index;
+      }
+
       const take = Math.min(buf.length, needed - offset);
       output.set(buf.subarray(0, take), offset);
 
       if (take === buf.length) {
         this._buffers.shift();
       } else {
-        this._buffers[0] = buf.subarray(take);
+        this._buffers[0].buffer = buf.subarray(take);
       }
 
       this._length -= take;
       offset += take;
     }
 
-    return output;
+    return { buffer: output, id: currentId, index: currentIndex };
   }
 }
 
@@ -84,7 +97,11 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
     this.port.onmessage = (e) => {
       switch (e.data?.type) {
         case 'audio':
-          this._bq.push(new Float32Array(e.data.data));
+          this._bq.push({
+            buffer: new Float32Array(e.data.data),
+            id: e.data.id,
+            index: e.data.index,
+          });
           if (this._fadeOutActive) {
             this._fadeOutActive = false;
             this._fadeOutCounter = 0;
@@ -115,6 +132,8 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
     );
     this._fadeOutActive = false;
     this._fadeOutCounter = 0;
+
+    this._lastClipIndex = null;
   }
 
   process(inputs, outputs) {
@@ -122,10 +141,16 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
     const frames = output[0].length;
     const channels = output.length;
 
-    const block = this._bq.read();
+    const result = this._bq.read();
     this.port.postMessage({ type: 'queueLength', length: this._bq.size });
 
-    if (block) {
+    if (result) {
+      const { buffer: block, id, index } = result;
+      if (this._lastClipIndex !== index) {
+        this._lastClipIndex = index;
+        this.port.postMessage({ type: 'start_clip', id, index });
+      }
+
       for (let ch = 0; ch < channels; ch++) {
         const out = output[ch];
         for (let i = 0; i < frames; i++) {
