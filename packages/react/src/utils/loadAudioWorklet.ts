@@ -4,7 +4,7 @@ export const loadAudioWorklet = async (
 ): Promise<boolean> => {
   return ctx.audioWorklet
     .addModule(
-      `https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet-20250627.js`,
+      `https://storage.googleapis.com/evi-react-sdk-assets/audio-worklet-20250702.js`,
     )
     .then(() => {
       return true;

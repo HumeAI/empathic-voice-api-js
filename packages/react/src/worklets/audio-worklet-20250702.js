@@ -133,7 +133,7 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
     this._fadeOutActive = false;
     this._fadeOutCounter = 0;
 
-    this._lastClipIndex = null;
+    this._lastClipId = null;
   }
 
   process(inputs, outputs) {
@@ -146,8 +146,9 @@ class AudioStreamProcessor extends AudioWorkletProcessor {
 
     if (result) {
       const { buffer: block, id, index } = result;
-      if (this._lastClipIndex !== index) {
-        this._lastClipIndex = index;
+
+      if (this._lastClipId !== id) {
+        this._lastClipId = id;
         this.port.postMessage({ type: 'start_clip', id, index });
       }
 
