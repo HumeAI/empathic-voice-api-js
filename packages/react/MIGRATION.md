@@ -8,26 +8,26 @@ This guide helps you migrate to the latest version of __@humeai/voice-react__, w
 
 __What changed__
 
-Several connection-specific options were previously passed as props on VoiceProvider. These are now expected as parameters to the connect() function instead. This change makes the API cleaner, since these values are tied to a single session, not the component’s lifecycle.
+Several connection-specific options were previously passed as props on `VoiceProvider`. These are now expected as parameters to the `connect()` function instead. This change makes the API cleaner, since these values are tied to a single session, not the component’s lifecycle.
 
 The affected properties are:
-* auth
-* hostName
-* configId
-* configVersion
-* verboseTranscription
-* resumedChatGroupId
-* sessionSettings
+* `auth`
+* `hostName`
+* `configId`
+* `configVersion`
+* `verboseTranscription`
+* `resumedChatGroupId`
+* `sessionSettings`
 
 __How to migrate__
 
-Remove these props from VoiceProvider, and instead pass them directly to connect() as the `ConnectOptions` parameter when you start a session.
+Remove these props from `VoiceProvider`, and instead pass them directly to the `useVoice` hook's `connect()` method as the `ConnectOptions` parameter when you start a session.
 
 ### 2. reconnectAttempts Removed from `VoiceProvider`
 
 __What changed__
 
-* The reconnectAttempts prop on `VoiceProvider` has been removed.
+* The `reconnectAttempts` prop on `VoiceProvider` has been removed.
 * Its default behavior is now set to 0, meaning calls will no longer auto-reconnect.
 * This change is necessary due to browser security policies (particularly in Safari) that prevent automatically resuming audio/mic connections without explicit user action.
 
