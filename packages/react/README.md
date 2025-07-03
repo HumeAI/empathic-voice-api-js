@@ -71,33 +71,9 @@ function App() {
 
 See a complete list of props accepted by `VoiceProvider` below:
 
-#### `auth`: {value: string; type: "apiKey";} | {value: string; type: "accessToken";}
+#### `enableAudioWorklet?`: boolean
 
-(_Required_) Authentication strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`.
-
-#### `hostname?`: string
-
-(_Optional_) Hostname of the Hume API. If not provided this value will default to `"api.hume.ai"`.
-
-#### `reconnectAttempts?`: number
-
-(_Optional_) Number of times to attempt to reconnect to the API. If not provided this value will default to `30`.
-
-#### `debug?`: boolean
-
-(_Optional_) Enable debug mode. If not provided this value will default to `false`.
-
-#### `configId?`: string
-
-(_Optional_) If you have a configuration ID with voice presets, pass the config ID here.
-
-#### `configVersion?`: string
-
-(_Optional_) If you wish to use a specific version of your config, pass in the version ID here.
-
-#### `verboseTranscription?`: boolean
-
-(_Optional_) A flag to enable verbose transcription. When `true`, unfinalized user transcripts are sent to the client as interim UserMessage messages, which makes the assistant more sensitive to interruptions. Defaults to `true`.
+(_Optional_) A flag to toggle the audio player implementation between AudioWorklet and AudioBuffer. AudioWorklet is recommended for best audio quality results on most browsers, but has degraded performance on Safari 17. Defaults to `true`.
 
 #### `onMessage?`: (message: [JsonMessage](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/JsonMessage.ts) & { receivedAt: Date;}) => void
 
@@ -135,15 +111,8 @@ See a complete list of props accepted by `VoiceProvider` below:
 
 (_Optional_) Set the number of messages that you wish to keep over the course of the conversation. The default value is 100.
 
-#### `sessionSettings?`: [SessionSettings](https://github.com/HumeAI/hume-typescript-sdk/blob/ac89e41e45a925f9861eb6d5a1335ab51d5a1c94/src/api/resources/empathicVoice/types/SessionSettings.ts)
 
-(_Optional_) Settings where you can set custom values for the session
-
-#### `resumedChatGroupId?`: string
-
-(_Optional_) Include a chat group ID, which enables the chat to continue from a previous chat group.
-
-## Using the Voice
+## Connecting to EVI
 
 After you have set up your voice provider, you will be able to access various properties and methods to use the voice in your application. In any component that is a child of `VoiceProvider`, access these methods by importing the `useVoice` custom hook.
 
@@ -155,7 +124,21 @@ import { useVoice } from '@humeai/voice-react';
 export function StartCallButton() {
   const { connect } = useVoice();
 
-  return <button onClick={() => connect()}>Start Call</button>;
+  return (
+    <>
+      <button
+        onClick={() => {
+          void connect({
+            auth: { type: 'accessToken', value: '<YOUR_ACCESS_TOKEN>' },
+            configId: '<YOUR_CONFIG_ID>',
+            // other configuration props go here
+          });
+        }}
+      >
+        Start Call
+      </button>
+    </>
+  );
 }
 ```
 
@@ -320,8 +303,23 @@ The number of assistant audio clips that are queued up, including the clip that 
 
 ```ts
 export type ConnectOptions = {
+  /** Authentication strategy and corresponding value. Authentication is required to establish the web socket connection with Hume's Voice API. See our [documentation](https://dev.hume.ai/docs/quick-start#getting-your-api-key) on obtaining your `API key` or `access token`.
+ */
+  auth: AuthStrategy;
+  /** Hostname of the Hume API. If not provided this value will default to `"api.hume.ai"`. */
+  hostname?: string;
+  /** If you have a configuration ID with voice presets, pass the config ID here. */
+  configId?: string;
+  /** If you wish to use a specific version of your config, pass in the version ID here. */
+  configVersion?: string;
+  /** A flag to enable verbose transcription. When `true`, unfinalized user transcripts are sent to the client as interim UserMessage messages, which makes the assistant more sensitive to interruptions. Defaults to `true`. */
+  verboseTranscription?: boolean;
+  /** Include a chat group ID, which enables the chat to continue from a previous chat group. */
+  resumedChatGroupId?: string;
   /** Custom audio constraints passed to navigator.getUserMedia to get the microphone stream */
   audioConstraints?: AudioConstraints;
+  /** Session settings to be sent immediately once the connection to EVI is established. See documentation for details: https://dev.hume.ai/docs/empathic-voice-interface-evi/configuration/session-settings */
+  sessionSettings?: Hume.empathicVoice.SessionSettings;
 };
 ```
 
