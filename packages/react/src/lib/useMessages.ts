@@ -155,6 +155,7 @@ export const useMessages = ({
     setMessages([]);
     setLastVoiceMessage(null);
     setLastUserMessage(null);
+    setLastAssistantProsodyMessage(null);
     setVoiceMessageMap({});
     setChatMetadata(null);
   }, []);
