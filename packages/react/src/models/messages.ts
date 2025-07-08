@@ -1,6 +1,7 @@
 import type {
   AssistantEnd,
   AssistantMessage,
+  AssistantProsody,
   AudioInput,
   AudioOutput,
   ChatMetadata,
@@ -18,6 +19,7 @@ type WithReceivedAt<T> = T & { receivedAt: Date };
 
 export type AssistantEndMessage = WithReceivedAt<AssistantEnd>;
 export type AssistantTranscriptMessage = WithReceivedAt<AssistantMessage>;
+export type AssistantProsodyMessage = WithReceivedAt<AssistantProsody>;
 export type AudioMessage = WithReceivedAt<AudioInput>;
 export type AudioOutputMessage = WithReceivedAt<AudioOutput>;
 export type ChatMetadataMessage = WithReceivedAt<ChatMetadata>;

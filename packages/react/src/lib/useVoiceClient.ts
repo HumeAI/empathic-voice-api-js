@@ -169,7 +169,8 @@ export const useVoiceClient = (props: {
             message.type === 'tool_response' ||
             message.type === 'tool_error' ||
             message.type === 'chat_metadata' ||
-            message.type === 'assistant_end'
+            message.type === 'assistant_end' ||
+            message.type === 'assistant_prosody'
           ) {
             const messageWithReceivedAt = {
               ...message,
