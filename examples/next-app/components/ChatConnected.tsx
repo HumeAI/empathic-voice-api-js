@@ -36,6 +36,7 @@ export const ChatConnected = () => {
     chatMetadata,
     lastUserMessage,
     lastVoiceMessage,
+    lastAssistantProsodyMessage,
     isPaused,
     volume,
     setVolume,
@@ -269,6 +270,21 @@ export const ChatConnected = () => {
           <textarea
             className={'w-full bg-neutral-800 font-mono text-sm text-white'}
             value={JSON.stringify(lastUserMessage)}
+            readOnly
+          ></textarea>
+        </div>
+
+        <div>
+          <div className={'text-sm font-medium uppercase'}>
+            Last assistant prosody message
+          </div>
+          <div>
+            Received at:{' '}
+            {lastAssistantProsodyMessage?.receivedAt.toTimeString() ?? 'n/a'}
+          </div>
+          <textarea
+            className={'w-full bg-neutral-800 font-mono text-sm text-white'}
+            value={JSON.stringify(lastAssistantProsodyMessage)}
             readOnly
           ></textarea>
         </div>
