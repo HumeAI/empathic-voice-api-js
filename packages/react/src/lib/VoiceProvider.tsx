@@ -26,6 +26,7 @@ import {
 } from './useVoiceClient';
 import { ConnectOptions } from '../models/connect-options';
 import {
+  AssistantProsodyMessage,
   AssistantTranscriptMessage,
   AudioOutputMessage,
   ChatMetadataMessage,
@@ -100,6 +101,7 @@ export type VoiceContextType = {
   messages: (JSONMessage | ConnectionMessage)[];
   lastVoiceMessage: AssistantTranscriptMessage | null;
   lastUserMessage: UserTranscriptMessage | null;
+  lastAssistantProsodyMessage: AssistantProsodyMessage | null;
   clearMessages: () => void;
   mute: () => void;
   unmute: () => void;
@@ -812,6 +814,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
         messages: messageStore.messages,
         lastVoiceMessage: messageStore.lastVoiceMessage,
         lastUserMessage: messageStore.lastUserMessage,
+        lastAssistantProsodyMessage: messageStore.lastAssistantProsodyMessage,
         clearMessages: messageStore.clearMessages,
         mute: mic.mute,
         muteAudio: player.muteAudio,
@@ -856,6 +859,7 @@ export const VoiceProvider: FC<VoiceProviderProps> = ({
       messageStore.messages,
       messageStore.lastVoiceMessage,
       messageStore.lastUserMessage,
+      messageStore.lastAssistantProsodyMessage,
       messageStore.clearMessages,
       messageStore.chatMetadata,
       client.readyState,

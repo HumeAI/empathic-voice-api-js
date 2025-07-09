@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 
 import type { ConnectionMessage } from './connection-message';
 import type {
+  AssistantProsodyMessage,
   AssistantTranscriptMessage,
   ChatMetadataMessage,
   JSONMessage,
@@ -29,6 +30,8 @@ export const useMessages = ({
     useState<AssistantTranscriptMessage | null>(null);
   const [lastUserMessage, setLastUserMessage] =
     useState<UserTranscriptMessage | null>(null);
+  const [lastAssistantProsodyMessage, setLastAssistantProsodyMessage] =
+    useState<AssistantProsodyMessage | null>(null);
 
   const [chatMetadata, setChatMetadata] = useState<ChatMetadataMessage | null>(
     null,
@@ -103,6 +106,13 @@ export const useMessages = ({
             return keepLastN(messageHistoryLimit, prev.concat([message]));
           });
           break;
+        case 'assistant_prosody':
+          setLastAssistantProsodyMessage(message);
+          sendMessageToParent?.(message);
+          setMessages((prev) => {
+            return keepLastN(messageHistoryLimit, prev.concat([message]));
+          });
+          break;
         case 'chat_metadata':
           sendMessageToParent?.(message);
           setMessages((prev) => {
@@ -145,6 +155,7 @@ export const useMessages = ({
     setMessages([]);
     setLastVoiceMessage(null);
     setLastUserMessage(null);
+    setLastAssistantProsodyMessage(null);
     setVoiceMessageMap({});
     setChatMetadata(null);
   }, []);
@@ -158,6 +169,7 @@ export const useMessages = ({
     messages,
     lastVoiceMessage,
     lastUserMessage,
+    lastAssistantProsodyMessage,
     chatMetadata,
   };
 };
