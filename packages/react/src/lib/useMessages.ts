@@ -103,13 +103,16 @@ export const useMessages = ({
               }
             }
             if (mostRecentUserMessage?.interim === true) {
-              const nextMessages = prev.map((m, idx) => {
+              const nextMessages = prev.filter((m, idx) => {
                 if (idx === mostRecentUserMessageIndex) {
-                  return message;
+                  return false;
                 }
-                return m;
+                return true;
               });
-              return keepLastN(messageHistoryLimit, nextMessages);
+              return keepLastN(
+                messageHistoryLimit,
+                nextMessages.concat([message]),
+              );
             }
             return keepLastN(messageHistoryLimit, prev.concat([message]));
           });
