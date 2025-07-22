@@ -236,7 +236,9 @@ export const ChatConnected = () => {
               if (message.type === 'user_message') {
                 return (
                   <div key={message.receivedAt.toISOString()}>
-                    <div className="text-xs uppercase">User</div>
+                    <div className="text-xs uppercase">
+                      User ({String(message.interim)})
+                    </div>
                     <div>{message.message.content}</div>
                   </div>
                 );
@@ -246,7 +248,7 @@ export const ChatConnected = () => {
           </div>
         </div>
 
-        <div>
+        {/* <div>
           <div className={'text-sm font-medium uppercase'}>
             Last assistant message
           </div>
@@ -287,7 +289,7 @@ export const ChatConnected = () => {
             value={JSON.stringify(lastAssistantProsodyMessage)}
             readOnly
           ></textarea>
-        </div>
+        </div> */}
       </div>
     </div>
   );
