@@ -269,7 +269,7 @@ describe('useMessages hook', () => {
     expect(hook.result.current.lastUserMessage).toBeNull();
   });
 
-  it('should not set interim user messages as `lastUserMessage`, but does call `sendMessageToParent`', () => {
+  it('should not assign interim user messages to `lastUserMessage`, but does call `sendMessageToParent`', () => {
     act(() => {
       hook.result.current.onMessage({
         ...userMessage,

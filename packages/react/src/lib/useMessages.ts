@@ -62,19 +62,32 @@ export const useMessages = ({
     );
   }, []);
 
+  const findMostRecentUserMessage = useCallback(
+    (allMessages: typeof messages) => {
+      let mostRecentUserMessage: UserTranscriptMessage | undefined;
+      let mostRecentUserMessageIndex: number | undefined;
+      for (let i = allMessages.length - 1; i >= 0; i--) {
+        const m = allMessages[i];
+        if (m && m.type === 'user_message') {
+          mostRecentUserMessage = m;
+          mostRecentUserMessageIndex = i;
+          break;
+        }
+      }
+      return { mostRecentUserMessage, mostRecentUserMessageIndex };
+    },
+    [],
+  );
+
   const updateMessagesArray = useCallback(
     (messageToAdd: JSONMessage) => {
       setMessages((prev) => {
-        let mostRecentUserMessage: UserTranscriptMessage | undefined;
-        let mostRecentUserMessageIndex: number | undefined;
-        for (let i = prev.length - 1; i >= 0; i--) {
-          const m = prev[i];
-          if (m && m.type === 'user_message') {
-            mostRecentUserMessage = m;
-            mostRecentUserMessageIndex = i;
-            break;
-          }
-        }
+        // If there is an interim user message, move it to the end of the array and insert the current
+        // message into the penultimate position.
+        // Otherwise, add the message to the end of the array.
+        const { mostRecentUserMessage, mostRecentUserMessageIndex } =
+          findMostRecentUserMessage(prev);
+
         if (mostRecentUserMessage?.interim === true) {
           // Move interim user messages to the end of the array
           const nextMessages = prev.filter((m, idx) => {
@@ -91,7 +104,7 @@ export const useMessages = ({
         return keepLastN(messageHistoryLimit, prev.concat([messageToAdd]));
       });
     },
-    [messageHistoryLimit],
+    [findMostRecentUserMessage, messageHistoryLimit],
   );
 
   const onMessage = useCallback(
@@ -114,6 +127,8 @@ export const useMessages = ({
           }));
           break;
         case 'user_message':
+          // Replace interim user message with current message
+          // If there are no interim user messages, add the current message to the end of the messages array
           sendMessageToParent?.(message);
 
           if (message.interim === false) {
@@ -124,16 +139,8 @@ export const useMessages = ({
             if (prev.length === 0) {
               return keepLastN(messageHistoryLimit, [message]);
             }
-            let mostRecentUserMessage: UserTranscriptMessage | undefined;
-            let mostRecentUserMessageIndex: number | undefined;
-            for (let i = prev.length - 1; i >= 0; i--) {
-              const m = prev[i];
-              if (m && m.type === 'user_message') {
-                mostRecentUserMessage = m;
-                mostRecentUserMessageIndex = i;
-                break;
-              }
-            }
+            const { mostRecentUserMessage, mostRecentUserMessageIndex } =
+              findMostRecentUserMessage(prev);
             if (mostRecentUserMessage?.interim === true) {
               const nextMessages = prev.filter((m, idx) => {
                 if (idx === mostRecentUserMessageIndex) {
@@ -174,7 +181,12 @@ export const useMessages = ({
           break;
       }
     },
-    [messageHistoryLimit, sendMessageToParent, updateMessagesArray],
+    [
+      findMostRecentUserMessage,
+      messageHistoryLimit,
+      sendMessageToParent,
+      updateMessagesArray,
+    ],
   );
 
   const onPlayAudio = useCallback(
