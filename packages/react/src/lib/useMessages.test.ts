@@ -410,7 +410,7 @@ describe('useMessages hook', () => {
     );
   });
 
-  it.only('always pushes interim user messages to the end of the messages array', () => {
+  it('always pushes interim user messages to the end of the messages array', () => {
     const interimMessage = {
       ...userMessage,
       interim: true,
