@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useMessages } from './useMessages'; // adjust the import path as needed
 import type {
   AssistantTranscriptMessage,
+  JSONMessage,
   UserTranscriptMessage,
 } from '../models/messages';
 
@@ -407,5 +408,49 @@ describe('useMessages hook', () => {
     expect(hook.result.current.messages[2]).toMatchObject(
       expect.objectContaining(finalMessage),
     );
+  });
+
+  it.only('always pushes interim user messages to the end of the messages array', () => {
+    const interimMessage = {
+      ...userMessage,
+      interim: true,
+      receivedAt: new Date(1),
+    };
+    act(() => {
+      hook.result.current.onMessage(interimMessage);
+    });
+
+    expect(hook.result.current.messages).toMatchObject([
+      expect.objectContaining(interimMessage),
+    ]);
+
+    const interruptionMessage: JSONMessage = {
+      type: 'user_interruption',
+      receivedAt: new Date(2),
+      time: 1633035625,
+    };
+    act(() => {
+      hook.result.current.onMessage(interruptionMessage);
+    });
+
+    expect(hook.result.current.messages[0]).toMatchObject(interruptionMessage);
+    expect(hook.result.current.messages[1]).toMatchObject(interimMessage);
+
+    const userMessage2 = {
+      ...userMessage,
+      message: {
+        ...userMessage.message,
+        content: 'user message 2',
+      },
+      interim: false,
+      receivedAt: new Date(2),
+    };
+    act(() => {
+      hook.result.current.onMessage(userMessage2);
+    });
+
+    expect(hook.result.current.messages.length).toBe(2);
+    expect(hook.result.current.messages[0]).toMatchObject(interruptionMessage);
+    expect(hook.result.current.messages[1]).toMatchObject(userMessage2);
   });
 });
