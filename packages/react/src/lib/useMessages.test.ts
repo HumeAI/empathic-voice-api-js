@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useMessages } from './useMessages'; // adjust the import path as needed
 import type {
   AssistantTranscriptMessage,
+  JSONMessage,
   UserTranscriptMessage,
 } from '../models/messages';
 
@@ -268,7 +269,7 @@ describe('useMessages hook', () => {
     expect(hook.result.current.lastUserMessage).toBeNull();
   });
 
-  it('should not add interim user messages to `messages` or `lastUserMessage`, but does call `sendMessageToParent`', () => {
+  it('should not assign interim user messages to `lastUserMessage`, but does call `sendMessageToParent`', () => {
     act(() => {
       hook.result.current.onMessage({
         ...userMessage,
@@ -277,12 +278,179 @@ describe('useMessages hook', () => {
       });
     });
 
-    expect(hook.result.current.messages).toMatchObject([]);
     expect(hook.result.current.lastUserMessage).toBe(null);
     expect(sendMessageToParent).toHaveBeenCalledWith({
       ...userMessage,
       interim: true,
       receivedAt: new Date(1),
     });
+  });
+
+  it('replaces interim user messages until a non-interim message is received', () => {
+    const interimMessage1 = {
+      ...userMessage,
+      message: {
+        ...userMessage.message,
+        content: 'interim message 1',
+      },
+      interim: true,
+      receivedAt: new Date(1),
+    };
+    act(() => {
+      hook.result.current.onMessage(interimMessage1);
+    });
+
+    expect(hook.result.current.messages).toMatchObject([
+      expect.objectContaining(interimMessage1),
+    ]);
+
+    const interimMessage2 = {
+      ...userMessage,
+      message: {
+        ...userMessage.message,
+        content: 'interim message 2',
+      },
+      interim: true,
+      receivedAt: new Date(1),
+    };
+    act(() => {
+      hook.result.current.onMessage(interimMessage2);
+    });
+
+    expect(hook.result.current.messages).toMatchObject([
+      expect.objectContaining(interimMessage2),
+    ]);
+    expect(hook.result.current.messages).not.toMatchObject([
+      expect.objectContaining(interimMessage1),
+    ]);
+
+    const finalMessage = {
+      ...userMessage,
+      message: {
+        ...userMessage.message,
+        content: 'final message',
+      },
+      interim: false,
+      receivedAt: new Date(2),
+    };
+    act(() => {
+      hook.result.current.onMessage(finalMessage);
+    });
+
+    expect(hook.result.current.messages).not.toMatchObject([
+      expect.objectContaining(interimMessage2),
+    ]);
+    expect(hook.result.current.messages).not.toMatchObject([
+      expect.objectContaining(interimMessage1),
+    ]);
+    expect(hook.result.current.messages).toMatchObject([
+      expect.objectContaining(finalMessage),
+    ]);
+  });
+
+  it('does no replacements if there are no interim messages', () => {
+    const message1 = {
+      ...userMessage,
+      message: {
+        ...userMessage.message,
+        content: 'message 1',
+      },
+      interim: false,
+      receivedAt: new Date(1),
+    };
+    act(() => {
+      hook.result.current.onMessage(message1);
+    });
+
+    expect(hook.result.current.messages).toMatchObject([
+      expect.objectContaining(message1),
+    ]);
+
+    const message2 = {
+      ...userMessage,
+      message: {
+        ...userMessage.message,
+        content: 'interim message 2',
+      },
+      interim: false,
+      receivedAt: new Date(1),
+    };
+    act(() => {
+      hook.result.current.onMessage(message2);
+    });
+
+    expect(hook.result.current.messages[0]).toMatchObject(
+      expect.objectContaining(message1),
+    );
+    expect(hook.result.current.messages[1]).toMatchObject(
+      expect.objectContaining(message2),
+    );
+
+    const finalMessage = {
+      ...userMessage,
+      message: {
+        ...userMessage.message,
+        content: 'final message',
+      },
+      interim: false,
+      receivedAt: new Date(2),
+    };
+    act(() => {
+      hook.result.current.onMessage(finalMessage);
+    });
+
+    expect(hook.result.current.messages[0]).toMatchObject(
+      expect.objectContaining(message1),
+    );
+    expect(hook.result.current.messages[1]).toMatchObject(
+      expect.objectContaining(message2),
+    );
+    expect(hook.result.current.messages[2]).toMatchObject(
+      expect.objectContaining(finalMessage),
+    );
+  });
+
+  it('always pushes interim user messages to the end of the messages array', () => {
+    const interimMessage = {
+      ...userMessage,
+      interim: true,
+      receivedAt: new Date(1),
+    };
+    act(() => {
+      hook.result.current.onMessage(interimMessage);
+    });
+
+    expect(hook.result.current.messages).toMatchObject([
+      expect.objectContaining(interimMessage),
+    ]);
+
+    const interruptionMessage: JSONMessage = {
+      type: 'user_interruption',
+      receivedAt: new Date(2),
+      time: 1633035625,
+    };
+    act(() => {
+      hook.result.current.onMessage(interruptionMessage);
+    });
+
+    expect(hook.result.current.messages[0]).toMatchObject(interruptionMessage);
+    expect(hook.result.current.messages[1]).toMatchObject(interimMessage);
+
+    const userMessage2 = {
+      ...userMessage,
+      message: {
+        ...userMessage.message,
+        content: 'user message 2',
+      },
+      interim: false,
+      receivedAt: new Date(2),
+    };
+    act(() => {
+      hook.result.current.onMessage(userMessage2);
+    });
+
+    expect(hook.result.current.messages.length).toBe(2);
+    expect(hook.result.current.messages[0]).toMatchObject(interruptionMessage);
+    expect(hook.result.current.messages[1]).toMatchObject(userMessage2);
   });
 });

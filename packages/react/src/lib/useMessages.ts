@@ -62,6 +62,51 @@ export const useMessages = ({
     );
   }, []);
 
+  const findMostRecentUserMessage = useCallback(
+    (allMessages: typeof messages) => {
+      let mostRecentUserMessage: UserTranscriptMessage | undefined;
+      let mostRecentUserMessageIndex: number | undefined;
+      for (let i = allMessages.length - 1; i >= 0; i--) {
+        const m = allMessages[i];
+        if (m && m.type === 'user_message') {
+          mostRecentUserMessage = m;
+          mostRecentUserMessageIndex = i;
+          break;
+        }
+      }
+      return { mostRecentUserMessage, mostRecentUserMessageIndex };
+    },
+    [],
+  );
+
+  const updateMessagesArray = useCallback(
+    (messageToAdd: JSONMessage) => {
+      setMessages((prev) => {
+        // If there is an interim user message, move it to the end of the array and insert the current
+        // message into the penultimate position.
+        // Otherwise, add the message to the end of the array.
+        const { mostRecentUserMessage, mostRecentUserMessageIndex } =
+          findMostRecentUserMessage(prev);
+
+        if (mostRecentUserMessage?.interim === true) {
+          // Move interim user messages to the end of the array
+          const nextMessages = prev.filter((m, idx) => {
+            if (idx === mostRecentUserMessageIndex) {
+              return false;
+            }
+            return true;
+          });
+          return keepLastN(
+            messageHistoryLimit,
+            nextMessages.concat([messageToAdd, mostRecentUserMessage]),
+          );
+        }
+        return keepLastN(messageHistoryLimit, prev.concat([messageToAdd]));
+      });
+    },
+    [findMostRecentUserMessage, messageHistoryLimit],
+  );
+
   const onMessage = useCallback(
     (message: JSONMessage) => {
       /* 
@@ -82,17 +127,34 @@ export const useMessages = ({
           }));
           break;
         case 'user_message':
+          // Replace interim user message with current message
+          // If there are no interim user messages, add the current message to the end of the messages array
           sendMessageToParent?.(message);
 
-          // Exclude interim messages from the messages array.
-          // If end users want to see interim messages, they can use the onMessage
-          // callback because we are still sending them via `sendMessageToParent`.
           if (message.interim === false) {
             setLastUserMessage(message);
-            setMessages((prev) => {
-              return keepLastN(messageHistoryLimit, prev.concat([message]));
-            });
           }
+
+          setMessages((prev) => {
+            if (prev.length === 0) {
+              return keepLastN(messageHistoryLimit, [message]);
+            }
+            const { mostRecentUserMessage, mostRecentUserMessageIndex } =
+              findMostRecentUserMessage(prev);
+            if (mostRecentUserMessage?.interim === true) {
+              const nextMessages = prev.filter((m, idx) => {
+                if (idx === mostRecentUserMessageIndex) {
+                  return false;
+                }
+                return true;
+              });
+              return keepLastN(
+                messageHistoryLimit,
+                nextMessages.concat([message]),
+              );
+            }
+            return keepLastN(messageHistoryLimit, prev.concat([message]));
+          });
 
           break;
         case 'user_interruption':
@@ -102,29 +164,29 @@ export const useMessages = ({
         case 'tool_error':
         case 'assistant_end':
           sendMessageToParent?.(message);
-          setMessages((prev) => {
-            return keepLastN(messageHistoryLimit, prev.concat([message]));
-          });
+          updateMessagesArray(message);
           break;
         case 'assistant_prosody':
           setLastAssistantProsodyMessage(message);
           sendMessageToParent?.(message);
-          setMessages((prev) => {
-            return keepLastN(messageHistoryLimit, prev.concat([message]));
-          });
+          updateMessagesArray(message);
+
           break;
         case 'chat_metadata':
           sendMessageToParent?.(message);
-          setMessages((prev) => {
-            return keepLastN(messageHistoryLimit, prev.concat([message]));
-          });
+          updateMessagesArray(message);
           setChatMetadata(message);
           break;
         default:
           break;
       }
     },
-    [messageHistoryLimit, sendMessageToParent],
+    [
+      findMostRecentUserMessage,
+      messageHistoryLimit,
+      sendMessageToParent,
+      updateMessagesArray,
+    ],
   );
 
   const onPlayAudio = useCallback(
@@ -133,12 +195,8 @@ export const useMessages = ({
       if (matchingTranscript) {
         sendMessageToParent?.(matchingTranscript);
         setLastVoiceMessage(matchingTranscript);
-        setMessages((prev) => {
-          return keepLastN(
-            messageHistoryLimit,
-            prev.concat([matchingTranscript]),
-          );
-        });
+        updateMessagesArray(matchingTranscript);
+
         // remove the message from the map to ensure we don't
         // accidentally push it to the messages array more than once
         setVoiceMessageMap((prev) => {
@@ -148,7 +206,7 @@ export const useMessages = ({
         });
       }
     },
-    [voiceMessageMap, sendMessageToParent, messageHistoryLimit],
+    [voiceMessageMap, sendMessageToParent, updateMessagesArray],
   );
 
   const clearMessages = useCallback(() => {

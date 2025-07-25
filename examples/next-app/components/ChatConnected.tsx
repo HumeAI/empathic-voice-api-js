@@ -235,13 +235,25 @@ export const ChatConnected = () => {
               }
               if (message.type === 'user_message') {
                 return (
-                  <div key={message.receivedAt.toISOString()}>
-                    <div className="text-xs uppercase">User</div>
+                  <div
+                    key={
+                      message.receivedAt.toISOString() +
+                      message.message.content +
+                      JSON.stringify(message.time)
+                    }
+                  >
+                    <div className="text-xs uppercase">
+                      User ({String(message.interim)})
+                    </div>
                     <div>{message.message.content}</div>
                   </div>
                 );
               }
-              return null;
+              return (
+                <div key={message.receivedAt.toISOString()}>
+                  {JSON.stringify(message)}
+                </div>
+              );
             })}
           </div>
         </div>
