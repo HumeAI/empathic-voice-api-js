@@ -23,6 +23,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
   const currentAnalyzer = useRef<AnalyserNode | null>(null);
   const fftAnimationId = useRef<number | null>(null);
+  const analyzerSource = useRef<MediaStreamAudioSourceNode | null>(null);
 
   const mimeTypeRef = useRef<MimeType | null>(null);
 
@@ -48,10 +49,46 @@ export const useMicrophone = (props: MicrophoneProps) => {
       });
   }, []);
 
+  const startFftAnalyzer = useCallback((stream: MediaStream) => {
+    if (!audioContext.current) {
+      return;
+    }
+
+    const source = audioContext.current.createMediaStreamSource(stream);
+    analyzerSource.current = source;
+    currentAnalyzer.current = audioContext.current.createAnalyser();
+    currentAnalyzer.current.fftSize = 2048;
+    const bufferLength = currentAnalyzer.current.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    source.connect(currentAnalyzer.current);
+    const draw = () => {
+      if (!currentAnalyzer.current || !audioContext.current) {
+        return;
+      }
+
+      currentAnalyzer.current.getByteFrequencyData(dataArray);
+
+      const sampleRate = audioContext.current.sampleRate;
+
+      const barkFrequencies = convertLinearFrequenciesToBark(
+        dataArray,
+        sampleRate,
+      );
+
+      setFft(barkFrequencies);
+      fftAnimationId.current = requestAnimationFrame(draw);
+    };
+    draw();
+  }, []);
+
   const start = useCallback(
     (stream: MediaStream) => {
       if (!stream) {
         throw new Error('No stream connected');
+      }
+
+      if (fftAnimationId.current) {
+        cancelAnimationFrame(fftAnimationId.current);
       }
 
       currentStream.current = stream;
@@ -60,28 +97,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
       audioContext.current = context;
 
       try {
-        const source = audioContext.current.createMediaStreamSource(stream);
-        currentAnalyzer.current = audioContext.current.createAnalyser();
-        currentAnalyzer.current.fftSize = 2048;
-        const bufferLength = currentAnalyzer.current.frequencyBinCount;
-        const dataArray = new Uint8Array(bufferLength);
-        source.connect(currentAnalyzer.current);
-        const draw = () => {
-          if (!currentAnalyzer.current || !audioContext.current) return;
-
-          currentAnalyzer.current.getByteFrequencyData(dataArray);
-
-          const sampleRate = audioContext.current.sampleRate;
-
-          const barkFrequencies = convertLinearFrequenciesToBark(
-            dataArray,
-            sampleRate,
-          );
-
-          setFft(barkFrequencies);
-          fftAnimationId.current = requestAnimationFrame(draw);
-        };
-        draw();
+        startFftAnalyzer(stream);
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Unknown error';
         console.error(`Failed to start mic analyzer: ${message}`);
@@ -97,10 +113,15 @@ export const useMicrophone = (props: MicrophoneProps) => {
       recorder.current.addEventListener('dataavailable', dataHandler);
       recorder.current.start(100);
     },
-    [dataHandler, mimeTypeRef],
+    [dataHandler, startFftAnalyzer],
   );
 
   const stop = useCallback(async () => {
+    if (analyzerSource.current) {
+      analyzerSource.current.disconnect();
+      analyzerSource.current = null;
+    }
+
     if (currentAnalyzer.current) {
       if (fftAnimationId.current) {
         cancelAnimationFrame(fftAnimationId.current);
@@ -179,6 +200,7 @@ export const useMicrophone = (props: MicrophoneProps) => {
         recorder.current?.removeEventListener('dataavailable', dataHandler);
 
         if (currentAnalyzer.current) {
+          analyzerSource.current?.disconnect();
           if (fftAnimationId.current) {
             cancelAnimationFrame(fftAnimationId.current);
           }
