@@ -1,10 +1,9 @@
 // cspell:ignore dataavailable
 import type { MimeType } from 'hume';
 import { getBrowserSupportedMimeType } from 'hume';
-import Meyda from 'meyda';
-import type { MeydaFeaturesObject } from 'meyda';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import { convertLinearFrequenciesToBark } from './convertFrequencyScale';
 import { generateEmptyFft } from './generateEmptyFft';
 import type { MicErrorReason } from './VoiceProvider';
 
@@ -22,7 +21,9 @@ export const useMicrophone = (props: MicrophoneProps) => {
   const currentStream = useRef<MediaStream | null>(null);
 
   const [fft, setFft] = useState<number[]>(generateEmptyFft());
-  const currentAnalyzer = useRef<Meyda.MeydaAnalyzer | null>(null);
+  const currentAnalyzer = useRef<AnalyserNode | null>(null);
+  const fftAnimationId = useRef<number | null>(null);
+
   const mimeTypeRef = useRef<MimeType | null>(null);
 
   const audioContext = useRef<AudioContext | null>(null);
@@ -57,20 +58,30 @@ export const useMicrophone = (props: MicrophoneProps) => {
 
       const context = new AudioContext();
       audioContext.current = context;
-      const input = context.createMediaStreamSource(stream);
 
       try {
-        currentAnalyzer.current = Meyda.createMeydaAnalyzer({
-          audioContext: context,
-          source: input,
-          featureExtractors: ['loudness'],
-          callback: (features: MeydaFeaturesObject) => {
-            const newFft = features.loudness.specific || [];
-            setFft(() => Array.from(newFft));
-          },
-        });
+        const source = audioContext.current.createMediaStreamSource(stream);
+        currentAnalyzer.current = audioContext.current.createAnalyser();
+        currentAnalyzer.current.fftSize = 2048;
+        const bufferLength = currentAnalyzer.current.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        source.connect(currentAnalyzer.current);
+        const draw = () => {
+          if (!currentAnalyzer.current || !audioContext.current) return;
 
-        currentAnalyzer.current.start();
+          currentAnalyzer.current.getByteFrequencyData(dataArray);
+
+          const sampleRate = audioContext.current.sampleRate;
+
+          const barkFrequencies = convertLinearFrequenciesToBark(
+            dataArray,
+            sampleRate,
+          );
+
+          setFft(barkFrequencies);
+          fftAnimationId.current = requestAnimationFrame(draw);
+        };
+        draw();
       } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Unknown error';
         console.error(`Failed to start mic analyzer: ${message}`);
@@ -91,7 +102,10 @@ export const useMicrophone = (props: MicrophoneProps) => {
 
   const stop = useCallback(async () => {
     if (currentAnalyzer.current) {
-      currentAnalyzer.current.stop();
+      if (fftAnimationId.current) {
+        cancelAnimationFrame(fftAnimationId.current);
+      }
+      fftAnimationId.current = null;
       currentAnalyzer.current = null;
     }
 
@@ -138,7 +152,6 @@ export const useMicrophone = (props: MicrophoneProps) => {
 
   const mute = useCallback(() => {
     if (currentAnalyzer.current) {
-      currentAnalyzer.current.stop();
       setFft(generateEmptyFft());
     }
 
@@ -151,10 +164,6 @@ export const useMicrophone = (props: MicrophoneProps) => {
   }, []);
 
   const unmute = useCallback(() => {
-    if (currentAnalyzer.current) {
-      currentAnalyzer.current.start();
-    }
-
     currentStream.current?.getTracks().forEach((track) => {
       track.enabled = true;
     });
@@ -170,7 +179,10 @@ export const useMicrophone = (props: MicrophoneProps) => {
         recorder.current?.removeEventListener('dataavailable', dataHandler);
 
         if (currentAnalyzer.current) {
-          currentAnalyzer.current.stop();
+          if (fftAnimationId.current) {
+            cancelAnimationFrame(fftAnimationId.current);
+          }
+          fftAnimationId.current = null;
           currentAnalyzer.current = null;
         }
 
